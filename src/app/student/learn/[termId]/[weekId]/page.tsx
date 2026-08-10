@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PageHeader } from "@/components/app-shell";
+import { TermWeekNav } from "@/components/term-week-nav";
 import { AssessmentQuiz } from "@/components/assessment";
 import { useStore } from "@/lib/store";
 
@@ -17,6 +18,8 @@ export default function StudentWeekPage() {
 
   return (
     <div>
+      <TermWeekNav termId={term.id} weeks={term.weeks} activeWeekId={week.id} />
+
       <PageHeader
         title={`Week ${week.number}: ${week.topic}`}
         subtitle={`${term.title} · Mon–Fri lessons, then Saturday week test`}

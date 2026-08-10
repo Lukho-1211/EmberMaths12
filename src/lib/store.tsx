@@ -15,6 +15,7 @@ import type {
   CorrectionResult,
   Lesson,
   Message,
+  Resource,
   Role,
   SchoolClass,
   StudyGroup,
@@ -22,6 +23,21 @@ import type {
   User,
   WeekDay,
 } from "@/lib/types";
+
+/** Older demo saves may lack exam file attachments. */
+function normalizeAppState(raw: AppState): AppState {
+  return {
+    ...raw,
+    terms: (raw.terms ?? []).map((term) => ({
+      ...term,
+      preExam: { ...term.preExam, resources: term.preExam.resources ?? [] },
+      weeks: (term.weeks ?? []).map((week) => ({
+        ...week,
+        weekTest: { ...week.weekTest, resources: week.weekTest.resources ?? [] },
+      })),
+    })),
+  };
+}
 
 interface Session {
   userId: string;
@@ -52,8 +68,12 @@ interface StoreContextValue {
     day: WeekDay,
     patch: Partial<Lesson>,
   ) => void;
-  setWeekTestTitle: (termId: string, weekId: string, title: string) => void;
-  setPreExamTitle: (termId: string, title: string) => void;
+  setWeekTest: (
+    termId: string,
+    weekId: string,
+    patch: { title?: string; resources?: Resource[] },
+  ) => void;
+  setPreExam: (termId: string, patch: { title?: string; resources?: Resource[] }) => void;
   createGroup: (input: { name: string; description: string; termId?: string }) => void;
   addMemberToGroup: (groupId: string, studentId: string) => void;
   removeMemberFromGroup: (groupId: string, studentId: string) => void;
@@ -137,7 +157,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setState(JSON.parse(raw) as AppState);
+      if (raw) setState(normalizeAppState(JSON.parse(raw) as AppState));
       const sess = localStorage.getItem(SESSION_KEY);
       if (sess) setSession(JSON.parse(sess) as Session);
     } catch {
@@ -273,30 +293,56 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const setWeekTestTitle = useCallback((termId: string, weekId: string, title: string) => {
-    setState((prev) => ({
-      ...prev,
-      terms: prev.terms.map((term) =>
-        term.id !== termId
-          ? term
-          : {
-              ...term,
-              weeks: term.weeks.map((w) =>
-                w.id !== weekId ? w : { ...w, weekTest: { ...w.weekTest, title } },
-              ),
-            },
-      ),
-    }));
-  }, []);
+  const setWeekTest = useCallback(
+    (termId: string, weekId: string, patch: { title?: string; resources?: Resource[] }) => {
+      setState((prev) => ({
+        ...prev,
+        terms: prev.terms.map((term) =>
+          term.id !== termId
+            ? term
+            : {
+                ...term,
+                weeks: term.weeks.map((w) =>
+                  w.id !== weekId
+                    ? w
+                    : {
+                        ...w,
+                        weekTest: {
+                          ...w.weekTest,
+                          ...(patch.title !== undefined ? { title: patch.title } : {}),
+                          ...(patch.resources !== undefined
+                            ? { resources: patch.resources }
+                            : {}),
+                        },
+                      },
+                ),
+              },
+        ),
+      }));
+    },
+    [],
+  );
 
-  const setPreExamTitle = useCallback((termId: string, title: string) => {
-    setState((prev) => ({
-      ...prev,
-      terms: prev.terms.map((term) =>
-        term.id !== termId ? term : { ...term, preExam: { ...term.preExam, title } },
-      ),
-    }));
-  }, []);
+  const setPreExam = useCallback(
+    (termId: string, patch: { title?: string; resources?: Resource[] }) => {
+      setState((prev) => ({
+        ...prev,
+        terms: prev.terms.map((term) =>
+          term.id !== termId
+            ? term
+            : {
+                ...term,
+                preExam: {
+                  ...term.preExam,
+                  ...(patch.title !== undefined ? { title: patch.title } : {}),
+                  ...(patch.resources !== undefined ? { resources: patch.resources } : {}),
+                },
+              },
+        ),
+      }));
+    },
+    [],
+  );
 
   const createGroup = useCallback((input: { name: string; description: string; termId?: string }) => {
     const group: StudyGroup = {
@@ -507,8 +553,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     createTeacher,
     updateTerms,
     upsertWeekLesson,
-    setWeekTestTitle,
-    setPreExamTitle,
+    setWeekTest,
+    setPreExam,
     createGroup,
     addMemberToGroup,
     removeMemberFromGroup,

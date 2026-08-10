@@ -48,6 +48,7 @@ function makeWeekTest(termNum: number, weekNum: number, topic: string): WeekTest
     title: `Week ${weekNum} Saturday Test — ${topic}`,
     description: `Assess Term ${termNum} Week ${weekNum} understanding of ${topic}.`,
     passMark: 50,
+    resources: [],
     questions: [
       {
         id: `q-t${termNum}-w${weekNum}-1`,
@@ -92,6 +93,7 @@ function makePreExam(termNum: number, focus: string): PreExam {
     title: `Term ${termNum} Pre-Exam`,
     description: `Consolidates Weeks 1–4 (${focus}).`,
     passMark: 50,
+    resources: [],
     questions: [
       {
         id: `pq-t${termNum}-1`,

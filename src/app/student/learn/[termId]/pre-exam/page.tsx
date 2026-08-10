@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PageHeader } from "@/components/app-shell";
+import { TermWeekNav } from "@/components/term-week-nav";
 import { AssessmentQuiz } from "@/components/assessment";
 import { useStore } from "@/lib/store";
 
@@ -20,6 +21,8 @@ export default function StudentPreExamPage() {
 
   return (
     <div>
+      <TermWeekNav termId={term.id} weeks={term.weeks} preExamActive />
+
       <PageHeader
         title={term.preExam.title}
         subtitle="Taken after Week 4 to consolidate the term."

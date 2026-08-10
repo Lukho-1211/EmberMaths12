@@ -19,8 +19,10 @@ export interface User {
 export interface Resource {
   id: string;
   title: string;
-  type: "pdf" | "link" | "worksheet";
+  type: "pdf" | "link" | "worksheet" | "markdown";
   url: string;
+  /** Original file name when uploaded in-browser (mock storage). */
+  fileName?: string;
 }
 
 export interface Lesson {
@@ -42,6 +44,8 @@ export interface WeekTest {
   description: string;
   questions: { id: string; prompt: string; options: string[]; answerIndex: number }[];
   passMark: number;
+  /** Uploaded PDF / Markdown exam papers (mock localStorage). */
+  resources: Resource[];
 }
 
 export interface PreExam {
@@ -50,6 +54,8 @@ export interface PreExam {
   description: string;
   questions: { id: string; prompt: string; options: string[]; answerIndex: number }[];
   passMark: number;
+  /** Uploaded PDF / Markdown exam papers (mock localStorage). */
+  resources: Resource[];
 }
 
 export interface Week {
