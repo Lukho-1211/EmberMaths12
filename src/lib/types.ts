@@ -25,6 +25,25 @@ export interface Resource {
   fileName?: string;
 }
 
+export interface AssessmentQuestion {
+  id: string;
+  prompt: string;
+  options: string[];
+  answerIndex: number;
+}
+
+export interface LessonTest {
+  id: string;
+  title: string;
+  description: string;
+  questions: AssessmentQuestion[];
+  passMark: number;
+  /** Optional override materials; students fall back to lesson.resources when empty. */
+  resources: Resource[];
+  /** Marking memo / answer key — admin only; used for paper-scan correction. */
+  memoResources: Resource[];
+}
+
 export interface Lesson {
   id: string;
   day: WeekDay;
@@ -33,6 +52,8 @@ export interface Lesson {
   videoUrl: string;
   durationMinutes: number;
   resources: Resource[];
+  /** Daily lesson test (MCQ / paper+scan); required before marking complete. */
+  lessonTest?: LessonTest;
   /** teacher-created extras */
   createdByTeacherId?: string;
   classId?: string;
@@ -42,20 +63,24 @@ export interface WeekTest {
   id: string;
   title: string;
   description: string;
-  questions: { id: string; prompt: string; options: string[]; answerIndex: number }[];
+  questions: AssessmentQuestion[];
   passMark: number;
   /** Uploaded PDF / Markdown exam papers (mock localStorage). */
   resources: Resource[];
+  /** Marking memo / answer key — admin only; used for paper-scan correction. */
+  memoResources: Resource[];
 }
 
 export interface PreExam {
   id: string;
   title: string;
   description: string;
-  questions: { id: string; prompt: string; options: string[]; answerIndex: number }[];
+  questions: AssessmentQuestion[];
   passMark: number;
   /** Uploaded PDF / Markdown exam papers (mock localStorage). */
   resources: Resource[];
+  /** Marking memo / answer key — admin only; used for paper-scan correction. */
+  memoResources: Resource[];
 }
 
 export interface Week {
@@ -84,7 +109,7 @@ export interface Badge {
 export interface StudentProgress {
   studentId: string;
   completedLessonIds: string[];
-  testScores: Record<string, number>; // weekTestId or preExamId → %
+  testScores: Record<string, number>; // weekTestId, preExamId, or lessonTestId → %
   badgeIds: string[];
   overallPercent: number;
   status: "passing" | "failing" | "pending";
@@ -118,6 +143,13 @@ export interface Message {
   read: boolean;
 }
 
+export interface QuestionFeedback {
+  questionId: string;
+  prompt: string;
+  correct: boolean;
+  note: string;
+}
+
 export interface CorrectionResult {
   id: string;
   studentId: string;
@@ -126,6 +158,11 @@ export interface CorrectionResult {
   feedback: string[];
   summary: string;
   createdAt: string;
+  /** Set when the scan is tied to a Saturday test or pre-exam. */
+  assessmentId?: string;
+  assessmentTitle?: string;
+  mode?: "paper-scan" | "practice";
+  questionFeedback?: QuestionFeedback[];
 }
 
 export interface AppState {

@@ -39,6 +39,7 @@ export default function StudentScanPage() {
     const result = addCorrection({
       studentId: user.id,
       fileName,
+      mode: "practice",
       ...mock,
     });
     setLatest(result);
@@ -46,16 +47,24 @@ export default function StudentScanPage() {
   }
 
   function shareResult(c: CorrectionResult) {
-    const text = `Ember12 AI correction — ${c.fileName}: ${c.score}%\n${c.summary}`;
+    const label = c.assessmentTitle ?? c.fileName;
+    const text = `EmberMaths12 AI correction — ${label}: ${c.score}%\n${c.summary}`;
     void navigator.clipboard?.writeText(text);
     alert("Result copied to clipboard (mock share).");
+  }
+
+  function historyLabel(c: CorrectionResult) {
+    if (c.assessmentTitle) {
+      return `${c.assessmentTitle} · ${c.fileName} · ${c.score}%`;
+    }
+    return `${c.fileName} · ${c.score}%`;
   }
 
   return (
     <div>
       <PageHeader
         title="Scan & correct"
-        subtitle="Upload a page photo for mock AI corrections. Results can be shared with your teacher or parent."
+        subtitle="Practice upload for mock AI corrections, or use Paper + scan on a Saturday week test / pre-exam. Results can be shared with your teacher or parent."
       />
 
       <form
@@ -67,6 +76,7 @@ export default function StudentScanPage() {
           <input
             type="file"
             accept="image/*"
+            capture="environment"
             className="mt-2 block w-full text-sm"
             onChange={(e) => setFileName(e.target.files?.[0]?.name ?? "")}
             required
@@ -107,12 +117,15 @@ export default function StudentScanPage() {
             {mine.map((c) => (
               <li
                 key={c.id}
-                className="flex items-center justify-between rounded-md border border-border bg-white px-4 py-3 text-sm"
+                className="flex items-center justify-between gap-3 rounded-md border border-border bg-white px-4 py-3 text-sm"
               >
                 <span>
-                  {c.fileName} · {c.score}%
+                  {historyLabel(c)}
+                  {c.mode === "paper-scan" ? (
+                    <span className="ml-2 text-xs uppercase text-muted">paper scan</span>
+                  ) : null}
                 </span>
-                <button type="button" className="text-ember-navy underline" onClick={() => shareResult(c)}>
+                <button type="button" className="shrink-0 text-ember-navy underline" onClick={() => shareResult(c)}>
                   Share
                 </button>
               </li>

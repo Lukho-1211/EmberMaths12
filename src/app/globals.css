@@ -87,6 +87,14 @@ h3,
   animation: rise-in 0.8s ease-out 0.15s both;
 }
 
+.animate-rise-stagger {
+  animation: rise-in 0.65s ease-out both;
+}
+
+.animate-reveal {
+  animation: rise-in 0.45s ease-out both;
+}
+
 .animate-glow {
   animation: glow-pulse 2.8s ease-in-out infinite;
 }
@@ -97,6 +105,8 @@ h3,
   }
   .animate-rise,
   .animate-rise-delay,
+  .animate-rise-stagger,
+  .animate-reveal,
   .animate-glow {
     animation: none;
   }

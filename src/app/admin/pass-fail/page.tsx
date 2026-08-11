@@ -27,7 +27,7 @@ export default function AdminPassFailPage() {
     <div>
       <PageHeader
         title="Passing & failing students"
-        subtitle="Monitor who is on track across Ember12 assessments."
+        subtitle="Monitor who is on track across EmberMaths12 assessments."
       />
 
       <div className="mb-4 flex flex-wrap gap-2">

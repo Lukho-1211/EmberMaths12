@@ -32,12 +32,12 @@ function SignupForm() {
   return (
     <div className="mx-auto w-full max-w-md rounded-2xl border border-border bg-ember-white p-8 shadow-sm">
       <h1 className="font-display text-3xl text-ember-navy">Sign up</h1>
-      <p className="mt-2 text-sm text-muted">Create your Ember12 account.</p>
+      <p className="mt-2 text-sm text-muted">Create your EmberMaths12 account.</p>
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <label className="block text-sm">
           <span className="mb-1 block font-medium">Full name</span>
           <input
-            className="w-full rounded-md border border-border px-3 py-2 outline-none focus:border-ember-gold"
+            className="w-full rounded-md border border-border px-3 py-2 outline-none focus:border-ember-gold focus:ring-2 focus:ring-ember-gold/40"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -46,7 +46,7 @@ function SignupForm() {
         <label className="block text-sm">
           <span className="mb-1 block font-medium">Email</span>
           <input
-            className="w-full rounded-md border border-border px-3 py-2 outline-none focus:border-ember-gold"
+            className="w-full rounded-md border border-border px-3 py-2 outline-none focus:border-ember-gold focus:ring-2 focus:ring-ember-gold/40"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -56,7 +56,7 @@ function SignupForm() {
         <label className="block text-sm">
           <span className="mb-1 block font-medium">Password</span>
           <input
-            className="w-full rounded-md border border-border px-3 py-2 outline-none focus:border-ember-gold"
+            className="w-full rounded-md border border-border px-3 py-2 outline-none focus:border-ember-gold focus:ring-2 focus:ring-ember-gold/40"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -67,7 +67,7 @@ function SignupForm() {
         <label className="block text-sm">
           <span className="mb-1 block font-medium">I am a…</span>
           <select
-            className="w-full rounded-md border border-border px-3 py-2 outline-none focus:border-ember-gold"
+            className="w-full rounded-md border border-border px-3 py-2 outline-none focus:border-ember-gold focus:ring-2 focus:ring-ember-gold/40"
             value={role}
             onChange={(e) => setRole(e.target.value as Role)}
           >
@@ -81,7 +81,7 @@ function SignupForm() {
         {error ? <p className="text-sm text-danger">{error}</p> : null}
         <button
           type="submit"
-          className="w-full rounded-md bg-ember-gold py-2.5 text-sm font-bold text-ember-navy hover:brightness-105"
+          className="w-full cursor-pointer rounded-md bg-ember-gold py-2.5 text-sm font-bold text-ember-navy transition duration-200 hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-gold"
         >
           Create account
         </button>
@@ -100,7 +100,7 @@ export default function SignupPage() {
   return (
     <div className="ember-wash flex min-h-screen flex-col items-center justify-center px-4 py-12">
       <Link href="/" className="mb-8 font-display text-3xl text-ember-navy">
-        Ember<span className="text-ember-gold">12</span>
+        EmberMaths<span className="text-ember-gold">12</span>
       </Link>
       <Suspense fallback={<p>Loading…</p>}>
         <SignupForm />

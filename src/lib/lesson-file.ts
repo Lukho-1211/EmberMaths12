@@ -1,7 +1,14 @@
-import type { Resource } from "@/lib/types";
+import type { Lesson, Resource } from "@/lib/types";
 
 /** Soft cap for in-browser lesson uploads (mock storage). */
 export const MAX_LESSON_FILE_BYTES = 20 * 1024 * 1024;
+
+/** First uploaded Markdown resource on a lesson (for Text lesson view). */
+export function primaryLessonMarkdownResource(lesson: Lesson): Resource | undefined {
+  return lesson.resources.find(
+    (r) => r.type === "markdown" && r.url.startsWith("data:text/markdown"),
+  );
+}
 
 function isMarkdownFile(file: File) {
   const name = file.name.toLowerCase();

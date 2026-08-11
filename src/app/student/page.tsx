@@ -11,10 +11,9 @@ export default function StudentDashboardPage() {
 
   const progress = state.progress.find((p) => p.studentId === user.id);
   const badges = state.badges.filter((b) => progress?.badgeIds.includes(b.id));
-  const upcoming = state.terms[0]?.weeks.find((w) => {
-    const scored = progress?.testScores[w.weekTest.id];
-    return scored === undefined;
-  });
+  const upcoming = state.terms
+    .flatMap((term) => term.weeks.map((week) => ({ term, week })))
+    .find(({ week }) => progress?.testScores[week.weekTest.id] === undefined);
 
   return (
     <div>
@@ -42,8 +41,8 @@ export default function StudentDashboardPage() {
         <div className="rounded-xl border border-border bg-white p-5">
           <h2 className="font-semibold">Continue learning</h2>
           <p className="mt-2 text-sm text-muted">
-            Follow Term → Week → Mon–Fri lessons. Saturday is your week test. After Week 4, write the
-            pre-exam.
+            Follow Term → Week → Mon–Fri lessons. Saturday tests and pre-exams can be done on screen
+            (MCQ) or with Paper + scan.
           </p>
           <Link
             href="/student/learn"
@@ -53,7 +52,13 @@ export default function StudentDashboardPage() {
           </Link>
           {upcoming ? (
             <p className="mt-4 text-sm">
-              Next Saturday test: <strong>{upcoming.weekTest.title}</strong>
+              Next Saturday test:{" "}
+              <Link
+                href={`/student/learn/${upcoming.term.id}/${upcoming.week.id}?mode=paper#saturday-test`}
+                className="font-semibold text-ember-navy underline decoration-ember-gold"
+              >
+                {upcoming.week.weekTest.title}
+              </Link>
             </p>
           ) : null}
         </div>

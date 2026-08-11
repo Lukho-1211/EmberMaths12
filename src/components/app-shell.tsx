@@ -69,7 +69,7 @@ export function AppShell({
   if (!ready || !user || user.role !== role) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface text-muted">
-        Loading Ember12…
+        Loading EmberMaths12…
       </div>
     );
   }
@@ -82,7 +82,7 @@ export function AppShell({
         <aside className="hidden w-64 shrink-0 flex-col bg-ember-navy text-ember-white md:flex">
           <div className="border-b border-white/10 px-5 py-6">
             <Link href={`/${role}`} className="font-display text-2xl">
-              Ember<span className="text-ember-gold">12</span>
+              EmberMaths<span className="text-ember-gold">12</span>
             </Link>
             <p className="mt-1 text-xs uppercase tracking-widest text-ember-gray/80">{role}</p>
           </div>

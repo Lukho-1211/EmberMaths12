@@ -35,12 +35,12 @@ function LoginForm() {
   return (
     <div className="mx-auto w-full max-w-md rounded-2xl border border-border bg-ember-white p-8 shadow-sm">
       <h1 className="font-display text-3xl text-ember-navy">Log in</h1>
-      <p className="mt-2 text-sm text-muted">Access your Ember12 portal.</p>
+      <p className="mt-2 text-sm text-muted">Access your EmberMaths12 portal.</p>
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <label className="block text-sm">
           <span className="mb-1 block font-medium">Email</span>
           <input
-            className="w-full rounded-md border border-border px-3 py-2 outline-none focus:border-ember-gold"
+            className="w-full rounded-md border border-border px-3 py-2 outline-none focus:border-ember-gold focus:ring-2 focus:ring-ember-gold/40"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -50,7 +50,7 @@ function LoginForm() {
         <label className="block text-sm">
           <span className="mb-1 block font-medium">Password</span>
           <input
-            className="w-full rounded-md border border-border px-3 py-2 outline-none focus:border-ember-gold"
+            className="w-full rounded-md border border-border px-3 py-2 outline-none focus:border-ember-gold focus:ring-2 focus:ring-ember-gold/40"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -60,7 +60,7 @@ function LoginForm() {
         {error ? <p className="text-sm text-danger">{error}</p> : null}
         <button
           type="submit"
-          className="w-full rounded-md bg-ember-navy py-2.5 text-sm font-semibold text-white hover:bg-ember-black"
+          className="w-full cursor-pointer rounded-md bg-ember-navy py-2.5 text-sm font-semibold text-white transition duration-200 hover:bg-ember-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-gold"
         >
           Log in
         </button>
@@ -71,7 +71,7 @@ function LoginForm() {
           <button
             key={d.email}
             type="button"
-            className="flex w-full items-center justify-between rounded-md border border-border px-3 py-2 text-left text-sm hover:border-ember-gold"
+            className="flex w-full cursor-pointer items-center justify-between rounded-md border border-border px-3 py-2 text-left text-sm transition duration-200 hover:border-ember-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-gold"
             onClick={() => {
               setEmail(d.email);
               setPassword(DEMO_PASSWORD);
@@ -97,7 +97,7 @@ export default function LoginPage() {
   return (
     <div className="ember-wash flex min-h-screen flex-col items-center justify-center px-4 py-12">
       <Link href="/" className="mb-8 font-display text-3xl text-ember-navy">
-        Ember<span className="text-ember-gold">12</span>
+        EmberMaths<span className="text-ember-gold">12</span>
       </Link>
       <Suspense fallback={<p>Loading…</p>}>
         <LoginForm />

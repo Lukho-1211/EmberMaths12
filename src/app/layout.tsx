@@ -14,7 +14,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Ember12 | CAPS Grade 12 Mathematics",
+  title: "EmberMaths12 | CAPS Grade 12 Mathematics",
   description:
     "Online South African CAPS Grade 12 Mathematics school — terms, weekly lessons, Saturday tests, and parent progress tracking.",
 };

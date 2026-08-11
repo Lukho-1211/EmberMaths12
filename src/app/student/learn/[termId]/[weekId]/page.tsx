@@ -1,18 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { PageHeader } from "@/components/app-shell";
 import { TermWeekNav } from "@/components/term-week-nav";
-import { AssessmentQuiz } from "@/components/assessment";
+import { AssessmentPanel } from "@/components/assessment";
 import { useStore } from "@/lib/store";
 
-export default function StudentWeekPage() {
+function StudentWeekContent() {
   const params = useParams<{ termId: string; weekId: string }>();
+  const searchParams = useSearchParams();
   const { state, user } = useStore();
   const term = state.terms.find((t) => t.id === params.termId);
   const week = term?.weeks.find((w) => w.id === params.weekId);
   const progress = state.progress.find((p) => p.studentId === user?.id);
+  const initialMode = searchParams.get("mode") === "paper" ? "paper" : "mcq";
 
   if (!term || !week || !user) return <p>Week not found.</p>;
 
@@ -54,7 +57,11 @@ export default function StudentWeekPage() {
             update.
           </p>
         ) : null}
-        <AssessmentQuiz assessment={week.weekTest} studentId={user.id} />
+        <AssessmentPanel
+          assessment={week.weekTest}
+          studentId={user.id}
+          initialMode={initialMode}
+        />
       </div>
 
       <Link
@@ -64,5 +71,13 @@ export default function StudentWeekPage() {
         ← Back to term
       </Link>
     </div>
+  );
+}
+
+export default function StudentWeekPage() {
+  return (
+    <Suspense fallback={<p>Loading…</p>}>
+      <StudentWeekContent />
+    </Suspense>
   );
 }

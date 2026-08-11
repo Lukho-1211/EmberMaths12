@@ -1,17 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { PageHeader } from "@/components/app-shell";
 import { TermWeekNav } from "@/components/term-week-nav";
-import { AssessmentQuiz } from "@/components/assessment";
+import { AssessmentPanel } from "@/components/assessment";
 import { useStore } from "@/lib/store";
 
-export default function StudentPreExamPage() {
+function StudentPreExamContent() {
   const params = useParams<{ termId: string }>();
+  const searchParams = useSearchParams();
   const { state, user } = useStore();
   const term = state.terms.find((t) => t.id === params.termId);
   const progress = state.progress.find((p) => p.studentId === user?.id);
+  const initialMode = searchParams.get("mode") === "paper" ? "paper" : "mcq";
 
   if (!term || !user) return <p>Term not found.</p>;
 
@@ -33,7 +36,11 @@ export default function StudentPreExamPage() {
           now.
         </p>
       ) : null}
-      <AssessmentQuiz assessment={term.preExam} studentId={user.id} />
+      <AssessmentPanel
+        assessment={term.preExam}
+        studentId={user.id}
+        initialMode={initialMode}
+      />
       <Link
         href={`/student/learn/${term.id}`}
         className="mt-6 inline-block text-sm font-semibold underline decoration-ember-gold"
@@ -41,5 +48,13 @@ export default function StudentPreExamPage() {
         ← Back to term
       </Link>
     </div>
+  );
+}
+
+export default function StudentPreExamPage() {
+  return (
+    <Suspense fallback={<p>Loading…</p>}>
+      <StudentPreExamContent />
+    </Suspense>
   );
 }

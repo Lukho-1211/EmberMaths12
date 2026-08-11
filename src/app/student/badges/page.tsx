@@ -18,7 +18,7 @@ export default function StudentBadgesPage() {
 
   return (
     <div>
-      <PageHeader title="Badges" subtitle="Milestones earned as you move through Ember12." />
+      <PageHeader title="Badges" subtitle="Milestones earned as you move through EmberMaths12." />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {state.badges.map((badge) => {
           const earned = progress?.badgeIds.includes(badge.id);

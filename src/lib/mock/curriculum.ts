@@ -1,9 +1,105 @@
-import type { Lesson, PreExam, Term, Week, WeekDay, WeekTest } from "@/lib/types";
+import type {
+  Lesson,
+  LessonTest,
+  PreExam,
+  Term,
+  Week,
+  WeekDay,
+  WeekTest,
+} from "@/lib/types";
 
 const DAYS: WeekDay[] = ["monday", "tuesday", "wednesday", "thursday", "friday"];
 
 function dayTitle(day: WeekDay) {
   return day.charAt(0).toUpperCase() + day.slice(1);
+}
+
+function makeLessonTest(
+  termNum: number,
+  weekNum: number,
+  day: WeekDay,
+  dayTopic: string,
+  topic: string,
+): LessonTest {
+  const lessonId = `t${termNum}-w${weekNum}-${day}`;
+  return {
+    id: `lesson-test-${lessonId}`,
+    title: `Lesson test — ${dayTitle(day)}: ${dayTopic}`,
+    description:
+      "Check today’s lesson. Choose on-screen MCQ or Paper + scan. Pass to mark the lesson complete.",
+    passMark: 50,
+    resources: [],
+    memoResources: [],
+    questions: [
+      {
+        id: `lt-${lessonId}-q1`,
+        prompt: `What is the main focus of today’s lesson (${dayTopic})?`,
+        options: [
+          "Unrelated enrichment only",
+          dayTopic,
+          "Term 4 wellness only",
+          "Skipping CAPS content",
+        ],
+        answerIndex: 1,
+      },
+      {
+        id: `lt-${lessonId}-q2`,
+        prompt: `This lesson sits inside the week topic “${topic}”. Learners should…`,
+        options: [
+          "Ignore daily notes",
+          "Work through examples and check answers",
+          "Wait until the Saturday test only",
+          "Avoid practice questions",
+        ],
+        answerIndex: 1,
+      },
+      {
+        id: `lt-${lessonId}-q3`,
+        prompt: "Before marking a lesson complete in EmberMaths12, you must…",
+        options: [
+          "Skip the lesson test",
+          "Pass today’s lesson test (MCQ or paper + scan)",
+          "Upload a memo as a student",
+          "Finish the term pre-exam first",
+        ],
+        answerIndex: 1,
+      },
+      {
+        id: `lt-${lessonId}-q4`,
+        prompt: `A sensible next step after studying ${dayTopic} is…`,
+        options: [
+          "Discard feedback",
+          "Review mistakes and retry similar problems",
+          "Change to a different subject permanently",
+          "Only memorise the title",
+        ],
+        answerIndex: 1,
+      },
+    ],
+  };
+}
+
+function markdownNotesUrl(dayTopic: string, topic: string, termNum: number, weekNum: number) {
+  const body = [
+    `# ${dayTopic}`,
+    "",
+    `CAPS Grade 12 — Term ${termNum}, Week ${weekNum} · ${topic}`,
+    "",
+    "## Learning focus",
+    `- Revise key ideas for **${dayTopic}**`,
+    "- Work through examples step by step",
+    "- Check answers and note common errors",
+    "",
+    "## Outline",
+    "1. Warm-up recall",
+    "2. Core method / formula",
+    "3. Guided examples",
+    "4. Independent practice",
+    "",
+    "## Tip",
+    "Switch to **Video** for the walkthrough, then return here for notes.",
+  ].join("\n");
+  return `data:text/markdown;charset=utf-8,${encodeURIComponent(body)}`;
 }
 
 function makeLessons(
@@ -12,43 +108,55 @@ function makeLessons(
   topic: string,
   dayTopics: string[],
 ): Lesson[] {
-  return DAYS.map((day, i) => ({
-    id: `t${termNum}-w${weekNum}-${day}`,
-    day,
-    title: `${dayTitle(day)}: ${dayTopics[i] ?? topic}`,
-    description: `CAPS Grade 12 — Term ${termNum}, Week ${weekNum}. Focus: ${dayTopics[i] ?? topic}.`,
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    durationMinutes: 25 + i * 5,
-    resources: [
-      {
-        id: `r-t${termNum}-w${weekNum}-${day}-1`,
-        title: `${dayTopics[i] ?? topic} — Notes (PDF)`,
-        type: "pdf",
-        url: "#",
-      },
-      {
-        id: `r-t${termNum}-w${weekNum}-${day}-2`,
-        title: "Extra practice worksheet",
-        type: "worksheet",
-        url: "#",
-      },
-      {
-        id: `r-t${termNum}-w${weekNum}-${day}-3`,
-        title: "Learn more — CAPS topic guide",
-        type: "link",
-        url: "https://www.education.gov.za/",
-      },
-    ],
-  }));
+  return DAYS.map((day, i) => {
+    const dayTopic = dayTopics[i] ?? topic;
+    return {
+      id: `t${termNum}-w${weekNum}-${day}`,
+      day,
+      title: `${dayTitle(day)}: ${dayTopic}`,
+      description: `CAPS Grade 12 — Term ${termNum}, Week ${weekNum}. Focus: ${dayTopic}.`,
+      videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      durationMinutes: 25 + i * 5,
+      lessonTest: makeLessonTest(termNum, weekNum, day, dayTopic, topic),
+      resources: [
+        {
+          id: `r-t${termNum}-w${weekNum}-${day}-md`,
+          title: `${dayTopic} — Lesson notes`,
+          type: "markdown" as const,
+          fileName: `${day}-notes.md`,
+          url: markdownNotesUrl(dayTopic, topic, termNum, weekNum),
+        },
+        {
+          id: `r-t${termNum}-w${weekNum}-${day}-1`,
+          title: `${dayTopic} — Notes (PDF)`,
+          type: "pdf" as const,
+          url: "#",
+        },
+        {
+          id: `r-t${termNum}-w${weekNum}-${day}-2`,
+          title: "Extra practice worksheet",
+          type: "worksheet" as const,
+          url: "#",
+        },
+        {
+          id: `r-t${termNum}-w${weekNum}-${day}-3`,
+          title: "Learn more — CAPS topic guide",
+          type: "link" as const,
+          url: "https://www.education.gov.za/",
+        },
+      ],
+    };
+  });
 }
 
 function makeWeekTest(termNum: number, weekNum: number, topic: string): WeekTest {
   return {
     id: `test-t${termNum}-w${weekNum}`,
     title: `Week ${weekNum} Saturday Test — ${topic}`,
-    description: `Assess Term ${termNum} Week ${weekNum} understanding of ${topic}.`,
+    description: `Assess Term ${termNum} Week ${weekNum} understanding of ${topic}. Choose on-screen MCQ or Paper + scan.`,
     passMark: 50,
     resources: [],
+    memoResources: [],
     questions: [
       {
         id: `q-t${termNum}-w${weekNum}-1`,
@@ -91,9 +199,10 @@ function makePreExam(termNum: number, focus: string): PreExam {
   return {
     id: `preexam-t${termNum}`,
     title: `Term ${termNum} Pre-Exam`,
-    description: `Consolidates Weeks 1–4 (${focus}).`,
+    description: `Consolidates Weeks 1–4 (${focus}). Choose on-screen MCQ or Paper + scan.`,
     passMark: 50,
     resources: [],
+    memoResources: [],
     questions: [
       {
         id: `pq-t${termNum}-1`,
@@ -114,7 +223,7 @@ function makePreExam(termNum: number, focus: string): PreExam {
       },
       {
         id: `pq-t${termNum}-3`,
-        prompt: "A pass mark in Ember12 assessments is…",
+        prompt: "A pass mark in EmberMaths12 assessments is…",
         options: ["30%", "40%", "50%", "90%"],
         answerIndex: 2,
       },

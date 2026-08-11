@@ -41,7 +41,7 @@ export default function AdminDashboardPage() {
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <PageHeader
           title="Admin dashboard"
-          subtitle="Overview of Ember12 learners, instructors, and term health."
+          subtitle="Overview of EmberMaths12 learners, instructors, and term health."
         />
         <button
           type="button"

@@ -12,7 +12,7 @@ export default function StudentLearnIndexPage() {
     <div>
       <PageHeader
         title="Learn"
-        subtitle="Choose a term. Each term has Weeks 1–4 (Mon–Fri + Saturday test) and a pre-exam."
+        subtitle="Choose a term. Each term has Weeks 1–4 (Mon–Fri + Saturday test) and a pre-exam — take assessments on screen (MCQ) or via Paper + scan."
       />
       <div className="grid gap-4 md:grid-cols-2">
         {state.terms.map((term) => {

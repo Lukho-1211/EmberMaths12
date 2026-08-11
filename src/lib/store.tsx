@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { createInitialState, SESSION_KEY, STORAGE_KEY } from "@/lib/mock/seed";
+import { SEED_TERMS } from "@/lib/mock/curriculum";
 import type {
   AppState,
   CorrectionResult,
@@ -24,18 +25,39 @@ import type {
   WeekDay,
 } from "@/lib/types";
 
-/** Older demo saves may lack exam file attachments. */
+/** Older demo saves may lack exam file / memo attachments or daily lesson tests. */
 function normalizeAppState(raw: AppState): AppState {
   return {
     ...raw,
-    terms: (raw.terms ?? []).map((term) => ({
-      ...term,
-      preExam: { ...term.preExam, resources: term.preExam.resources ?? [] },
-      weeks: (term.weeks ?? []).map((week) => ({
-        ...week,
-        weekTest: { ...week.weekTest, resources: week.weekTest.resources ?? [] },
-      })),
-    })),
+    terms: (raw.terms ?? []).map((term) => {
+      const seedTerm = SEED_TERMS.find((t) => t.id === term.id);
+      return {
+        ...term,
+        preExam: {
+          ...term.preExam,
+          resources: term.preExam.resources ?? [],
+          memoResources: term.preExam.memoResources ?? [],
+        },
+        weeks: (term.weeks ?? []).map((week) => {
+          const seedWeek = seedTerm?.weeks.find((w) => w.id === week.id);
+          return {
+            ...week,
+            weekTest: {
+              ...week.weekTest,
+              resources: week.weekTest.resources ?? [],
+              memoResources: week.weekTest.memoResources ?? [],
+            },
+            lessons: (week.lessons ?? []).map((lesson) => {
+              if (lesson.lessonTest) return lesson;
+              const seedLesson = seedWeek?.lessons.find((l) => l.id === lesson.id || l.day === lesson.day);
+              return seedLesson?.lessonTest
+                ? { ...lesson, lessonTest: seedLesson.lessonTest }
+                : lesson;
+            }),
+          };
+        }),
+      };
+    }),
   };
 }
 
@@ -71,9 +93,12 @@ interface StoreContextValue {
   setWeekTest: (
     termId: string,
     weekId: string,
-    patch: { title?: string; resources?: Resource[] },
+    patch: { title?: string; resources?: Resource[]; memoResources?: Resource[] },
   ) => void;
-  setPreExam: (termId: string, patch: { title?: string; resources?: Resource[] }) => void;
+  setPreExam: (
+    termId: string,
+    patch: { title?: string; resources?: Resource[]; memoResources?: Resource[] },
+  ) => void;
   createGroup: (input: { name: string; description: string; termId?: string }) => void;
   addMemberToGroup: (groupId: string, studentId: string) => void;
   removeMemberFromGroup: (groupId: string, studentId: string) => void;
@@ -294,7 +319,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const setWeekTest = useCallback(
-    (termId: string, weekId: string, patch: { title?: string; resources?: Resource[] }) => {
+    (
+      termId: string,
+      weekId: string,
+      patch: { title?: string; resources?: Resource[]; memoResources?: Resource[] },
+    ) => {
       setState((prev) => ({
         ...prev,
         terms: prev.terms.map((term) =>
@@ -313,6 +342,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                           ...(patch.resources !== undefined
                             ? { resources: patch.resources }
                             : {}),
+                          ...(patch.memoResources !== undefined
+                            ? { memoResources: patch.memoResources }
+                            : {}),
                         },
                       },
                 ),
@@ -324,7 +356,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const setPreExam = useCallback(
-    (termId: string, patch: { title?: string; resources?: Resource[] }) => {
+    (
+      termId: string,
+      patch: { title?: string; resources?: Resource[]; memoResources?: Resource[] },
+    ) => {
       setState((prev) => ({
         ...prev,
         terms: prev.terms.map((term) =>
@@ -336,6 +371,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                   ...term.preExam,
                   ...(patch.title !== undefined ? { title: patch.title } : {}),
                   ...(patch.resources !== undefined ? { resources: patch.resources } : {}),
+                  ...(patch.memoResources !== undefined
+                    ? { memoResources: patch.memoResources }
+                    : {}),
                 },
               },
         ),
