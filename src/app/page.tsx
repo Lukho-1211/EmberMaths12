@@ -116,9 +116,18 @@ export default function HomePage() {
 
       <main id="main">
         <section className="relative min-h-[100svh] overflow-hidden bg-ember-navy text-ember-white">
-          <div className="ember-grid absolute inset-0 opacity-30" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(252,163,17,0.32),transparent_48%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,rgba(0,0,0,0.45)_100%)]" />
+          <Image
+            src="/images/hero-grade12-maths.jpg"
+            alt="Grade 12 learners studying mathematics together"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-ember-navy/80" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(20,33,61,0.92)_0%,rgba(20,33,61,0.55)_55%,rgba(20,33,61,0.72)_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(252,163,17,0.28),transparent_48%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,rgba(0,0,0,0.5)_100%)]" />
 
           <div className="relative mx-auto grid min-h-[100svh] max-w-6xl items-end gap-12 px-6 pb-16 pt-28 md:grid-cols-[1.05fr_0.95fr] md:items-center md:pb-24 md:pt-24">
             <div>
@@ -159,17 +168,25 @@ export default function HomePage() {
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-ember-navy/60">
               How it works
             </p>
-            <h2 className="font-display text-3xl md:text-4xl">
-              Built around the CAPS classroom rhythm
-            </h2>
 
-            <div className="mt-8 grid items-center gap-10 md:grid-cols-[1.05fr_0.95fr] md:gap-12">
-              <p className="max-w-xl text-base leading-relaxed text-muted">
-                EmberMaths12 mirrors how South African Grade 12 Mathematics is taught across the year:
-                Term 1 to Term 4, weekday lessons, Saturday week tests, and a pre-exam after each
-                four-week block. Learners move through curated content with downloadable resources —
-                teachers and parents stay in the loop.
-              </p>
+            <div className="grid items-center gap-10 md:grid-cols-[1.05fr_0.95fr] md:gap-12">
+              <div className="max-w-xl space-y-4">
+                <h2 className="font-display text-3xl md:text-4xl">
+                  Built around the CAPS classroom rhythm
+                </h2>
+                <p className="text-base leading-relaxed text-muted">
+                  EmberMaths12 mirrors the way South African Grade 12 Mathematics is taught throughout
+                  the academic year, following a structured Term 1 to Term 4 programme. Learners
+                  progress through weekday lessons designed to build their understanding step by step,
+                  with Saturday week tests providing regular opportunities to assess their progress.
+                </p>
+                <p className="text-base leading-relaxed text-muted">
+                  Every four-week learning block concludes with a pre-exam, helping learners prepare
+                  for formal assessments and identify areas that need improvement. The platform also
+                  provides curated learning content and downloadable resources, while keeping teachers
+                  and parents informed about each learner&apos;s progress and development.
+                </p>
+              </div>
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-[0_20px_40px_rgba(20,33,61,0.16)]">
                 <Image
                   src="/images/about-caps-rhythm.jpg"
