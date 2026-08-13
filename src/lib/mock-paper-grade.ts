@@ -38,6 +38,15 @@ const INCORRECT_NOTES = [
   "Revisit this week’s notes — the selected approach does not match the mark scheme.",
 ];
 
+const GENERIC_PROMPTS = [
+  "Question 1 — Algebra / equations",
+  "Question 2 — Functions or graphs",
+  "Question 3 — Sequences & series / finance",
+  "Question 4 — Calculus or geometry",
+  "Question 5 — Trigonometry / statistics",
+  "Question 6 — Mixed exam-style problem",
+];
+
 function memoLabel(memoResources: Resource[] | undefined): string | null {
   const first = memoResources?.[0];
   if (!first) return null;
@@ -56,13 +65,24 @@ export function mockPaperGrade(args: {
   const rand = mulberry32(hashSeed(`${assessmentId}::${fileName}`));
   const memo = memoLabel(memoResources);
 
-  const questionFeedback: QuestionFeedback[] = questions.map((q, idx) => {
+  const bank =
+    questions.length > 0
+      ? questions
+      : GENERIC_PROMPTS.map((prompt, idx) => ({
+          id: `generic-q${idx + 1}`,
+          prompt,
+          options: ["—"],
+          answerIndex: 0,
+        }));
+
+  const questionFeedback: QuestionFeedback[] = bank.map((q, idx) => {
     // Bias toward a passable demo: ~65–80% chance correct depending on seed + index.
     const threshold = 0.28 + (idx % 3) * 0.04;
     const correct = rand() > threshold;
     const notePool = correct ? CORRECT_NOTES : INCORRECT_NOTES;
     const note = notePool[Math.floor(rand() * notePool.length)]!;
     const expected = q.options[q.answerIndex];
+    const hasMcqHint = questions.length > 0 && expected && expected !== "—";
     return {
       questionId: q.id,
       prompt: q.prompt,
@@ -71,12 +91,14 @@ export function mockPaperGrade(args: {
         ? note
         : memo
           ? `${note} (Checked against memo “${memo}”.)`
-          : `${note} (Expected direction: ${expected}.)`,
+          : hasMcqHint
+            ? `${note} (Expected direction: ${expected}.)`
+            : note,
     };
   });
 
   const correctCount = questionFeedback.filter((q) => q.correct).length;
-  const total = Math.max(questions.length, 1);
+  const total = Math.max(questionFeedback.length, 1);
   const score = Math.round((correctCount / total) * 100);
 
   const feedback = [
@@ -85,14 +107,14 @@ export function mockPaperGrade(args: {
       : `Mock OCR read ${fileName} against “${assessmentTitle}”.`,
     `${correctCount} of ${total} questions marked correct.`,
     score >= passMark
-      ? "Overall: pass band reached for this assessment."
-      : "Overall: below pass mark — revise weak items below before retaking.",
+      ? "Overall: pass band reached for this practice paper."
+      : "Overall: below pass band — revise weak items below before retrying.",
   ];
 
   const summary =
     score >= passMark
       ? "Strong paper attempt. Review the marked items and keep the clear working style."
-      : "Needs consolidation. Revisit the flagged questions and this week’s lessons, then rescan.";
+      : "Needs consolidation. Revisit the flagged questions and this term’s lessons, then rescan.";
 
   return { score, feedback, summary, questionFeedback };
 }

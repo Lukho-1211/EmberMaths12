@@ -13,6 +13,10 @@ export interface User {
   /** Student → parent id */
   parentId?: string;
   classIds?: string[];
+  /** South African province — required for students */
+  province?: string;
+  /** Local / metro municipality — required for students */
+  municipality?: string;
   createdAt: string;
 }
 
@@ -83,6 +87,19 @@ export interface PreExam {
   memoResources: Resource[];
 }
 
+/** Optional per-term previous exam pack for student practice (not pass/fail). */
+export interface PastPaper {
+  id: string;
+  title: string;
+  description: string;
+  /** Feedback band only — does not change pass/fail. */
+  passMark: number;
+  /** Student-visible previous exam paper(s). */
+  resources: Resource[];
+  /** Marking memo / answer key — admin only; used for paper-scan correction. */
+  memoResources: Resource[];
+}
+
 export interface Week {
   id: string;
   number: 1 | 2 | 3 | 4;
@@ -97,6 +114,7 @@ export interface Term {
   title: string;
   weeks: Week[];
   preExam: PreExam;
+  pastPaper: PastPaper;
 }
 
 export interface Badge {
@@ -161,7 +179,7 @@ export interface CorrectionResult {
   /** Set when the scan is tied to a Saturday test or pre-exam. */
   assessmentId?: string;
   assessmentTitle?: string;
-  mode?: "paper-scan" | "practice";
+  mode?: "paper-scan" | "practice" | "past-paper";
   questionFeedback?: QuestionFeedback[];
 }
 

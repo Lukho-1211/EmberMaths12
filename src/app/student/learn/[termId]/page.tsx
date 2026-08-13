@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PageHeader } from "@/components/app-shell";
+import { TermInsightsPanel } from "@/components/term-insights";
+import { buildAllTermInsights } from "@/lib/term-insights";
 import { useStore } from "@/lib/store";
 
 export default function StudentTermPage() {
@@ -10,6 +12,11 @@ export default function StudentTermPage() {
   const { state, user } = useStore();
   const term = state.terms.find((t) => t.id === params.termId);
   const progress = state.progress.find((p) => p.studentId === user?.id);
+  const insights = buildAllTermInsights(
+    state.terms,
+    progress,
+    state.corrections.filter((c) => c.studentId === user?.id),
+  );
 
   if (!term) {
     return <p>Term not found.</p>;
@@ -21,6 +28,15 @@ export default function StudentTermPage() {
         title={term.title}
         subtitle="Pick a week, then work Mon–Fri. Saturday tests and the pre-exam support on-screen MCQ or Paper + scan."
       />
+      <div className="mb-8">
+        <TermInsightsPanel
+          insights={insights}
+          showLinks
+          termFilter={term.id}
+          title="This term — strengths and gaps"
+          subtitle="Strong and weak topics for this term, plus where to improve next."
+        />
+      </div>
       <div className="grid gap-4">
         {term.weeks.map((week) => {
           const done = week.lessons.filter((l) =>
@@ -90,6 +106,21 @@ export default function StudentTermPage() {
               Paper + scan
             </Link>
           </div>
+        </div>
+        <div className="rounded-xl border border-dashed border-ember-navy/30 bg-white p-5">
+          <h2 className="font-display text-xl">{term.pastPaper.title}</h2>
+          <p className="mt-1 text-sm text-muted">
+            Optional practice ·{" "}
+            {(term.pastPaper.resources?.length ?? 0) > 0
+              ? "Paper ready — write, scan, get feedback"
+              : "Waiting for admin upload"}
+          </p>
+          <Link
+            href={`/student/past-papers/${term.id}`}
+            className="mt-3 inline-block text-sm font-semibold text-ember-navy underline decoration-ember-gold"
+          >
+            Practice past papers →
+          </Link>
         </div>
       </div>
     </div>

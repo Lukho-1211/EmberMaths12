@@ -25,12 +25,30 @@ import type {
   WeekDay,
 } from "@/lib/types";
 
-/** Older demo saves may lack exam file / memo attachments or daily lesson tests. */
+/** Older demo saves may lack exam file / memo attachments, past papers, or daily lesson tests. */
 function normalizeAppState(raw: AppState): AppState {
   return {
     ...raw,
     terms: (raw.terms ?? []).map((term) => {
       const seedTerm = SEED_TERMS.find((t) => t.id === term.id);
+      const seedPast = seedTerm?.pastPaper;
+      const pastPaper = term.pastPaper
+        ? {
+            ...term.pastPaper,
+            resources: term.pastPaper.resources ?? [],
+            memoResources: term.pastPaper.memoResources ?? [],
+          }
+        : seedPast
+          ? { ...seedPast, resources: [], memoResources: [] }
+          : {
+              id: `pastpaper-${term.id}`,
+              title: `Term ${term.number} past papers`,
+              description:
+                "Previous exam papers for practice. Download, write on paper, then scan for mock AI feedback.",
+              passMark: 50,
+              resources: [],
+              memoResources: [],
+            };
       return {
         ...term,
         preExam: {
@@ -38,6 +56,7 @@ function normalizeAppState(raw: AppState): AppState {
           resources: term.preExam.resources ?? [],
           memoResources: term.preExam.memoResources ?? [],
         },
+        pastPaper,
         weeks: (term.weeks ?? []).map((week) => {
           const seedWeek = seedTerm?.weeks.find((w) => w.id === week.id);
           return {
@@ -78,6 +97,8 @@ interface StoreContextValue {
     email: string;
     password: string;
     role: Role;
+    province?: string;
+    municipality?: string;
   }) => { ok: true } | { ok: false; error: string };
   logout: () => void;
   resetDemo: () => void;
@@ -96,6 +117,10 @@ interface StoreContextValue {
     patch: { title?: string; resources?: Resource[]; memoResources?: Resource[] },
   ) => void;
   setPreExam: (
+    termId: string,
+    patch: { title?: string; resources?: Resource[]; memoResources?: Resource[] },
+  ) => void;
+  setPastPaper: (
     termId: string,
     patch: { title?: string; resources?: Resource[]; memoResources?: Resource[] },
   ) => void;
@@ -220,9 +245,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const signup = useCallback(
-    (input: { name: string; email: string; password: string; role: Role }) => {
+    (input: {
+      name: string;
+      email: string;
+      password: string;
+      role: Role;
+      province?: string;
+      municipality?: string;
+    }) => {
       if (state.users.some((u) => u.email.toLowerCase() === input.email.toLowerCase())) {
         return { ok: false as const, error: "An account with this email already exists." };
+      }
+      if (input.role === "student" && (!input.province || !input.municipality)) {
+        return {
+          ok: false as const,
+          error: "Province and municipality are required for students.",
+        };
       }
       const id = `${input.role}-${crypto.randomUUID().slice(0, 8)}`;
       const newUser: User = {
@@ -234,6 +272,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         createdAt: new Date().toISOString(),
         childIds: input.role === "parent" ? [] : undefined,
         classIds: input.role === "student" || input.role === "teacher" ? [] : undefined,
+        province: input.role === "student" ? input.province : undefined,
+        municipality: input.role === "student" ? input.municipality : undefined,
       };
       setState((prev) => {
         let next = { ...prev, users: [...prev.users, newUser] };
@@ -369,6 +409,33 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 ...term,
                 preExam: {
                   ...term.preExam,
+                  ...(patch.title !== undefined ? { title: patch.title } : {}),
+                  ...(patch.resources !== undefined ? { resources: patch.resources } : {}),
+                  ...(patch.memoResources !== undefined
+                    ? { memoResources: patch.memoResources }
+                    : {}),
+                },
+              },
+        ),
+      }));
+    },
+    [],
+  );
+
+  const setPastPaper = useCallback(
+    (
+      termId: string,
+      patch: { title?: string; resources?: Resource[]; memoResources?: Resource[] },
+    ) => {
+      setState((prev) => ({
+        ...prev,
+        terms: prev.terms.map((term) =>
+          term.id !== termId
+            ? term
+            : {
+                ...term,
+                pastPaper: {
+                  ...term.pastPaper,
                   ...(patch.title !== undefined ? { title: patch.title } : {}),
                   ...(patch.resources !== undefined ? { resources: patch.resources } : {}),
                   ...(patch.memoResources !== undefined
@@ -593,6 +660,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     upsertWeekLesson,
     setWeekTest,
     setPreExam,
+    setPastPaper,
     createGroup,
     addMemberToGroup,
     removeMemberFromGroup,

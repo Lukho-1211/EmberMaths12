@@ -7,14 +7,34 @@ import { MarkdownPreview } from "@/components/markdown-preview";
 import { hasVideoSources } from "@/lib/lesson-video";
 import { mockPaperGrade } from "@/lib/mock-paper-grade";
 import { useStore } from "@/lib/store";
-import type { CorrectionResult, LessonTest, PreExam, Resource, WeekTest } from "@/lib/types";
+import type {
+  AssessmentQuestion,
+  CorrectionResult,
+  LessonTest,
+  PastPaper,
+  PreExam,
+  Resource,
+  WeekTest,
+} from "@/lib/types";
 
 type AssessmentLike = WeekTest | PreExam | LessonTest;
 
+/** Shape accepted by paper-scan (curriculum tests or past-paper packs). */
+export type PaperScanAssessment = {
+  id: string;
+  title: string;
+  description: string;
+  passMark: number;
+  resources: Resource[];
+  memoResources: Resource[];
+  questions?: AssessmentQuestion[];
+};
+
 type AssessmentMode = "mcq" | "paper";
 type PaperStep = "questions" | "upload" | "result";
+type CorrectionMode = "paper-scan" | "past-paper";
 
-function AssessmentMaterials({
+export function AssessmentMaterials({
   resources,
   assessmentTitle,
 }: {
@@ -184,19 +204,42 @@ export function AssessmentQuiz({
   );
 }
 
+export function pastPaperToScanAssessment(pastPaper: PastPaper): PaperScanAssessment {
+  return {
+    id: pastPaper.id,
+    title: pastPaper.title,
+    description: pastPaper.description,
+    passMark: pastPaper.passMark,
+    resources: pastPaper.resources ?? [],
+    memoResources: pastPaper.memoResources ?? [],
+    questions: [],
+  };
+}
+
 export function AssessmentPaperScan({
   assessment,
   studentId,
   onDone,
+  practiceOnly = false,
+  correctionMode = "paper-scan",
+  acceptPdf = false,
 }: {
-  assessment: AssessmentLike;
+  assessment: AssessmentLike | PaperScanAssessment;
   studentId: string;
   onDone?: (score: number) => void;
+  /** When true, skip submitTestScore so pass/fail is unchanged. */
+  practiceOnly?: boolean;
+  correctionMode?: CorrectionMode;
+  /** Allow PDF script uploads in addition to images. */
+  acceptPdf?: boolean;
 }) {
   const { addCorrection, submitTestScore } = useStore();
+  const questions = assessment.questions ?? [];
+  const paperOnly = questions.length === 0;
   const [step, setStep] = useState<PaperStep>("questions");
   const [fileName, setFileName] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isPdfPreview, setIsPdfPreview] = useState(false);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<CorrectionResult | null>(null);
 
@@ -209,7 +252,7 @@ export function AssessmentPaperScan({
     const graded = mockPaperGrade({
       assessmentId: assessment.id,
       assessmentTitle: assessment.title,
-      questions: assessment.questions,
+      questions,
       fileName,
       passMark: assessment.passMark,
       memoResources: assessment.memoResources,
@@ -222,10 +265,12 @@ export function AssessmentPaperScan({
       summary: graded.summary,
       assessmentId: assessment.id,
       assessmentTitle: assessment.title,
-      mode: "paper-scan",
+      mode: correctionMode,
       questionFeedback: graded.questionFeedback,
     });
-    submitTestScore(studentId, assessment.id, graded.score);
+    if (!practiceOnly) {
+      submitTestScore(studentId, assessment.id, graded.score);
+    }
     setResult(saved);
     setStep("result");
     setBusy(false);
@@ -233,7 +278,9 @@ export function AssessmentPaperScan({
   }
 
   function shareResult(c: CorrectionResult) {
-    const text = `EmberMaths12 paper scan — ${c.assessmentTitle ?? c.fileName}: ${c.score}%\n${c.summary}`;
+    const label =
+      correctionMode === "past-paper" ? "past paper practice" : "paper scan";
+    const text = `EmberMaths12 ${label} — ${c.assessmentTitle ?? c.fileName}: ${c.score}%\n${c.summary}`;
     void navigator.clipboard?.writeText(text);
     alert("Result copied to clipboard (mock share).");
   }
@@ -243,18 +290,40 @@ export function AssessmentPaperScan({
     if (!file) {
       setFileName("");
       setPreviewUrl(null);
+      setIsPdfPreview(false);
       return;
     }
     setFileName(file.name);
+    const isPdf =
+      file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    setIsPdfPreview(isPdf);
     setPreviewUrl(URL.createObjectURL(file));
   }
+
+  const stepLabels = paperOnly
+    ? ([
+        ["questions", "1. Write"],
+        ["upload", "2. Scan"],
+        ["result", "3. Feedback"],
+      ] as const)
+    : ([
+        ["questions", "1. Questions"],
+        ["upload", "2. Scan"],
+        ["result", "3. Feedback"],
+      ] as const);
+
+  const fileAccept = acceptPdf
+    ? "image/*,.pdf,application/pdf"
+    : "image/*";
 
   return (
     <div className="rounded-xl border border-border bg-white p-5">
       <h2 className="font-display text-2xl">{assessment.title}</h2>
       <p className="mt-1 text-sm text-muted">{assessment.description}</p>
       <p className="mt-2 text-xs text-muted">
-        Paper path (demo): write answers on paper, then upload a scan for mock AI correction.
+        {practiceOnly
+          ? "Practice path (demo): download the paper, write answers on paper, then upload a scan for mock AI correction. Does not affect pass/fail."
+          : "Paper path (demo): write answers on paper, then upload a scan for mock AI correction."}
       </p>
 
       <div className="mt-6">
@@ -262,13 +331,7 @@ export function AssessmentPaperScan({
       </div>
 
       <ol className="mb-4 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
-        {(
-          [
-            ["questions", "1. Questions"],
-            ["upload", "2. Scan"],
-            ["result", "3. Feedback"],
-          ] as const
-        ).map(([key, label]) => (
+        {stepLabels.map(([key, label]) => (
           <li
             key={key}
             className={
@@ -284,28 +347,46 @@ export function AssessmentPaperScan({
 
       {step === "questions" ? (
         <div>
-          <p className="mb-4 text-sm text-muted">
-            Copy these questions onto paper (or print this screen). Show full working. Options are
-            shown as a reference only — write your own answers.
-          </p>
-          <div className="space-y-5 print:space-y-4">
-            {assessment.questions.map((q, idx) => (
-              <div key={q.id} className="rounded-md border border-border px-3 py-3">
-                <p className="text-sm font-semibold">
-                  {idx + 1}. {q.prompt}
+          {paperOnly ? (
+            <>
+              <p className="mb-4 text-sm text-muted">
+                Download or walk through the past paper above. Write full working on paper (or
+                print the PDF). When you are done, scan your script for mock feedback.
+              </p>
+              {resources.length === 0 ? (
+                <p className="mb-4 rounded-md border border-ember-gold/40 bg-ember-gold/10 px-3 py-2 text-sm">
+                  No past paper uploaded yet. Ask your admin to add a previous exam PDF under
+                  Admin → Terms → Past papers.
                 </p>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-muted">
-                  {q.options.map((opt) => (
-                    <li key={opt}>{opt}</li>
-                  ))}
-                </ul>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <p className="mb-4 text-sm text-muted">
+                Copy these questions onto paper (or print this screen). Show full working. Options
+                are shown as a reference only — write your own answers.
+              </p>
+              <div className="space-y-5 print:space-y-4">
+                {questions.map((q, idx) => (
+                  <div key={q.id} className="rounded-md border border-border px-3 py-3">
+                    <p className="text-sm font-semibold">
+                      {idx + 1}. {q.prompt}
+                    </p>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-muted">
+                      {q.options.map((opt) => (
+                        <li key={opt}>{opt}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
           <button
             type="button"
             onClick={() => setStep("upload")}
-            className="mt-6 rounded-md bg-ember-gold px-4 py-2 text-sm font-bold text-ember-navy"
+            disabled={paperOnly && resources.length === 0}
+            className="mt-6 rounded-md bg-ember-gold px-4 py-2 text-sm font-bold text-ember-navy disabled:opacity-50"
           >
             I&apos;m ready to scan
           </button>
@@ -315,20 +396,21 @@ export function AssessmentPaperScan({
       {step === "upload" ? (
         <div>
           <p className="mb-4 text-sm text-muted">
-            Photograph or upload your handwritten page. This demo does not run real OCR — feedback
-            is a mock mark against this assessment&apos;s question bank.
+            {acceptPdf
+              ? "Photograph your handwritten pages or upload a PDF scan. This demo does not run real OCR — feedback is a mock mark."
+              : "Photograph or upload your handwritten page. This demo does not run real OCR — feedback is a mock mark against this assessment’s question bank."}
           </p>
           <label className="block text-sm font-medium">
-            Upload page image
+            {acceptPdf ? "Upload page image or PDF" : "Upload page image"}
             <input
               type="file"
-              accept="image/*"
-              capture="environment"
+              accept={fileAccept}
+              capture={acceptPdf ? undefined : "environment"}
               className="mt-2 block w-full text-sm"
               onChange={(e) => onFileChange(e.target.files?.[0])}
             />
           </label>
-          {previewUrl ? (
+          {previewUrl && !isPdfPreview ? (
             /* Blob preview — next/image is not suited to object URLs */
             // eslint-disable-next-line @next/next/no-img-element -- local object URL preview
             <img
@@ -337,6 +419,12 @@ export function AssessmentPaperScan({
               className="mt-4 max-h-64 rounded-md border border-border object-contain"
             />
           ) : null}
+          {previewUrl && isPdfPreview ? (
+            <p className="mt-4 rounded-md border border-border bg-surface px-3 py-2 text-sm text-muted">
+              PDF selected — preview opens after download in a real browser; demo uses the filename
+              for mock grading.
+            </p>
+          ) : null}
           {fileName ? <p className="mt-2 text-xs text-muted">Selected: {fileName}</p> : null}
           <div className="mt-6 flex flex-wrap gap-3">
             <button
@@ -344,7 +432,7 @@ export function AssessmentPaperScan({
               onClick={() => setStep("questions")}
               className="rounded-md border border-border px-4 py-2 text-sm font-semibold"
             >
-              Back to questions
+              {paperOnly ? "Back to write" : "Back to questions"}
             </button>
             <button
               type="button"
@@ -362,8 +450,9 @@ export function AssessmentPaperScan({
         <div>
           <p className="rounded-md bg-ember-navy px-4 py-3 text-sm font-semibold text-white">
             Score: {result.score}% —{" "}
-            {result.score >= assessment.passMark ? "Pass" : "Needs improvement"} (pass mark{" "}
+            {result.score >= assessment.passMark ? "Pass band" : "Needs improvement"} (band{" "}
             {assessment.passMark}%)
+            {practiceOnly ? " · practice only" : ""}
           </p>
           <p className="mt-3 text-sm">{result.summary}</p>
           <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-muted">

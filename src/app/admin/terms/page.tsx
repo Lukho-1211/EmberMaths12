@@ -112,7 +112,7 @@ function ExamFileUploader({
 }
 
 export default function AdminTermsPage() {
-  const { state, upsertWeekLesson, setWeekTest, setPreExam } = useStore();
+  const { state, upsertWeekLesson, setWeekTest, setPreExam, setPastPaper } = useStore();
   const [termId, setTermId] = useState(state.terms[0]?.id ?? "term-1");
   const term = state.terms.find((t) => t.id === termId) ?? state.terms[0];
   const [weekId, setWeekId] = useState(term?.weeks[0]?.id ?? "");
@@ -139,6 +139,10 @@ export default function AdminTermsPage() {
   const [preResources, setPreResources] = useState<Resource[]>([]);
   const [preMemoResources, setPreMemoResources] = useState<Resource[]>([]);
   const [preSavedFlash, setPreSavedFlash] = useState(false);
+  const [pastTitle, setPastTitle] = useState("");
+  const [pastResources, setPastResources] = useState<Resource[]>([]);
+  const [pastMemoResources, setPastMemoResources] = useState<Resource[]>([]);
+  const [pastSavedFlash, setPastSavedFlash] = useState(false);
 
   function loadLessonFields(nextDay: WeekDay, nextWeek = week) {
     const l = nextWeek?.lessons.find((x) => x.day === nextDay);
@@ -172,6 +176,14 @@ export default function AdminTermsPage() {
     setPreMemoResources(term.preExam.memoResources ?? []);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: term.preExam identity
   }, [term?.id, term?.preExam]);
+
+  useEffect(() => {
+    if (!term?.pastPaper) return;
+    setPastTitle(term.pastPaper.title);
+    setPastResources(term.pastPaper.resources ?? []);
+    setPastMemoResources(term.pastPaper.memoResources ?? []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: term.pastPaper identity
+  }, [term?.id, term?.pastPaper]);
 
   async function saveLesson(e: FormEvent) {
     e.preventDefault();
@@ -576,6 +588,55 @@ export default function AdminTermsPage() {
                 </button>
                 {preSavedFlash ? (
                   <span className="text-sm font-medium text-success">Pre-exam saved</span>
+                ) : null}
+              </div>
+            </form>
+
+            <form
+              className="rounded-xl border border-border bg-white p-5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                setPastPaper(term.id, {
+                  title: pastTitle.trim() || term.pastPaper.title,
+                  resources: pastResources,
+                  memoResources: pastMemoResources,
+                });
+                setPastSavedFlash(true);
+                window.setTimeout(() => setPastSavedFlash(false), 1800);
+              }}
+            >
+              <h3 className="font-semibold">Past papers (practice)</h3>
+              <p className="mt-1 text-xs text-muted">
+                Previous exam papers for optional student practice. Not used for pass/fail.
+              </p>
+              <input
+                className="mt-3 w-full rounded-md border border-border px-3 py-2 text-sm"
+                value={pastTitle}
+                onChange={(e) => setPastTitle(e.target.value)}
+              />
+              <ExamFileUploader
+                label="Past paper"
+                description="Upload PDF or Markdown (.md) previous exam papers. Students walk through, write on paper, then scan for mock correction."
+                emptyLabel="No past paper uploaded yet."
+                resources={pastResources}
+                onChange={setPastResources}
+              />
+              <ExamFileUploader
+                label="Past paper memo"
+                description="Upload PDF or Markdown (.md) mark scheme used to correct learner paper scans. Not shown to students."
+                emptyLabel="No memo uploaded yet."
+                resources={pastMemoResources}
+                onChange={setPastMemoResources}
+              />
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <button
+                  type="submit"
+                  className="rounded-md bg-ember-gold px-4 py-2 text-sm font-bold text-ember-navy"
+                >
+                  Update past papers
+                </button>
+                {pastSavedFlash ? (
+                  <span className="text-sm font-medium text-success">Past papers saved</span>
                 ) : null}
               </div>
             </form>

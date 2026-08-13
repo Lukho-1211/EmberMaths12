@@ -25,10 +25,16 @@ export default function TeacherDashboardPage() {
         <StatCard label="Pending joins" value={pending} />
       </div>
 
-      <div className="mt-8 grid gap-4 md:grid-cols-3">
+      <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Link href="/teacher/classes" className="rounded-xl border border-border bg-white p-5 hover:border-ember-gold">
           <h2 className="font-display text-xl">Classes</h2>
           <p className="mt-2 text-sm text-muted">Create classes, search and accept students.</p>
+        </Link>
+        <Link href="/teacher/progress" className="rounded-xl border border-border bg-white p-5 hover:border-ember-gold">
+          <h2 className="font-display text-xl">Progress</h2>
+          <p className="mt-2 text-sm text-muted">
+            Per-term strengths, weaknesses, and where students should improve.
+          </p>
         </Link>
         <Link href="/teacher/lessons" className="rounded-xl border border-border bg-white p-5 hover:border-ember-gold">
           <h2 className="font-display text-xl">Lessons</h2>

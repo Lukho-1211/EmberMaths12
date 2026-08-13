@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { PageHeader, StatCard } from "@/components/app-shell";
 import { ProgressRing } from "@/components/assessment";
+import { TermInsightsPanel } from "@/components/term-insights";
+import { buildAllTermInsights } from "@/lib/term-insights";
 import { useStore } from "@/lib/store";
 
 export default function StudentDashboardPage() {
@@ -14,6 +16,11 @@ export default function StudentDashboardPage() {
   const upcoming = state.terms
     .flatMap((term) => term.weeks.map((week) => ({ term, week })))
     .find(({ week }) => progress?.testScores[week.weekTest.id] === undefined);
+  const insights = buildAllTermInsights(
+    state.terms,
+    progress,
+    state.corrections.filter((c) => c.studentId === user.id),
+  );
 
   return (
     <div>
@@ -35,6 +42,10 @@ export default function StudentDashboardPage() {
           value={progress?.completedLessonIds.length ?? 0}
         />
         <StatCard label="Badges earned" value={badges.length} />
+      </div>
+
+      <div className="mt-8">
+        <TermInsightsPanel insights={insights} showLinks />
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
@@ -61,6 +72,19 @@ export default function StudentDashboardPage() {
               </Link>
             </p>
           ) : null}
+        </div>
+        <div className="rounded-xl border border-border bg-white p-5">
+          <h2 className="font-semibold">Practice past papers</h2>
+          <p className="mt-2 text-sm text-muted">
+            Extreme corner practice: download a previous exam PDF, write on paper, scan your
+            answers, and get mock AI feedback. Does not change pass/fail.
+          </p>
+          <Link
+            href="/student/past-papers"
+            className="mt-4 inline-block rounded-md bg-ember-navy px-4 py-2 text-sm font-semibold text-white"
+          >
+            Open past papers
+          </Link>
         </div>
         <div className="rounded-xl border border-border bg-white p-5">
           <h2 className="font-semibold">Recent badges</h2>

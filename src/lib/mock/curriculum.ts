@@ -1,6 +1,7 @@
 import type {
   Lesson,
   LessonTest,
+  PastPaper,
   PreExam,
   Term,
   Week,
@@ -242,6 +243,17 @@ function makePreExam(termNum: number, focus: string): PreExam {
   };
 }
 
+function makePastPaper(termNum: number, focus: string): PastPaper {
+  return {
+    id: `pastpaper-t${termNum}`,
+    title: `Term ${termNum} past papers`,
+    description: `Previous exam papers for Term ${termNum} practice (${focus}). Download the paper, write on paper, then scan for mock AI feedback. Does not affect pass/fail.`,
+    passMark: 50,
+    resources: [],
+    memoResources: [],
+  };
+}
+
 function makeWeek(
   termNum: number,
   weekNum: 1 | 2 | 3 | 4,
@@ -294,6 +306,7 @@ export const SEED_TERMS: Term[] = [
       ]),
     ],
     preExam: makePreExam(1, "Patterns, series and functions"),
+    pastPaper: makePastPaper(1, "Patterns, series and functions"),
   },
   {
     id: "term-2",
@@ -330,6 +343,7 @@ export const SEED_TERMS: Term[] = [
       ]),
     ],
     preExam: makePreExam(2, "Geometry and differential calculus"),
+    pastPaper: makePastPaper(2, "Geometry and differential calculus"),
   },
   {
     id: "term-3",
@@ -366,6 +380,7 @@ export const SEED_TERMS: Term[] = [
       ]),
     ],
     preExam: makePreExam(3, "Finance, statistics and probability"),
+    pastPaper: makePastPaper(3, "Finance, statistics and probability"),
   },
   {
     id: "term-4",
@@ -402,5 +417,6 @@ export const SEED_TERMS: Term[] = [
       ]),
     ],
     preExam: makePreExam(4, "Full CAPS Grade 12 revision"),
+    pastPaper: makePastPaper(4, "Full CAPS Grade 12 revision"),
   },
 ];

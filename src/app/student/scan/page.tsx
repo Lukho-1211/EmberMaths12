@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { PageHeader } from "@/components/app-shell";
 import { useStore } from "@/lib/store";
@@ -64,8 +65,19 @@ export default function StudentScanPage() {
     <div>
       <PageHeader
         title="Scan & correct"
-        subtitle="Practice upload for mock AI corrections, or use Paper + scan on a Saturday week test / pre-exam. Results can be shared with your teacher or parent."
+        subtitle="Ad-hoc practice upload for mock AI corrections. For term past exam papers, use Past papers. Week tests and pre-exams use Paper + scan on the learn path."
       />
+
+      <p className="mb-4 rounded-xl border border-border bg-white px-4 py-3 text-sm">
+        Prefer a full previous exam?{" "}
+        <Link
+          href="/student/past-papers"
+          className="font-semibold text-ember-navy underline decoration-ember-gold"
+        >
+          Open Past papers
+        </Link>{" "}
+        — download the PDF, write on paper, then scan for memo-aware feedback.
+      </p>
 
       <form
         onSubmit={onSubmit}
@@ -123,6 +135,9 @@ export default function StudentScanPage() {
                   {historyLabel(c)}
                   {c.mode === "paper-scan" ? (
                     <span className="ml-2 text-xs uppercase text-muted">paper scan</span>
+                  ) : null}
+                  {c.mode === "past-paper" ? (
+                    <span className="ml-2 text-xs uppercase text-muted">past paper</span>
                   ) : null}
                 </span>
                 <button type="button" className="shrink-0 text-ember-navy underline" onClick={() => shareResult(c)}>

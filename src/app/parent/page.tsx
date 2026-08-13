@@ -2,6 +2,8 @@
 
 import { PageHeader, StatCard } from "@/components/app-shell";
 import { ProgressRing } from "@/components/assessment";
+import { TermInsightsPanel } from "@/components/term-insights";
+import { buildAllTermInsights, resolveAssessmentLabel } from "@/lib/term-insights";
 import { useStore } from "@/lib/store";
 
 export default function ParentProgressPage() {
@@ -16,7 +18,7 @@ export default function ParentProgressPage() {
     <div>
       <PageHeader
         title="Child progress"
-        subtitle="Track lessons, tests, badges, and pass/fail status for your learner."
+        subtitle="Track lessons, tests, badges, and per-term strengths and gaps for your learner."
       />
 
       {children.length === 0 ? (
@@ -31,6 +33,14 @@ export default function ParentProgressPage() {
             const progress = state.progress.find((p) => p.studentId === child.id);
             const badges = state.badges.filter((b) => progress?.badgeIds.includes(b.id));
             const scores = Object.entries(progress?.testScores ?? {});
+            const pastPaperAttempts = state.corrections.filter(
+              (c) => c.studentId === child.id && c.mode === "past-paper",
+            );
+            const insights = buildAllTermInsights(
+              state.terms,
+              progress,
+              state.corrections.filter((c) => c.studentId === child.id),
+            );
 
             return (
               <section key={child.id} className="rounded-xl border border-border bg-white p-6">
@@ -77,10 +87,12 @@ export default function ParentProgressPage() {
                         scores.map(([id, score]) => (
                           <li
                             key={id}
-                            className="flex justify-between rounded-md bg-surface px-3 py-2"
+                            className="flex justify-between gap-3 rounded-md bg-surface px-3 py-2"
                           >
-                            <span className="truncate pr-2">{id}</span>
-                            <span className="font-semibold">{score}%</span>
+                            <span className="min-w-0 truncate pr-2">
+                              {resolveAssessmentLabel(state.terms, id)}
+                            </span>
+                            <span className="shrink-0 font-semibold">{score}%</span>
                           </li>
                         ))
                       )}
@@ -105,29 +117,42 @@ export default function ParentProgressPage() {
                   </div>
                 </div>
 
+                <div className="mt-8">
+                  <TermInsightsPanel
+                    insights={insights}
+                    showLinks={false}
+                    title="Term strengths and gaps"
+                    subtitle="Strong and weak topics for every term, plus where your learner should improve."
+                  />
+                </div>
+
                 <div className="mt-6">
                   <h3 className="text-sm font-semibold uppercase tracking-wider text-muted">
-                    Term overview
+                    Past paper practice
                   </h3>
-                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                    {state.terms.map((term) => {
-                      const weeksDone = term.weeks.filter((w) =>
-                        w.lessons.every((l) =>
-                          progress?.completedLessonIds.includes(l.id),
-                        ),
-                      ).length;
-                      const pre = progress?.testScores[term.preExam.id];
-                      return (
-                        <div key={term.id} className="rounded-md border border-border px-3 py-2 text-sm">
-                          <p className="font-medium">Term {term.number}</p>
-                          <p className="text-muted">
-                            {weeksDone}/4 weeks · Pre-exam{" "}
-                            {pre !== undefined ? `${pre}%` : "pending"}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <p className="mt-1 text-xs text-muted">
+                    Optional practice attempts — not counted toward pass/fail.
+                  </p>
+                  <ul className="mt-2 space-y-2 text-sm">
+                    {pastPaperAttempts.length === 0 ? (
+                      <li className="text-muted">No past paper attempts yet.</li>
+                    ) : (
+                      pastPaperAttempts.map((c) => (
+                        <li
+                          key={c.id}
+                          className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-surface px-3 py-2"
+                        >
+                          <span>
+                            {c.assessmentTitle ?? "Past paper"} ·{" "}
+                            <strong>{c.score}%</strong>
+                          </span>
+                          <span className="text-xs text-muted">
+                            {new Date(c.createdAt).toLocaleDateString()}
+                          </span>
+                        </li>
+                      ))
+                    )}
+                  </ul>
                 </div>
               </section>
             );

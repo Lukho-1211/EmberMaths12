@@ -8,24 +8,30 @@ Built with **Next.js (App Router)**, **TypeScript**, and **Tailwind CSS**. Auth 
 
 Palette from `resourceInfo/colors.jpg` (Black & Gold Elegance):
 
-| Token | Hex |
-|-------|-----|
-| White | `#FFFFFF` |
+
+| Token      | Hex       |
+| ---------- | --------- |
+| White      | `#FFFFFF` |
 | Light gray | `#E5E5E5` |
-| Gold | `#FCA311` |
-| Navy | `#14213D` |
-| Black | `#000000` |
+| Gold       | `#FCA311` |
+| Navy       | `#14213D` |
+| Black      | `#000000` |
+
 
 ## Demo accounts
 
-Password for all demos: **`ember12`**
+Password for all demos: `ember12`
 
-| Role | Email |
-|------|-------|
-| Admin | `admin@ember12.za` |
+
+| Role    | Email                |
+| ------- | -------------------- |
+| Admin   | `admin@ember12.za`   |
 | Student | `student@ember12.za` |
 | Teacher | `teacher@ember12.za` |
-| Parent | `parent@ember12.za` |
+| Parent  | `parent@ember12.za`  |
+
+
+
 
 ## Curriculum model (v1)
 
@@ -33,7 +39,11 @@ Password for all demos: **`ember12`**
 - Each term: **Weeks 1–4** → Mon–Fri lessons (each with a **lesson test**) + **Saturday week test**
 - After Week 4: **Pre-exam**
 
+
+
 ## Features
+
+
 
 ### Admin → Terms
 
@@ -42,6 +52,7 @@ Upload **PDF** or **Markdown** (`.md`) files for:
 - Daily **lessons** (Mon–Fri)
 - **Saturday week tests** (exam paper + marking **memo**)
 - **Pre-exams** (exam paper + marking **memo**)
+- **Past papers (practice)** — previous exam papers (+ optional memo) per term
 
 Saving a daily lesson with uploaded PDF/Markdown **mock-generates MCQ questions** from the document text (deterministic demo generation, not a live AI API). Admins can also **Regenerate questions** from the current materials.
 
@@ -67,7 +78,17 @@ Daily lesson tests, Saturday week tests, and pre-exams support two modes:
 1. **On-screen MCQ** — answer in the browser; score against the pass mark.
 2. **Paper + scan** — read the questions, work on paper, upload a photo/PDF of your script, then receive a **mock mark and per-question feedback** (deterministic demo grading, not real OCR).
 
-General **Scan & feedback** (`/student/scan`) is also available for ad-hoc script uploads.
+### Past papers (practice)
+
+Extreme-corner practice loop (separate from pass/fail):
+
+1. Admin uploads a previous exam PDF (+ optional memo) per term under **Admin → Terms → Past papers**.
+2. Student opens **Past papers**, downloads / walks through the paper, writes answers on paper.
+3. Student scans or uploads a photo/PDF of their script.
+4. System returns a **mock mark and per-question feedback** (deterministic demo grading, not real OCR).
+5. Feedback appears in-app; parents see practice attempts on the parent portal; **Share results** copies a summary to the clipboard.
+
+General **Scan & feedback** (`/student/scan`) remains for ad-hoc worksheet uploads.
 
 ## Local development
 
@@ -92,12 +113,16 @@ npm i -g vercel
 vercel
 ```
 
+
+
 ## Scripts
 
 - `npm run dev` — development server
 - `npm run build` — production build
 - `npm run start` — serve production build
 - `npm run lint` — ESLint
+
+
 
 ## Out of scope (frontend v1)
 
