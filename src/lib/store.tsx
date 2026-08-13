@@ -9,8 +9,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { createInitialState, SESSION_KEY, STORAGE_KEY } from "@/lib/mock/seed";
+import { createInitialState, SESSION_KEY, STORAGE_KEY, THEME_KEY } from "@/lib/mock/seed";
 import { SEED_TERMS } from "@/lib/mock/curriculum";
+import { isValidMunicipality } from "@/lib/sa-geography";
 import type {
   AppState,
   CorrectionResult,
@@ -24,6 +25,13 @@ import type {
   User,
   WeekDay,
 } from "@/lib/types";
+
+export type Theme = "light" | "dark";
+
+function applyThemeClass(theme: Theme) {
+  if (typeof document === "undefined") return;
+  document.documentElement.classList.toggle("dark", theme === "dark");
+}
 
 /** Older demo saves may lack exam file / memo attachments, past papers, or daily lesson tests. */
 function normalizeAppState(raw: AppState): AppState {
@@ -91,6 +99,7 @@ interface StoreContextValue {
   login: (
     email: string,
     password: string,
+    expectedRole: Role,
   ) => { ok: true; role: Role } | { ok: false; error: string };
   signup: (input: {
     name: string;
@@ -100,7 +109,16 @@ interface StoreContextValue {
     province?: string;
     municipality?: string;
   }) => { ok: true } | { ok: false; error: string };
+  updateProfile: (input: {
+    name: string;
+    email: string;
+    password?: string;
+    province?: string;
+    municipality?: string;
+  }) => { ok: true } | { ok: false; error: string };
   logout: () => void;
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
   resetDemo: () => void;
   deleteUser: (userId: string) => void;
   createTeacher: (input: { name: string; email: string; password: string }) => void;
@@ -203,6 +221,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [state, setState] = useState<AppState>(() => createInitialState());
   const [session, setSession] = useState<Session | null>(null);
+  const [theme, setThemeState] = useState<Theme>("light");
 
   useEffect(() => {
     try {
@@ -210,6 +229,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (raw) setState(normalizeAppState(JSON.parse(raw) as AppState));
       const sess = localStorage.getItem(SESSION_KEY);
       if (sess) setSession(JSON.parse(sess) as Session);
+      const storedTheme = localStorage.getItem(THEME_KEY);
+      if (storedTheme === "light" || storedTheme === "dark") {
+        setThemeState(storedTheme);
+        applyThemeClass(storedTheme);
+      }
     } catch {
       /* ignore corrupt storage */
     }
@@ -227,17 +251,33 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     else localStorage.removeItem(SESSION_KEY);
   }, [session, ready]);
 
+  useEffect(() => {
+    if (!ready) return;
+    localStorage.setItem(THEME_KEY, theme);
+    applyThemeClass(theme);
+  }, [theme, ready]);
+
+  const setTheme = useCallback((next: Theme) => {
+    setThemeState(next);
+  }, []);
+
   const user = useMemo(
     () => state.users.find((u) => u.id === session?.userId) ?? null,
     [state.users, session],
   );
 
   const login = useCallback(
-    (email: string, password: string) => {
+    (email: string, password: string, expectedRole: Role) => {
       const found = state.users.find(
         (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password,
       );
       if (!found) return { ok: false as const, error: "Invalid email or password." };
+      if (found.role !== expectedRole) {
+        return {
+          ok: false as const,
+          error: `This account is not a ${expectedRole} account.`,
+        };
+      }
       setSession({ userId: found.id });
       return { ok: true as const, role: found.role };
     },
@@ -287,6 +327,65 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(() => setSession(null), []);
+
+  const updateProfile = useCallback(
+    (input: {
+      name: string;
+      email: string;
+      password?: string;
+      province?: string;
+      municipality?: string;
+    }) => {
+      if (!session?.userId) {
+        return { ok: false as const, error: "You must be signed in to update your profile." };
+      }
+      const current = state.users.find((u) => u.id === session.userId);
+      if (!current) {
+        return { ok: false as const, error: "User not found." };
+      }
+      const emailTaken = state.users.some(
+        (u) => u.id !== current.id && u.email.toLowerCase() === input.email.toLowerCase(),
+      );
+      if (emailTaken) {
+        return { ok: false as const, error: "An account with this email already exists." };
+      }
+      if (current.role === "student") {
+        if (!input.province || !input.municipality) {
+          return {
+            ok: false as const,
+            error: "Province and municipality are required for students.",
+          };
+        }
+        if (!isValidMunicipality(input.province, input.municipality)) {
+          return {
+            ok: false as const,
+            error: "Please select a valid municipality for the chosen province.",
+          };
+        }
+      }
+      const password =
+        input.password && input.password.trim().length > 0 ? input.password : current.password;
+      if (input.password && input.password.trim().length > 0 && input.password.trim().length < 6) {
+        return { ok: false as const, error: "Password must be at least 6 characters." };
+      }
+      setState((prev) => ({
+        ...prev,
+        users: prev.users.map((u) => {
+          if (u.id !== current.id) return u;
+          return {
+            ...u,
+            name: input.name.trim(),
+            email: input.email.trim(),
+            password,
+            province: u.role === "student" ? input.province : u.province,
+            municipality: u.role === "student" ? input.municipality : u.municipality,
+          };
+        }),
+      }));
+      return { ok: true as const };
+    },
+    [session?.userId, state.users],
+  );
 
   const resetDemo = useCallback(() => {
     const initial = createInitialState();
@@ -652,7 +751,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     user,
     login,
     signup,
+    updateProfile,
     logout,
+    theme,
+    setTheme,
     resetDemo,
     deleteUser,
     createTeacher,

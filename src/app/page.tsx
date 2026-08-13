@@ -17,22 +17,22 @@ import {
 const roleCards = [
   {
     role: "Student",
-    href: "/signup?role=student",
+    href: "/signup/student",
     blurb: "Learn Mon–Fri lessons, Saturday week tests, and term pre-exams.",
   },
   {
     role: "Teacher",
-    href: "/signup?role=teacher",
+    href: "/signup/teacher",
     blurb: "Build classes, publish lessons, and message parents.",
   },
   {
     role: "Parent",
-    href: "/signup?role=parent",
+    href: "/signup/parent",
     blurb: "Track your child’s progress, badges, and pass/fail status.",
   },
   {
     role: "Admin",
-    href: "/signup?role=admin",
+    href: "/signup/admin",
     blurb: "Shape terms, weeks, teachers, groups, and school-wide insight.",
   },
 ];
