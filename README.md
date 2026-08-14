@@ -151,7 +151,7 @@ vercel
 - `npm run build` — `prisma generate` + production build
 - `npm run start` — serve production build
 - `npm run lint` — ESLint
-- `npm run typecheck` — Prisma generate + TypeScript check (`tsc --noEmit`)
+- `npm run typecheck` — Prisma generate + `next typegen` + TypeScript check (`tsc --noEmit`)
 - `npm test` — unit + integration tests (Vitest)
 - `npm run test:watch` — Vitest watch mode
 - `npm run test:e2e` — Playwright end-to-end (expects a production build; CI runs `build` first)
