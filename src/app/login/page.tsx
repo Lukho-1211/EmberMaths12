@@ -5,7 +5,7 @@ export default function LoginHubPage() {
   return (
     <div className="ember-wash flex min-h-screen flex-col items-center justify-center px-4 py-12">
       <Link href="/" className="mb-8 font-display text-3xl text-ember-navy">
-        EmberMaths<span className="text-ember-gold">12</span>
+        Ember Maths<span className="text-ember-gold">12</span>
       </Link>
       <div className="mx-auto w-full max-w-md rounded-2xl border border-border bg-ember-white p-8 shadow-sm">
         <h1 className="font-display text-3xl text-ember-navy">Log in</h1>

@@ -137,7 +137,7 @@ export function AppShell({
         <aside className="hidden w-64 shrink-0 flex-col bg-[#14213d] text-white md:flex">
           <div className="border-b border-white/10 px-5 py-6">
             <Link href={`/${role}`} className="font-display text-2xl">
-              EmberMaths<span className="text-ember-gold">12</span>
+              Ember Maths<span className="text-ember-gold">12</span>
             </Link>
             <p className="mt-1 text-xs uppercase tracking-widest text-white/70">{role}</p>
           </div>

@@ -1,4 +1,4 @@
-# EmberMaths12
+# Ember Maths12
 
 Online South African **CAPS Grade 12 Mathematics** school frontend — Udemy-style learning with Admin, Student, Teacher, and Parent portals.
 

@@ -6,7 +6,7 @@
 
 ---
 
-**Project:** EmberMaths12
+**Project:** Ember Maths12
 **Generated:** 2026-08-11 21:03:30
 **Updated:** 2026-08-11 — Black & Gold brand overrides from README
 **Category:** Online Course/E-learning (CAPS Grade 12 Mathematics)
@@ -143,7 +143,7 @@
 
 ### Brand mark
 
-`EmberMaths` + gold `12` → **EmberMaths12**
+`Ember Maths` + gold `12` → **Ember Maths12**
 
 Demo emails (`*@ember12.za`), password (`ember12`), and storage keys stay unchanged.
 

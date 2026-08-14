@@ -49,7 +49,7 @@ export default function StudentScanPage() {
 
   function shareResult(c: CorrectionResult) {
     const label = c.assessmentTitle ?? c.fileName;
-    const text = `EmberMaths12 AI correction — ${label}: ${c.score}%\n${c.summary}`;
+    const text = `Ember Maths12 AI correction — ${label}: ${c.score}%\n${c.summary}`;
     void navigator.clipboard?.writeText(text);
     alert("Result copied to clipboard (mock share).");
   }

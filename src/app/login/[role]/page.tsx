@@ -43,7 +43,7 @@ function LoginForm() {
   return (
     <div className="mx-auto w-full max-w-md rounded-2xl border border-border bg-ember-white p-8 shadow-sm">
       <h1 className="font-display text-3xl text-ember-navy">{roleLabel(role)} log in</h1>
-      <p className="mt-2 text-sm text-muted">Access your EmberMaths12 {role} portal.</p>
+      <p className="mt-2 text-sm text-muted">Access your Ember Maths12 {role} portal.</p>
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <label className="block text-sm">
           <span className="mb-1 block font-medium">Email</span>
@@ -110,7 +110,7 @@ export default function RoleLoginPage() {
   return (
     <div className="ember-wash flex min-h-screen flex-col items-center justify-center px-4 py-12">
       <Link href="/" className="mb-8 font-display text-3xl text-ember-navy">
-        EmberMaths<span className="text-ember-gold">12</span>
+        Ember Maths<span className="text-ember-gold">12</span>
       </Link>
       <Suspense fallback={<p>Loading…</p>}>
         <LoginForm />

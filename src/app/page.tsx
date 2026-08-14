@@ -135,7 +135,7 @@ export default function HomePage() {
                 South African CAPS · Grade 12 Mathematics
               </p>
               <h1 className="animate-rise-delay mt-4 font-display text-5xl leading-[0.95] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
-                EmberMaths<span className="text-ember-gold">12</span>
+                Ember Maths<span className="text-ember-gold">12</span>
               </h1>
               <p className="animate-rise-delay mt-6 max-w-xl text-lg text-ember-gray md:text-xl">
                 An online school for Grade 12 Maths — structured terms, weekday lessons, and Saturday
@@ -175,7 +175,7 @@ export default function HomePage() {
                   Built around the CAPS classroom rhythm
                 </h2>
                 <p className="text-base leading-relaxed text-muted">
-                  EmberMaths12 mirrors the way South African Grade 12 Mathematics is taught throughout
+                  Ember Maths12 mirrors the way South African Grade 12 Mathematics is taught throughout
                   the academic year, following a structured Term 1 to Term 4 programme. Learners
                   progress through weekday lessons designed to build their understanding step by step,
                   with Saturday week tests providing regular opportunities to assess their progress.
@@ -225,7 +225,7 @@ export default function HomePage() {
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-ember-navy/60">
               Features
             </p>
-            <h2 className="font-display text-3xl md:text-4xl">What EmberMaths12 offers</h2>
+            <h2 className="font-display text-3xl md:text-4xl">What Ember Maths12 offers</h2>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
               Udemy-style learning for CAPS Maths — with Admin, Student, Teacher, and Parent portals
               mocked in the browser so you can demo the full product.
@@ -291,7 +291,7 @@ export default function HomePage() {
           dark
         >
           <p>
-            EmberMaths12 turns the Annual Teaching Plan into a living online school: daily lessons,
+            Ember Maths12 turns the Annual Teaching Plan into a living online school: daily lessons,
             weekly checks, term pre-exams, and dashboards that help admins, teachers, students, and
             parents act early when a learner is at risk of failing. A learner in Johannesburg and a
             tutor in Cape Town share the same weekly map — families see progress without waiting for
@@ -299,7 +299,7 @@ export default function HomePage() {
           </p>
         </Section>
 
-        <Section id="contact" eyebrow="Contact" title="Talk to EmberMaths12">
+        <Section id="contact" eyebrow="Contact" title="Talk to Ember Maths12">
           <div className="space-y-2 text-ember-navy">
             <p>
               Email:{" "}

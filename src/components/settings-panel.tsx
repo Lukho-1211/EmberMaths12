@@ -64,7 +64,7 @@ export function SettingsPanel() {
 
       <section className="rounded-xl border border-border bg-ember-white p-6 shadow-sm">
         <h2 className="font-display text-xl text-foreground">Appearance</h2>
-        <p className="mt-1 text-sm text-muted">Choose light or dark mode for EmberMaths12.</p>
+        <p className="mt-1 text-sm text-muted">Choose light or dark mode for Ember Maths12.</p>
         <div className="mt-4 grid grid-cols-2 gap-2 rounded-lg border border-border bg-surface p-1">
           <button
             type="button"
@@ -173,7 +173,7 @@ export function SettingsPanel() {
 
       <section className="rounded-xl border border-border bg-ember-white p-6 shadow-sm">
         <h2 className="font-display text-xl text-foreground">Session</h2>
-        <p className="mt-1 text-sm text-muted">Sign out of EmberMaths12 on this device.</p>
+        <p className="mt-1 text-sm text-muted">Sign out of Ember Maths12 on this device.</p>
         <button
           type="button"
           onClick={() => {

@@ -21,7 +21,7 @@ export function BrandMark({
   const base = tone === "dark" ? "text-ember-navy" : "text-ember-white";
   return (
     <span className={`font-display tracking-tight ${base} ${className}`}>
-      EmberMaths<span className="text-ember-gold">12</span>
+      Ember Maths<span className="text-ember-gold">12</span>
     </span>
   );
 }
@@ -153,7 +153,7 @@ export function MarketingFooter() {
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-10 md:flex-row md:items-center md:justify-between">
         <BrandMark className="text-xl" />
         <p className="text-sm">CAPS Grade 12 Mathematics · South Africa</p>
-        <p className="text-sm">© {new Date().getFullYear()} EmberMaths12</p>
+        <p className="text-sm">© {new Date().getFullYear()} Ember Maths12</p>
       </div>
     </footer>
   );

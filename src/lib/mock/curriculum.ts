@@ -56,7 +56,7 @@ function makeLessonTest(
       },
       {
         id: `lt-${lessonId}-q3`,
-        prompt: "Before marking a lesson complete in EmberMaths12, you must…",
+        prompt: "Before marking a lesson complete in Ember Maths12, you must…",
         options: [
           "Skip the lesson test",
           "Pass today’s lesson test (MCQ or paper + scan)",
@@ -224,7 +224,7 @@ function makePreExam(termNum: number, focus: string): PreExam {
       },
       {
         id: `pq-t${termNum}-3`,
-        prompt: "A pass mark in EmberMaths12 assessments is…",
+        prompt: "A pass mark in Ember Maths12 assessments is…",
         options: ["30%", "40%", "50%", "90%"],
         answerIndex: 2,
       },

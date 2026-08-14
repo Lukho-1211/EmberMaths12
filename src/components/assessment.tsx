@@ -280,7 +280,7 @@ export function AssessmentPaperScan({
   function shareResult(c: CorrectionResult) {
     const label =
       correctionMode === "past-paper" ? "past paper practice" : "paper scan";
-    const text = `EmberMaths12 ${label} — ${c.assessmentTitle ?? c.fileName}: ${c.score}%\n${c.summary}`;
+    const text = `Ember Maths12 ${label} — ${c.assessmentTitle ?? c.fileName}: ${c.score}%\n${c.summary}`;
     void navigator.clipboard?.writeText(text);
     alert("Result copied to clipboard (mock share).");
   }
