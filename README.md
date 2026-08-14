@@ -69,7 +69,6 @@ Files are stored as data URLs in `localStorage` (max **20 MB** per file). Admins
 | **Past papers** | Practice loop separate from pass/fail (download, scan script, mock feedback) |
 | **Badges** | Milestone badges earned from progress |
 | **Top Achievers** | Geographic rankings board |
-| **Scan & Correct** | Ad-hoc worksheet photo/PDF upload with mock feedback |
 | **Settings** | Profile, location, theme |
 
 **Lesson player**

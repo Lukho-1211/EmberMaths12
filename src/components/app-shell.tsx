@@ -11,7 +11,6 @@ import {
   Home,
   LogOut,
   MessagesSquare,
-  ScanLine,
   School,
   Settings,
   Trophy,
@@ -37,7 +36,6 @@ const NAV: Record<Role, { href: string; label: string; icon: typeof Home }[]> = 
     { href: "/student/past-papers", label: "Past papers", icon: FileStack },
     { href: "/student/badges", label: "Badges", icon: Award },
     { href: "/student/achievers", label: "Top Achievers", icon: Trophy },
-    { href: "/student/scan", label: "Scan & Correct", icon: ScanLine },
     { href: "/student/settings", label: "Settings", icon: Settings },
   ],
   teacher: [
