@@ -124,12 +124,12 @@ export function useSlidePlayback(resources: Resource[]) {
         advanceFrom(index);
       };
 
-      const useTimer = () => {
+      const scheduleTimer = () => {
         timerRef.current = setTimeout(finish, fallbackMsForText(slide.bodyText));
       };
 
       if (mutedRef.current || !speechSupported() || !slide.bodyText.trim()) {
-        useTimer();
+        scheduleTimer();
         return;
       }
 
@@ -139,11 +139,11 @@ export function useSlidePlayback(resources: Resource[]) {
         if (voice) utter.voice = voice;
         utter.rate = 1;
         utter.onend = finish;
-        utter.onerror = () => useTimer();
+        utter.onerror = () => scheduleTimer();
         utteranceRef.current = utter;
         window.speechSynthesis.speak(utter);
       } catch {
-        useTimer();
+        scheduleTimer();
       }
     },
     [advanceFrom, clearAdvance],

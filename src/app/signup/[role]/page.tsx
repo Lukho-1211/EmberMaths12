@@ -37,7 +37,7 @@ export default function RoleSignupPage() {
     );
   }
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!role) return;
     setError("");
@@ -51,7 +51,7 @@ export default function RoleSignupPage() {
         return;
       }
     }
-    const result = signup({
+    const result = await signup({
       name,
       email,
       password,

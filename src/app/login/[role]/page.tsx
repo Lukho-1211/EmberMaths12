@@ -27,10 +27,11 @@ function LoginForm() {
     return <p className="text-sm text-muted">Redirecting…</p>;
   }
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!role) return;
-    const result = login(email, password, role);
+    setError("");
+    const result = await login(email, password, role);
     if (!result.ok) {
       setError(result.error);
       return;

@@ -1,0 +1,28 @@
+// Ember Maths12 — Slice 1: users only (auth). Curriculum/progress stay client-mocked.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  admin
+  student
+  teacher
+  parent
+}
+
+model User {
+  id           String   @id
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  province     String?
+  municipality String?
+  createdAt    DateTime @default(now())
+}

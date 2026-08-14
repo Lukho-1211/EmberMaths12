@@ -2,7 +2,7 @@
 
 Online South African **CAPS Grade 12 Mathematics** school frontend — Udemy-style learning with Admin, Student, Teacher, and Parent portals.
 
-Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, and **Tailwind CSS 4**. Auth and data are **mocked in the browser** (`localStorage`) so you can demo the full product on Vercel without a backend.
+Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, and **Tailwind CSS 4**. **Auth** uses Auth.js + Prisma/Postgres (cookie sessions). Curriculum, progress, and uploads remain **mocked in the browser** (`localStorage`) so the product still demos without full backend coverage.
 
 ## Brand
 
@@ -111,17 +111,32 @@ Top Achievers boards (admin, teacher, student) rank by overall progress percent,
 
 ```bash
 npm install
+```
+
+Copy [`.env.example`](.env.example) to `.env` and set:
+
+- `DATABASE_URL` — Postgres (Neon, Vercel Postgres, Docker, or `npx prisma dev`)
+- `AUTH_SECRET` — generate with `npx auth secret`
+
+Then apply schema + seed demo users:
+
+```bash
+npx prisma migrate deploy
+npm run db:seed
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+Demo logins still work (`ember12` / role emails) — accounts live in Postgres with hashed passwords. Curriculum, progress, and uploads remain in browser `localStorage` until later backend slices.
 
 ## Deploy to Vercel
 
 1. Push this repo to GitHub.
 2. Import the project in [Vercel](https://vercel.com/new).
 3. Framework preset: **Next.js** (defaults are fine).
-4. Deploy.
+4. Set env vars: `DATABASE_URL`, `AUTH_SECRET` (and optionally `AUTH_URL`).
+5. Deploy (build runs `prisma generate`; run `prisma migrate deploy` against your DB before or via a release command).
 
 Or with the Vercel CLI:
 
@@ -133,10 +148,36 @@ vercel
 ## Scripts
 
 - `npm run dev` — development server
-- `npm run build` — production build
+- `npm run build` — `prisma generate` + production build
 - `npm run start` — serve production build
 - `npm run lint` — ESLint
+- `npm run typecheck` — Prisma generate + TypeScript check (`tsc --noEmit`)
+- `npm test` — unit + integration tests (Vitest)
+- `npm run test:watch` — Vitest watch mode
+- `npm run test:e2e` — Playwright end-to-end (expects a production build; CI runs `build` first)
+- `npm run db:migrate` — create/apply migrations in development
+- `npm run db:deploy` — apply migrations (CI/production)
+- `npm run db:seed` — seed demo users into Postgres
 
-## Out of scope (frontend v1)
+## Testing
 
-Real auth/database, live video hosting, real OCR/AI correction API, email, and payments. Those UIs are wired with mock behaviour ready for later APIs.
+| Layer | Command | Location |
+| ----- | ------- | -------- |
+| Unit + integration | `npm test` | `tests/unit`, `tests/integration` |
+| End-to-end | `npm run build && npm run test:e2e` | `e2e/` |
+
+GitHub Actions (`.github/workflows/ci.yml`) runs lint, typecheck, Vitest, then Postgres migrate/seed + production build + Playwright on every push and pull request.
+
+For local e2e login flows, ensure Postgres is running with `DATABASE_URL` / `AUTH_SECRET` set (see `.env.example`), then:
+
+```bash
+npx prisma migrate deploy
+npx prisma db seed
+npm run build
+npm run test:e2e
+```
+
+Playwright serves the app on port **3005** by default so it does not clash with `npm run dev` on 3000.
+## Out of scope (frontend v1 / later backend slices)
+
+Live video hosting, real OCR/AI correction API, email, and payments. Curriculum, progress, files, classes, and messaging are still mocked in the browser. Auth + users are server-backed (Slice 1).

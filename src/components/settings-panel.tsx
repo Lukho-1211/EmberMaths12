@@ -177,8 +177,7 @@ export function SettingsPanel() {
         <button
           type="button"
           onClick={() => {
-            logout();
-            router.push("/");
+            void logout().then(() => router.push("/"));
           }}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
         >

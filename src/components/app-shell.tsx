@@ -162,8 +162,7 @@ export function AppShell({
           <button
             type="button"
             onClick={() => {
-              logout();
-              router.push("/");
+              void logout().then(() => router.push("/"));
             }}
             className="m-3 flex items-center gap-2 rounded-md px-3 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white"
           >
@@ -203,8 +202,7 @@ export function AppShell({
               <button
                 type="button"
                 onClick={() => {
-                  logout();
-                  router.push("/");
+                  void logout().then(() => router.push("/"));
                 }}
                 className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition hover:bg-surface"
               >

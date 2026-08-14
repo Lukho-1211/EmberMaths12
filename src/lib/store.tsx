@@ -9,6 +9,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import {
+  credentialsSignIn,
+  credentialsSignOut,
+  fetchAuthSession,
+  signupAccount,
+  type AuthSessionUser,
+} from "@/lib/auth-client";
 import { createInitialState, SESSION_KEY, STORAGE_KEY, THEME_KEY } from "@/lib/mock/seed";
 import { SEED_TERMS } from "@/lib/mock/curriculum";
 import { isValidMunicipality } from "@/lib/sa-geography";
@@ -92,6 +99,53 @@ interface Session {
   userId: string;
 }
 
+function userFromAuthSession(authUser: AuthSessionUser): User {
+  return {
+    id: authUser.id,
+    name: authUser.name,
+    email: authUser.email,
+    password: "",
+    role: authUser.role,
+    createdAt: new Date().toISOString(),
+    childIds: authUser.role === "parent" ? [] : undefined,
+    classIds: authUser.role === "student" || authUser.role === "teacher" ? [] : undefined,
+    province: authUser.province,
+    municipality: authUser.municipality,
+  };
+}
+
+function ensureLocalUser(state: AppState, authUser: AuthSessionUser): AppState {
+  const existing = state.users.find(
+    (u) => u.id === authUser.id || u.email.toLowerCase() === authUser.email.toLowerCase(),
+  );
+  if (existing) {
+    if (existing.id === authUser.id) return state;
+    // Prefer server id when email matches a seeded local user under a different id.
+    return {
+      ...state,
+      users: state.users.map((u) =>
+        u.id === existing.id
+          ? {
+              ...u,
+              id: authUser.id,
+              name: authUser.name,
+              email: authUser.email,
+              role: authUser.role,
+              province: authUser.province ?? u.province,
+              municipality: authUser.municipality ?? u.municipality,
+            }
+          : u,
+      ),
+    };
+  }
+  let next: AppState = {
+    ...state,
+    users: [...state.users, userFromAuthSession(authUser)],
+  };
+  if (authUser.role === "student") next = ensureStudentProgress(next, authUser.id);
+  return next;
+}
+
 interface StoreContextValue {
   ready: boolean;
   state: AppState;
@@ -100,7 +154,7 @@ interface StoreContextValue {
     email: string,
     password: string,
     expectedRole: Role,
-  ) => { ok: true; role: Role } | { ok: false; error: string };
+  ) => Promise<{ ok: true; role: Role } | { ok: false; error: string }>;
   signup: (input: {
     name: string;
     email: string;
@@ -108,7 +162,7 @@ interface StoreContextValue {
     role: Role;
     province?: string;
     municipality?: string;
-  }) => { ok: true } | { ok: false; error: string };
+  }) => Promise<{ ok: true } | { ok: false; error: string }>;
   updateProfile: (input: {
     name: string;
     email: string;
@@ -116,10 +170,10 @@ interface StoreContextValue {
     province?: string;
     municipality?: string;
   }) => { ok: true } | { ok: false; error: string };
-  logout: () => void;
+  logout: () => Promise<void>;
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  resetDemo: () => void;
+  resetDemo: () => Promise<void>;
   deleteUser: (userId: string) => void;
   createTeacher: (input: { name: string; email: string; password: string }) => void;
   updateTerms: (terms: Term[]) => void;
@@ -224,32 +278,45 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setState(normalizeAppState(JSON.parse(raw) as AppState));
-      const sess = localStorage.getItem(SESSION_KEY);
-      if (sess) setSession(JSON.parse(sess) as Session);
-      const storedTheme = localStorage.getItem(THEME_KEY);
-      if (storedTheme === "light" || storedTheme === "dark") {
-        setThemeState(storedTheme);
-        applyThemeClass(storedTheme);
+    let cancelled = false;
+    (async () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        let nextState = createInitialState();
+        if (raw) nextState = normalizeAppState(JSON.parse(raw) as AppState);
+
+        const storedTheme = localStorage.getItem(THEME_KEY);
+        if (storedTheme === "light" || storedTheme === "dark") {
+          setThemeState(storedTheme);
+          applyThemeClass(storedTheme);
+        }
+
+        // Migrate away from localStorage sessions (Slice 1 uses Auth.js cookies).
+        localStorage.removeItem(SESSION_KEY);
+
+        const authUser = await fetchAuthSession();
+        if (cancelled) return;
+        if (authUser) {
+          nextState = ensureLocalUser(nextState, authUser);
+          setSession({ userId: authUser.id });
+        } else {
+          setSession(null);
+        }
+        setState(nextState);
+      } catch {
+        /* ignore corrupt storage / auth bootstrap failures */
       }
-    } catch {
-      /* ignore corrupt storage */
-    }
-    setReady(true);
+      if (!cancelled) setReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
     if (!ready) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state, ready]);
-
-  useEffect(() => {
-    if (!ready) return;
-    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    else localStorage.removeItem(SESSION_KEY);
-  }, [session, ready]);
 
   useEffect(() => {
     if (!ready) return;
@@ -266,26 +333,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [state.users, session],
   );
 
-  const login = useCallback(
-    (email: string, password: string, expectedRole: Role) => {
-      const found = state.users.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password,
-      );
-      if (!found) return { ok: false as const, error: "Invalid email or password." };
-      if (found.role !== expectedRole) {
-        return {
-          ok: false as const,
-          error: `This account is not a ${expectedRole} account.`,
-        };
-      }
-      setSession({ userId: found.id });
-      return { ok: true as const, role: found.role };
-    },
-    [state.users],
-  );
+  const login = useCallback(async (email: string, password: string, expectedRole: Role) => {
+    const result = await credentialsSignIn(email, password);
+    if (!result.ok) return result;
+    if (result.user.role !== expectedRole) {
+      await credentialsSignOut();
+      setSession(null);
+      return {
+        ok: false as const,
+        error: `This account is not a ${expectedRole} account.`,
+      };
+    }
+    setState((prev) => ensureLocalUser(prev, result.user));
+    setSession({ userId: result.user.id });
+    return { ok: true as const, role: result.user.role };
+  }, []);
 
   const signup = useCallback(
-    (input: {
+    async (input: {
       name: string;
       email: string;
       password: string;
@@ -293,40 +358,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       province?: string;
       municipality?: string;
     }) => {
-      if (state.users.some((u) => u.email.toLowerCase() === input.email.toLowerCase())) {
-        return { ok: false as const, error: "An account with this email already exists." };
-      }
       if (input.role === "student" && (!input.province || !input.municipality)) {
         return {
           ok: false as const,
           error: "Province and municipality are required for students.",
         };
       }
-      const id = `${input.role}-${crypto.randomUUID().slice(0, 8)}`;
-      const newUser: User = {
-        id,
-        name: input.name,
-        email: input.email,
-        password: input.password,
-        role: input.role,
-        createdAt: new Date().toISOString(),
-        childIds: input.role === "parent" ? [] : undefined,
-        classIds: input.role === "student" || input.role === "teacher" ? [] : undefined,
-        province: input.role === "student" ? input.province : undefined,
-        municipality: input.role === "student" ? input.municipality : undefined,
-      };
-      setState((prev) => {
-        let next = { ...prev, users: [...prev.users, newUser] };
-        if (input.role === "student") next = ensureStudentProgress(next, id);
-        return next;
-      });
-      setSession({ userId: id });
+      const result = await signupAccount(input);
+      if (!result.ok) return result;
+      setState((prev) => ensureLocalUser(prev, result.user));
+      setSession({ userId: result.user.id });
       return { ok: true as const };
     },
-    [state.users],
+    [],
   );
 
-  const logout = useCallback(() => setSession(null), []);
+  const logout = useCallback(async () => {
+    await credentialsSignOut();
+    setSession(null);
+  }, []);
 
   const updateProfile = useCallback(
     (input: {
@@ -387,7 +437,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [session?.userId, state.users],
   );
 
-  const resetDemo = useCallback(() => {
+  const resetDemo = useCallback(async () => {
+    await credentialsSignOut();
     const initial = createInitialState();
     setState(initial);
     setSession(null);

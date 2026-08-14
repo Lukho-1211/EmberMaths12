@@ -1,0 +1,65 @@
+- generic [ref=e1]:
+  - generic [ref=e193] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e194]
+    - generic [ref=e255]:
+      - button "Open issues overlay" [ref=e256]:
+        - generic [ref=e257]:
+          - generic [ref=e258]: "0"
+          - generic [ref=e259]: "1"
+        - generic [ref=e260]: Issue
+      - button "Collapse issues badge" [ref=e261]
+  - alert [ref=e198]: Learn
+  - generic [ref=e420]:
+    - complementary [ref=e421]:
+      - generic [ref=e422]:
+        - link "Ember Maths12" [ref=e423] [cursor=pointer]:
+          - /url: /student
+        - paragraph [ref=e424]: student
+      - navigation [ref=e425]:
+        - link "Dashboard" [ref=e426] [cursor=pointer]:
+          - /url: /student
+        - link "Learn" [active] [ref=e430] [cursor=pointer]:
+          - /url: /student/learn
+        - link "Past papers" [ref=e433] [cursor=pointer]:
+          - /url: /student/past-papers
+        - link "Badges" [ref=e438] [cursor=pointer]:
+          - /url: /student/badges
+        - link "Top Achievers" [ref=e442] [cursor=pointer]:
+          - /url: /student/achievers
+        - link "Settings" [ref=e449] [cursor=pointer]:
+          - /url: /student/settings
+      - button "Log out" [ref=e453]
+    - generic [ref=e457]:
+      - banner [ref=e458]:
+        - generic [ref=e459]:
+          - paragraph [ref=e460]: Signed in
+          - paragraph [ref=e461]: Test Friday Learner
+        - generic [ref=e462]:
+          - generic [ref=e463]: friday.learner.20260814@ember12.za
+          - button "Log out" [ref=e464]
+      - main [ref=e468]:
+        - generic [ref=e551]:
+          - generic [ref=e552]:
+            - heading "Learn" [level=1] [ref=e553]
+            - paragraph [ref=e554]: Choose a term. Each term has Weeks 1–4 (Mon–Fri + Saturday test) and a pre-exam — take assessments on screen (MCQ) or via Paper + scan.
+          - generic [ref=e555]:
+            - link [ref=e556] [cursor=pointer]:
+              - /url: /student/learn/term-1
+              - paragraph [ref=e557]: Term 1
+              - heading "Term 1 — Patterns, Series & Functions" [level=2] [ref=e558]
+              - paragraph [ref=e559]: 0/4 weeks complete · Pre-exam pending
+            - link [ref=e560] [cursor=pointer]:
+              - /url: /student/learn/term-2
+              - paragraph [ref=e561]: Term 2
+              - heading "Term 2 — Geometry & Calculus" [level=2] [ref=e562]
+              - paragraph [ref=e563]: 0/4 weeks complete · Pre-exam pending
+            - link [ref=e564] [cursor=pointer]:
+              - /url: /student/learn/term-3
+              - paragraph [ref=e565]: Term 3
+              - heading "Term 3 — Finance, Stats & Probability" [level=2] [ref=e566]
+              - paragraph [ref=e567]: 0/4 weeks complete · Pre-exam pending
+            - link [ref=e568] [cursor=pointer]:
+              - /url: /student/learn/term-4
+              - paragraph [ref=e569]: Term 4
+              - heading "Term 4 — Revision & Exam Prep" [level=2] [ref=e570]
+              - paragraph [ref=e571]: 0/4 weeks complete · Pre-exam pending
