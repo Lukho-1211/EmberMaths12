@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { decodeMarkdownResource } from "@/lib/lesson-file";
+import { useEffect, useState } from "react";
+import { decodeMarkdownResourceAsync } from "@/lib/lesson-file";
 import type { Resource } from "@/lib/types";
 
 export function MarkdownPreview({
@@ -12,7 +12,18 @@ export function MarkdownPreview({
   /** Optional class on the outer article (e.g. taller scroll for main lesson text). */
   className?: string;
 }) {
-  const text = useMemo(() => decodeMarkdownResource(resource.url), [resource.url]);
+  const [text, setText] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void decodeMarkdownResourceAsync(resource.url).then((value) => {
+      if (!cancelled) setText(value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [resource.url]);
+
   if (!text) {
     return (
       <a

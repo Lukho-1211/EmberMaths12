@@ -61,7 +61,10 @@ export function AssessmentMaterials({
       ) : null}
       <ul className="mt-3 space-y-2">
         {resources.map((r) => {
-          const isUploaded = r.url.startsWith("data:");
+          const isUploaded =
+            r.url.startsWith("data:") ||
+            r.url.startsWith("http://") ||
+            r.url.startsWith("https://");
           const isMarkdown = r.type === "markdown";
 
           if (isMarkdown && isUploaded) {

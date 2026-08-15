@@ -25,7 +25,7 @@ export interface Resource {
   title: string;
   type: "pdf" | "link" | "worksheet" | "markdown";
   url: string;
-  /** Original file name when uploaded in-browser (mock storage). */
+  /** Original file name when uploaded (Supabase Storage). */
   fileName?: string;
 }
 
@@ -69,7 +69,7 @@ export interface WeekTest {
   description: string;
   questions: AssessmentQuestion[];
   passMark: number;
-  /** Uploaded PDF / Markdown exam papers (mock localStorage). */
+  /** Uploaded PDF / Markdown exam papers (Supabase Storage URLs). */
   resources: Resource[];
   /** Marking memo / answer key — admin only; used for paper-scan correction. */
   memoResources: Resource[];
@@ -81,7 +81,7 @@ export interface PreExam {
   description: string;
   questions: AssessmentQuestion[];
   passMark: number;
-  /** Uploaded PDF / Markdown exam papers (mock localStorage). */
+  /** Uploaded PDF / Markdown exam papers (Supabase Storage URLs). */
   resources: Resource[];
   /** Marking memo / answer key — admin only; used for paper-scan correction. */
   memoResources: Resource[];

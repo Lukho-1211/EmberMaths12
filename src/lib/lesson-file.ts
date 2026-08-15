@@ -1,13 +1,12 @@
 import type { Lesson, Resource } from "@/lib/types";
+import { uploadLessonFile } from "@/lib/supabase/app-state";
 
-/** Soft cap for in-browser lesson uploads (mock storage). */
+/** Soft cap for lesson uploads (Supabase Storage). */
 export const MAX_LESSON_FILE_BYTES = 20 * 1024 * 1024;
 
-/** First uploaded Markdown resource on a lesson (for Text lesson view). */
+/** First Markdown resource on a lesson (for Text lesson view). */
 export function primaryLessonMarkdownResource(lesson: Lesson): Resource | undefined {
-  return lesson.resources.find(
-    (r) => r.type === "markdown" && r.url.startsWith("data:text/markdown"),
-  );
+  return lesson.resources.find((r) => r.type === "markdown");
 }
 
 function isMarkdownFile(file: File) {
@@ -31,15 +30,6 @@ export function lessonResourceTypeFromFile(file: File): Resource["type"] | null 
   return null;
 }
 
-function readAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(reader.error ?? new Error("Failed to read file"));
-    reader.readAsDataURL(file);
-  });
-}
-
 function readAsText(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -49,37 +39,49 @@ function readAsText(file: File): Promise<string> {
   });
 }
 
+/**
+ * Upload a PDF/Markdown lesson file to Supabase Storage and return a Resource.
+ * Markdown is also inlined as a data URL fallback so offline decoding still works
+ * when the Storage fetch is unavailable; primary `url` is always the public Storage URL.
+ */
 export async function resourceFromLessonFile(file: File): Promise<Resource> {
   const type = lessonResourceTypeFromFile(file);
   if (!type) {
     throw new Error("Only PDF or Markdown (.md) files are supported.");
   }
   if (file.size > MAX_LESSON_FILE_BYTES) {
-    throw new Error("File is too large (max 20 MB for this demo).");
+    throw new Error("File is too large (max 20 MB).");
   }
 
   const title = file.name.replace(/\.(pdf|md|markdown)$/i, "") || file.name;
-  const id = `upload-${crypto.randomUUID().slice(0, 8)}`;
+  const id = crypto.randomUUID();
 
-  if (type === "markdown") {
-    const text = await readAsText(file);
-    return {
-      id,
-      title,
-      type,
-      fileName: file.name,
-      url: `data:text/markdown;charset=utf-8,${encodeURIComponent(text)}`,
-    };
+  const uploaded = await uploadLessonFile(file, "lesson-resources");
+  if ("error" in uploaded) {
+    throw new Error(uploaded.error);
   }
 
-  const url = await readAsDataUrl(file);
   return {
     id,
     title,
     type,
     fileName: file.name,
-    url,
+    url: uploaded.url,
   };
+}
+
+/** Decode markdown from a data URL or fetch text from a Storage/http URL. */
+export async function decodeMarkdownResourceAsync(url: string): Promise<string | null> {
+  if (url.startsWith("data:text/markdown")) {
+    return decodeMarkdownResource(url);
+  }
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    return await res.text();
+  } catch {
+    return null;
+  }
 }
 
 export function decodeMarkdownResource(url: string): string | null {
@@ -96,4 +98,10 @@ export function decodeMarkdownResource(url: string): string | null {
   } catch {
     return null;
   }
+}
+
+/** @deprecated Prefer decodeMarkdownResourceAsync for Storage URLs. */
+export async function ensureMarkdownText(file?: File): Promise<string | null> {
+  if (!file) return null;
+  return readAsText(file);
 }

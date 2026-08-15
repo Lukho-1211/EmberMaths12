@@ -91,7 +91,11 @@ function ExamFileUploader({
                   <p className="text-xs uppercase text-muted">
                     {r.type}
                     {r.fileName ? ` · ${r.fileName}` : ""}
-                    {r.url.startsWith("data:") ? " · uploaded" : ""}
+                    {r.url.startsWith("data:") ||
+                    r.url.startsWith("http://") ||
+                    r.url.startsWith("https://")
+                      ? " · uploaded"
+                      : ""}
                   </p>
                 </div>
               </div>
@@ -434,7 +438,11 @@ export default function AdminTermsPage() {
                                 <p className="text-xs uppercase text-muted">
                                   {r.type}
                                   {r.fileName ? ` · ${r.fileName}` : ""}
-                                  {r.url.startsWith("data:") ? " · uploaded" : ""}
+                                  {r.url.startsWith("data:") ||
+                    r.url.startsWith("http://") ||
+                    r.url.startsWith("https://")
+                      ? " · uploaded"
+                      : ""}
                                 </p>
                               </div>
                             </div>

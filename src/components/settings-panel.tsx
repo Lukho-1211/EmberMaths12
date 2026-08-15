@@ -35,11 +35,11 @@ export function SettingsPanel() {
 
   const isStudent = user.role === "student";
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
     setSuccess("");
-    const result = updateProfile({
+    const result = await updateProfile({
       name,
       email,
       password: password.trim() ? password : undefined,
@@ -177,8 +177,7 @@ export function SettingsPanel() {
         <button
           type="button"
           onClick={() => {
-            logout();
-            router.push("/");
+            void logout().then(() => router.push("/"));
           }}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
         >

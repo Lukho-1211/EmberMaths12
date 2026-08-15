@@ -14,7 +14,7 @@ import { PageHeader, StatCard } from "@/components/app-shell";
 import { useStore } from "@/lib/store";
 
 export default function AdminDashboardPage() {
-  const { state, resetDemo } = useStore();
+  const { state } = useStore();
   const [view, setView] = useState<"students" | "instructors">("students");
 
   const students = state.users.filter((u) => u.role === "student");
@@ -38,19 +38,10 @@ export default function AdminDashboardPage() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <PageHeader
-          title="Admin dashboard"
-          subtitle="Overview of Ember Maths12 learners, instructors, and term health."
-        />
-        <button
-          type="button"
-          onClick={resetDemo}
-          className="rounded-md border border-border px-3 py-2 text-sm hover:border-ember-gold"
-        >
-          Reset demo data
-        </button>
-      </div>
+      <PageHeader
+        title="Admin dashboard"
+        subtitle="Overview of Ember Maths12 learners, instructors, and term health."
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Students" value={students.length} />

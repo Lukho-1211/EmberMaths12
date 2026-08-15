@@ -14,9 +14,16 @@ export default function AdminUsersPage() {
   const removable = state.users.filter((u) => u.role === "student" || u.role === "parent");
   const teachers = state.users.filter((u) => u.role === "teacher");
 
-  function onCreate(e: FormEvent) {
+  const [formError, setFormError] = useState("");
+
+  async function onCreate(e: FormEvent) {
     e.preventDefault();
-    createTeacher({ name, email, password });
+    setFormError("");
+    const result = await createTeacher({ name, email, password });
+    if (!result.ok) {
+      setFormError(result.error);
+      return;
+    }
     setName("");
     setEmail("");
     setPassword(DEMO_PASSWORD);
@@ -58,6 +65,9 @@ export default function AdminUsersPage() {
         <button type="submit" className="rounded-md bg-ember-gold px-4 py-2 text-sm font-bold text-ember-navy">
           Create teacher
         </button>
+        {formError ? (
+          <p className="md:col-span-4 text-sm text-danger">{formError}</p>
+        ) : null}
       </form>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -91,7 +101,7 @@ export default function AdminUsersPage() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => deleteUser(u.id)}
+                  onClick={() => void deleteUser(u.id)}
                   className="rounded-md border border-danger/30 px-3 py-1 text-danger hover:bg-danger/5"
                 >
                   Delete

@@ -9,9 +9,36 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { createInitialState, SESSION_KEY, STORAGE_KEY, THEME_KEY } from "@/lib/mock/seed";
+import {
+  getProfile,
+  getProfileWithRetry,
+  getSessionUser,
+  signInWithPassword,
+  signOut as supabaseSignOut,
+  signUpWithPassword,
+  type ProfileRow,
+} from "@/lib/auth-client";
+import { createInitialState } from "@/lib/mock/seed";
 import { SEED_TERMS } from "@/lib/mock/curriculum";
 import { isValidMunicipality } from "@/lib/sa-geography";
+import {
+  addGroupMember,
+  deleteProgress,
+  deleteStudyGroup,
+  insertCorrection,
+  insertMessage,
+  insertSchoolClass,
+  insertStudyGroup,
+  insertTeacherLesson,
+  loadAppState,
+  markMessageReadDb,
+  removeGroupMember,
+  saveCurriculum,
+  saveProgress,
+  saveTheme,
+  updateProfileRow,
+  upsertClassMember,
+} from "@/lib/supabase/app-state";
 import type {
   AppState,
   CorrectionResult,
@@ -92,6 +119,49 @@ interface Session {
   userId: string;
 }
 
+function profileToUser(profile: ProfileRow): User {
+  return {
+    id: profile.id,
+    name: profile.name,
+    email: profile.email,
+    password: "",
+    role: profile.role,
+    createdAt: profile.created_at,
+    parentId: profile.parent_id ?? undefined,
+    childIds: profile.role === "parent" ? [] : undefined,
+    classIds: profile.role === "student" || profile.role === "teacher" ? [] : undefined,
+    province: profile.province ?? undefined,
+    municipality: profile.municipality ?? undefined,
+  };
+}
+
+/** Merge a freshly loaded profile into AppState using Auth UUID as the user id. */
+function mergeProfileUser(prev: AppState, profile: ProfileRow): AppState {
+  const user = profileToUser(profile);
+  const existingIdx = prev.users.findIndex((u) => u.id === profile.id);
+  let users: User[];
+  if (existingIdx >= 0) {
+    users = prev.users.map((u, i) =>
+      i === existingIdx
+        ? {
+            ...u,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            parentId: user.parentId,
+            province: user.province,
+            municipality: user.municipality,
+          }
+        : u,
+    );
+  } else {
+    users = [...prev.users, user];
+  }
+  let next: AppState = { ...prev, users };
+  if (user.role === "student") next = ensureStudentProgress(next, user.id);
+  return next;
+}
+
 interface StoreContextValue {
   ready: boolean;
   state: AppState;
@@ -100,7 +170,7 @@ interface StoreContextValue {
     email: string,
     password: string,
     expectedRole: Role,
-  ) => { ok: true; role: Role } | { ok: false; error: string };
+  ) => Promise<{ ok: true; role: Role } | { ok: false; error: string }>;
   signup: (input: {
     name: string;
     email: string;
@@ -108,20 +178,23 @@ interface StoreContextValue {
     role: Role;
     province?: string;
     municipality?: string;
-  }) => { ok: true } | { ok: false; error: string };
+  }) => Promise<{ ok: true } | { ok: false; error: string }>;
   updateProfile: (input: {
     name: string;
     email: string;
     password?: string;
     province?: string;
     municipality?: string;
-  }) => { ok: true } | { ok: false; error: string };
-  logout: () => void;
+  }) => Promise<{ ok: true } | { ok: false; error: string }>;
+  logout: () => Promise<void>;
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  resetDemo: () => void;
-  deleteUser: (userId: string) => void;
-  createTeacher: (input: { name: string; email: string; password: string }) => void;
+  deleteUser: (userId: string) => Promise<void>;
+  createTeacher: (input: {
+    name: string;
+    email: string;
+    password: string;
+  }) => Promise<{ ok: true } | { ok: false; error: string }>;
   updateTerms: (terms: Term[]) => void;
   upsertWeekLesson: (
     termId: string,
@@ -217,6 +290,15 @@ function ensureStudentProgress(state: AppState, studentId: string): AppState {
   };
 }
 
+function persistTerms(next: AppState) {
+  void saveCurriculum(next.terms, next.badges);
+}
+
+function persistProgressRow(next: AppState, studentId: string) {
+  const row = next.progress.find((p) => p.studentId === studentId);
+  if (row) void saveProgress(row);
+}
+
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [state, setState] = useState<AppState>(() => createInitialState());
@@ -224,68 +306,96 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setState(normalizeAppState(JSON.parse(raw) as AppState));
-      const sess = localStorage.getItem(SESSION_KEY);
-      if (sess) setSession(JSON.parse(sess) as Session);
-      const storedTheme = localStorage.getItem(THEME_KEY);
-      if (storedTheme === "light" || storedTheme === "dark") {
-        setThemeState(storedTheme);
-        applyThemeClass(storedTheme);
+    let cancelled = false;
+
+    async function boot() {
+      try {
+        const authUser = await getSessionUser();
+        if (!authUser) {
+          if (!cancelled) {
+            setState(createInitialState());
+            setSession(null);
+            setThemeState("light");
+            applyThemeClass("light");
+            setReady(true);
+          }
+          return;
+        }
+
+        const loaded = await loadAppState();
+        if (cancelled) return;
+        setState(normalizeAppState(loaded.state));
+        setSession(loaded.userId ? { userId: loaded.userId } : null);
+        setThemeState(loaded.theme);
+        applyThemeClass(loaded.theme);
+        setReady(true);
+      } catch {
+        if (!cancelled) {
+          setState(createInitialState());
+          setSession(null);
+          setReady(true);
+        }
       }
-    } catch {
-      /* ignore corrupt storage */
     }
-    setReady(true);
+
+    void boot();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  useEffect(() => {
-    if (!ready) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state, ready]);
-
-  useEffect(() => {
-    if (!ready) return;
-    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    else localStorage.removeItem(SESSION_KEY);
-  }, [session, ready]);
-
-  useEffect(() => {
-    if (!ready) return;
-    localStorage.setItem(THEME_KEY, theme);
-    applyThemeClass(theme);
-  }, [theme, ready]);
-
-  const setTheme = useCallback((next: Theme) => {
-    setThemeState(next);
-  }, []);
+  const setTheme = useCallback(
+    (next: Theme) => {
+      setThemeState(next);
+      applyThemeClass(next);
+      if (session?.userId) void saveTheme(session.userId, next);
+    },
+    [session?.userId],
+  );
 
   const user = useMemo(
     () => state.users.find((u) => u.id === session?.userId) ?? null,
     [state.users, session],
   );
 
+  const reloadFromSupabase = useCallback(async () => {
+    const loaded = await loadAppState();
+    setState(normalizeAppState(loaded.state));
+    setSession(loaded.userId ? { userId: loaded.userId } : null);
+    setThemeState(loaded.theme);
+    applyThemeClass(loaded.theme);
+  }, []);
+
   const login = useCallback(
-    (email: string, password: string, expectedRole: Role) => {
-      const found = state.users.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password,
-      );
-      if (!found) return { ok: false as const, error: "Invalid email or password." };
-      if (found.role !== expectedRole) {
+    async (email: string, password: string, expectedRole: Role) => {
+      const auth = await signInWithPassword(email, password);
+      if (!auth.ok) {
+        return { ok: false as const, error: "Invalid email or password." };
+      }
+      const profile = await getProfile(auth.user.id);
+      if (!profile) {
+        await supabaseSignOut();
+        return { ok: false as const, error: "Profile not found. Contact support." };
+      }
+      if (profile.role !== expectedRole) {
+        await supabaseSignOut();
         return {
           ok: false as const,
           error: `This account is not a ${expectedRole} account.`,
         };
       }
-      setSession({ userId: found.id });
-      return { ok: true as const, role: found.role };
+      const loaded = await loadAppState();
+      setState(normalizeAppState(loaded.state));
+      setSession({ userId: profile.id });
+      setThemeState(loaded.theme);
+      applyThemeClass(loaded.theme);
+      return { ok: true as const, role: profile.role };
     },
-    [state.users],
+    [],
   );
 
   const signup = useCallback(
-    (input: {
+    async (input: {
       name: string;
       email: string;
       password: string;
@@ -293,43 +403,63 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       province?: string;
       municipality?: string;
     }) => {
-      if (state.users.some((u) => u.email.toLowerCase() === input.email.toLowerCase())) {
-        return { ok: false as const, error: "An account with this email already exists." };
+      if (input.role === "student") {
+        if (!input.province || !input.municipality) {
+          return {
+            ok: false as const,
+            error: "Province and municipality are required for students.",
+          };
+        }
+        if (!isValidMunicipality(input.province, input.municipality)) {
+          return {
+            ok: false as const,
+            error: "Please select a valid municipality for the chosen province.",
+          };
+        }
       }
-      if (input.role === "student" && (!input.province || !input.municipality)) {
+
+      const created = await signUpWithPassword(input);
+      if (!created.ok) return created;
+
+      const profile = await getProfileWithRetry(created.userId);
+      if (!profile) {
+        return { ok: false as const, error: "Account created but profile missing." };
+      }
+      if (profile.role !== input.role) {
+        await supabaseSignOut();
         return {
           ok: false as const,
-          error: "Province and municipality are required for students.",
+          error: `This account is not a ${input.role} account.`,
         };
       }
-      const id = `${input.role}-${crypto.randomUUID().slice(0, 8)}`;
-      const newUser: User = {
-        id,
-        name: input.name,
-        email: input.email,
-        password: input.password,
-        role: input.role,
-        createdAt: new Date().toISOString(),
-        childIds: input.role === "parent" ? [] : undefined,
-        classIds: input.role === "student" || input.role === "teacher" ? [] : undefined,
-        province: input.role === "student" ? input.province : undefined,
-        municipality: input.role === "student" ? input.municipality : undefined,
-      };
-      setState((prev) => {
-        let next = { ...prev, users: [...prev.users, newUser] };
-        if (input.role === "student") next = ensureStudentProgress(next, id);
-        return next;
-      });
-      setSession({ userId: id });
+
+      const loaded = await loadAppState();
+      let next = normalizeAppState(loaded.state);
+      next = mergeProfileUser(next, profile);
+      if (profile.role === "student") {
+        next = ensureStudentProgress(next, profile.id);
+        const row = next.progress.find((p) => p.studentId === profile.id);
+        if (row) void saveProgress(row);
+      }
+      setState(next);
+      setSession({ userId: profile.id });
+      setThemeState(loaded.theme);
+      applyThemeClass(loaded.theme);
       return { ok: true as const };
     },
-    [state.users],
+    [],
   );
 
-  const logout = useCallback(() => setSession(null), []);
+  const logout = useCallback(async () => {
+    await supabaseSignOut();
+    setSession(null);
+    setState(createInitialState());
+    setThemeState("light");
+    applyThemeClass("light");
+  }, []);
 
   const updateProfile = useCallback(
-    (input: {
+    async (input: {
       name: string;
       email: string;
       password?: string;
@@ -342,12 +472,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const current = state.users.find((u) => u.id === session.userId);
       if (!current) {
         return { ok: false as const, error: "User not found." };
-      }
-      const emailTaken = state.users.some(
-        (u) => u.id !== current.id && u.email.toLowerCase() === input.email.toLowerCase(),
-      );
-      if (emailTaken) {
-        return { ok: false as const, error: "An account with this email already exists." };
       }
       if (current.role === "student") {
         if (!input.province || !input.municipality) {
@@ -363,11 +487,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           };
         }
       }
-      const password =
-        input.password && input.password.trim().length > 0 ? input.password : current.password;
       if (input.password && input.password.trim().length > 0 && input.password.trim().length < 6) {
         return { ok: false as const, error: "Password must be at least 6 characters." };
       }
+
+      const result = await updateProfileRow(session.userId, input);
+      if (!result.ok) return result;
+
       setState((prev) => ({
         ...prev,
         users: prev.users.map((u) => {
@@ -375,8 +501,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           return {
             ...u,
             name: input.name.trim(),
-            email: input.email.trim(),
-            password,
+            email: input.email.trim().toLowerCase(),
             province: u.role === "student" ? input.province : u.province,
             municipality: u.role === "student" ? input.municipality : u.municipality,
           };
@@ -387,15 +512,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [session?.userId, state.users],
   );
 
-  const resetDemo = useCallback(() => {
-    const initial = createInitialState();
-    setState(initial);
-    setSession(null);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
-    localStorage.removeItem(SESSION_KEY);
-  }, []);
-
-  const deleteUser = useCallback((userId: string) => {
+  const deleteUser = useCallback(async (userId: string) => {
+    try {
+      await fetch("/api/auth/delete-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+    } catch {
+      /* ignore network errors; still clear local cache */
+    }
+    void deleteProgress(userId);
     setState((prev) => ({
       ...prev,
       users: prev.users.filter((u) => u.id !== userId && u.role !== "admin"),
@@ -413,46 +540,67 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setSession((s) => (s?.userId === userId ? null : s));
   }, []);
 
-  const createTeacher = useCallback((input: { name: string; email: string; password: string }) => {
-    setState((prev) => {
-      if (prev.users.some((u) => u.email.toLowerCase() === input.email.toLowerCase())) return prev;
-      const teacher: User = {
-        id: `teacher-${crypto.randomUUID().slice(0, 8)}`,
-        name: input.name,
-        email: input.email,
-        password: input.password,
-        role: "teacher",
-        classIds: [],
-        createdAt: new Date().toISOString(),
-      };
-      return { ...prev, users: [...prev.users, teacher] };
-    });
-  }, []);
+  const createTeacher = useCallback(
+    async (input: { name: string; email: string; password: string }) => {
+      try {
+        const res = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: input.name,
+            email: input.email,
+            password: input.password,
+            role: "teacher",
+          }),
+        });
+        const body = (await res.json()) as { ok?: boolean; userId?: string; error?: string };
+        if (!res.ok || !body.ok || !body.userId) {
+          return { ok: false as const, error: body.error ?? "Failed to create teacher." };
+        }
+        await reloadFromSupabase();
+        return { ok: true as const };
+      } catch (err) {
+        return {
+          ok: false as const,
+          error: err instanceof Error ? err.message : "Failed to create teacher.",
+        };
+      }
+    },
+    [reloadFromSupabase],
+  );
 
   const updateTerms = useCallback((terms: Term[]) => {
-    setState((prev) => ({ ...prev, terms }));
+    setState((prev) => {
+      const next = { ...prev, terms };
+      persistTerms(next);
+      return next;
+    });
   }, []);
 
   const upsertWeekLesson = useCallback(
     (termId: string, weekId: string, day: WeekDay, patch: Partial<Lesson>) => {
-      setState((prev) => ({
-        ...prev,
-        terms: prev.terms.map((term) => {
-          if (term.id !== termId) return term;
-          return {
-            ...term,
-            weeks: term.weeks.map((week) => {
-              if (week.id !== weekId) return week;
-              return {
-                ...week,
-                lessons: week.lessons.map((lesson) =>
-                  lesson.day === day ? { ...lesson, ...patch } : lesson,
-                ),
-              };
-            }),
-          };
-        }),
-      }));
+      setState((prev) => {
+        const next = {
+          ...prev,
+          terms: prev.terms.map((term) => {
+            if (term.id !== termId) return term;
+            return {
+              ...term,
+              weeks: term.weeks.map((week) => {
+                if (week.id !== weekId) return week;
+                return {
+                  ...week,
+                  lessons: week.lessons.map((lesson) =>
+                    lesson.day === day ? { ...lesson, ...patch } : lesson,
+                  ),
+                };
+              }),
+            };
+          }),
+        };
+        persistTerms(next);
+        return next;
+      });
     },
     [],
   );
@@ -463,33 +611,37 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       weekId: string,
       patch: { title?: string; resources?: Resource[]; memoResources?: Resource[] },
     ) => {
-      setState((prev) => ({
-        ...prev,
-        terms: prev.terms.map((term) =>
-          term.id !== termId
-            ? term
-            : {
-                ...term,
-                weeks: term.weeks.map((w) =>
-                  w.id !== weekId
-                    ? w
-                    : {
-                        ...w,
-                        weekTest: {
-                          ...w.weekTest,
-                          ...(patch.title !== undefined ? { title: patch.title } : {}),
-                          ...(patch.resources !== undefined
-                            ? { resources: patch.resources }
-                            : {}),
-                          ...(patch.memoResources !== undefined
-                            ? { memoResources: patch.memoResources }
-                            : {}),
+      setState((prev) => {
+        const next = {
+          ...prev,
+          terms: prev.terms.map((term) =>
+            term.id !== termId
+              ? term
+              : {
+                  ...term,
+                  weeks: term.weeks.map((w) =>
+                    w.id !== weekId
+                      ? w
+                      : {
+                          ...w,
+                          weekTest: {
+                            ...w.weekTest,
+                            ...(patch.title !== undefined ? { title: patch.title } : {}),
+                            ...(patch.resources !== undefined
+                              ? { resources: patch.resources }
+                              : {}),
+                            ...(patch.memoResources !== undefined
+                              ? { memoResources: patch.memoResources }
+                              : {}),
+                          },
                         },
-                      },
-                ),
-              },
-        ),
-      }));
+                  ),
+                },
+          ),
+        };
+        persistTerms(next);
+        return next;
+      });
     },
     [],
   );
@@ -499,24 +651,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       termId: string,
       patch: { title?: string; resources?: Resource[]; memoResources?: Resource[] },
     ) => {
-      setState((prev) => ({
-        ...prev,
-        terms: prev.terms.map((term) =>
-          term.id !== termId
-            ? term
-            : {
-                ...term,
-                preExam: {
-                  ...term.preExam,
-                  ...(patch.title !== undefined ? { title: patch.title } : {}),
-                  ...(patch.resources !== undefined ? { resources: patch.resources } : {}),
-                  ...(patch.memoResources !== undefined
-                    ? { memoResources: patch.memoResources }
-                    : {}),
+      setState((prev) => {
+        const next = {
+          ...prev,
+          terms: prev.terms.map((term) =>
+            term.id !== termId
+              ? term
+              : {
+                  ...term,
+                  preExam: {
+                    ...term.preExam,
+                    ...(patch.title !== undefined ? { title: patch.title } : {}),
+                    ...(patch.resources !== undefined ? { resources: patch.resources } : {}),
+                    ...(patch.memoResources !== undefined
+                      ? { memoResources: patch.memoResources }
+                      : {}),
+                  },
                 },
-              },
-        ),
-      }));
+          ),
+        };
+        persistTerms(next);
+        return next;
+      });
     },
     [],
   );
@@ -526,41 +682,47 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       termId: string,
       patch: { title?: string; resources?: Resource[]; memoResources?: Resource[] },
     ) => {
-      setState((prev) => ({
-        ...prev,
-        terms: prev.terms.map((term) =>
-          term.id !== termId
-            ? term
-            : {
-                ...term,
-                pastPaper: {
-                  ...term.pastPaper,
-                  ...(patch.title !== undefined ? { title: patch.title } : {}),
-                  ...(patch.resources !== undefined ? { resources: patch.resources } : {}),
-                  ...(patch.memoResources !== undefined
-                    ? { memoResources: patch.memoResources }
-                    : {}),
+      setState((prev) => {
+        const next = {
+          ...prev,
+          terms: prev.terms.map((term) =>
+            term.id !== termId
+              ? term
+              : {
+                  ...term,
+                  pastPaper: {
+                    ...term.pastPaper,
+                    ...(patch.title !== undefined ? { title: patch.title } : {}),
+                    ...(patch.resources !== undefined ? { resources: patch.resources } : {}),
+                    ...(patch.memoResources !== undefined
+                      ? { memoResources: patch.memoResources }
+                      : {}),
+                  },
                 },
-              },
-        ),
-      }));
+          ),
+        };
+        persistTerms(next);
+        return next;
+      });
     },
     [],
   );
 
   const createGroup = useCallback((input: { name: string; description: string; termId?: string }) => {
     const group: StudyGroup = {
-      id: `group-${crypto.randomUUID().slice(0, 8)}`,
+      id: crypto.randomUUID(),
       name: input.name,
       description: input.description,
       termId: input.termId,
       memberIds: [],
       createdAt: new Date().toISOString(),
     };
+    void insertStudyGroup(group);
     setState((prev) => ({ ...prev, groups: [...prev.groups, group] }));
   }, []);
 
   const addMemberToGroup = useCallback((groupId: string, studentId: string) => {
+    void addGroupMember(groupId, studentId);
     setState((prev) => ({
       ...prev,
       groups: prev.groups.map((g) =>
@@ -572,6 +734,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const removeMemberFromGroup = useCallback((groupId: string, studentId: string) => {
+    void removeGroupMember(groupId, studentId);
     setState((prev) => ({
       ...prev,
       groups: prev.groups.map((g) =>
@@ -581,13 +744,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const deleteGroup = useCallback((groupId: string) => {
+    void deleteStudyGroup(groupId);
     setState((prev) => ({ ...prev, groups: prev.groups.filter((g) => g.id !== groupId) }));
   }, []);
 
   const completeLesson = useCallback((studentId: string, lessonId: string) => {
     setState((prev) => {
       const next = ensureStudentProgress(prev, studentId);
-      return {
+      const updated: AppState = {
         ...next,
         progress: next.progress.map((p) => {
           if (p.studentId !== studentId) return p;
@@ -598,13 +762,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           });
         }),
       };
+      persistProgressRow(updated, studentId);
+      return updated;
     });
   }, []);
 
   const submitTestScore = useCallback((studentId: string, assessmentId: string, score: number) => {
     setState((prev) => {
       const next = ensureStudentProgress(prev, studentId);
-      return {
+      const updated: AppState = {
         ...next,
         progress: next.progress.map((p) => {
           if (p.studentId !== studentId) return p;
@@ -614,6 +780,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           });
         }),
       };
+      persistProgressRow(updated, studentId);
+      return updated;
     });
   }, []);
 
@@ -621,9 +789,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     (correction: Omit<CorrectionResult, "id" | "createdAt">) => {
       const full: CorrectionResult = {
         ...correction,
-        id: `corr-${crypto.randomUUID().slice(0, 8)}`,
+        id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
       };
+      void insertCorrection(full);
       setState((prev) => ({ ...prev, corrections: [full, ...prev.corrections] }));
       return full;
     },
@@ -632,13 +801,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const createClass = useCallback((teacherId: string, name: string) => {
     const schoolClass: SchoolClass = {
-      id: `class-${crypto.randomUUID().slice(0, 8)}`,
+      id: crypto.randomUUID(),
       name,
       teacherId,
       studentIds: [],
       pendingStudentIds: [],
       createdAt: new Date().toISOString(),
     };
+    void insertSchoolClass(schoolClass);
     setState((prev) => ({
       ...prev,
       classes: [...prev.classes, schoolClass],
@@ -663,6 +833,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const requestJoinClass = useCallback((classId: string, studentId: string) => {
+    void upsertClassMember(classId, studentId, "pending");
     setState((prev) => ({
       ...prev,
       classes: prev.classes.map((c) => {
@@ -674,6 +845,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const acceptStudent = useCallback((classId: string, studentId: string) => {
+    void upsertClassMember(classId, studentId, "enrolled");
     setState((prev) => ({
       ...prev,
       classes: prev.classes.map((c) => {
@@ -695,6 +867,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addStudentToClass = useCallback((classId: string, studentId: string) => {
+    void upsertClassMember(classId, studentId, "enrolled");
     setState((prev) => ({
       ...prev,
       classes: prev.classes.map((c) => {
@@ -717,15 +890,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const createTeacherLesson = useCallback((lesson: Omit<Lesson, "id"> & { id?: string }) => {
     const full: Lesson = {
       ...lesson,
-      id: lesson.id ?? `tl-${crypto.randomUUID().slice(0, 8)}`,
+      id: lesson.id ?? crypto.randomUUID(),
     };
+    void insertTeacherLesson(full);
     setState((prev) => ({ ...prev, teacherLessons: [...prev.teacherLessons, full] }));
   }, []);
 
   const sendMessage = useCallback(
     (input: { fromUserId: string; toUserId: string; studentId?: string; body: string }) => {
       const message: Message = {
-        id: `msg-${crypto.randomUUID().slice(0, 8)}`,
+        id: crypto.randomUUID(),
         fromUserId: input.fromUserId,
         toUserId: input.toUserId,
         studentId: input.studentId,
@@ -733,12 +907,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         createdAt: new Date().toISOString(),
         read: false,
       };
+      void insertMessage(message);
       setState((prev) => ({ ...prev, messages: [message, ...prev.messages] }));
     },
     [],
   );
 
   const markMessageRead = useCallback((messageId: string) => {
+    void markMessageReadDb(messageId);
     setState((prev) => ({
       ...prev,
       messages: prev.messages.map((m) => (m.id === messageId ? { ...m, read: true } : m)),
@@ -755,7 +931,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     logout,
     theme,
     setTheme,
-    resetDemo,
     deleteUser,
     createTeacher,
     updateTerms,

@@ -183,7 +183,12 @@ function StudentLessonContent() {
           <ul className="mt-4 space-y-3">
             {lesson.resources.map((r) => {
               const href = resourceHref(r);
-              const isUploaded = Boolean(href?.startsWith("data:"));
+                  const isUploaded = Boolean(
+                    href &&
+                      (href.startsWith("data:") ||
+                        href.startsWith("http://") ||
+                        href.startsWith("https://")),
+                  );
               const isMarkdown = r.type === "markdown";
 
               if (isMarkdown && isUploaded) {

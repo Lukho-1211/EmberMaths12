@@ -1,4 +1,3 @@
-import { decodeMarkdownResource } from "@/lib/lesson-file";
 import { extractPdfText } from "@/lib/lesson-video/pdf-utils";
 import type {
   AssessmentQuestion,
@@ -115,16 +114,20 @@ function truncateOption(text: string): string {
 
 /** True when a resource can yield extractable lesson text. */
 export function isExtractableLessonResource(resource: Resource): boolean {
-  if (!resource.url.startsWith("data:")) return false;
+  const url = resource.url;
+  const isData = url.startsWith("data:");
+  const isRemote = url.startsWith("http://") || url.startsWith("https://");
+  if (!isData && !isRemote) return false;
   return resource.type === "markdown" || resource.type === "pdf";
 }
 
 export async function extractTextFromResources(resources: Resource[]): Promise<string> {
+  const { decodeMarkdownResourceAsync } = await import("@/lib/lesson-file");
   const parts: string[] = [];
   for (const resource of resources) {
     if (!isExtractableLessonResource(resource)) continue;
     if (resource.type === "markdown") {
-      const md = decodeMarkdownResource(resource.url);
+      const md = await decodeMarkdownResourceAsync(resource.url);
       if (md?.trim()) parts.push(md);
       continue;
     }

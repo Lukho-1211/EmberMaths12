@@ -2,7 +2,7 @@
 
 Online South African **CAPS Grade 12 Mathematics** school frontend — Udemy-style learning with Admin, Student, Teacher, and Parent portals.
 
-Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, and **Tailwind CSS 4**. Auth and data are **mocked in the browser** (`localStorage`) so you can demo the full product on Vercel without a backend.
+Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, and **Tailwind CSS 4**. **Auth, curriculum, progress, classes, and uploads** all use **Supabase** (Auth + Postgres + Storage). The React store is an in-memory cache that loads and writes through Supabase — nothing is persisted in `localStorage`.
 
 ## Brand
 
@@ -18,6 +18,21 @@ Palette from `resourceInfo/colors.jpg` (Black & Gold Elegance):
 
 Typography: **Fraunces** (display) and **Outfit** (body) via `next/font`. Design tokens and component rules live in `design-system/embermaths12/`.
 
+## Architecture
+
+| Layer | What it does today |
+| ----- | ------------------ |
+| **Supabase Auth** | Email/password signup and login for **admin**, **student**, **teacher**, and **parent**. Cookie session refresh via `src/proxy.ts` and `@supabase/ssr` clients in `src/lib/supabase/`. |
+| **Postgres** | `public.profiles` (incl. theme), `public.student` roster, `curriculum`, `student_progress`, classes, groups, messages, corrections, teacher lessons. Migrations in `supabase/migrations/`. |
+| **Storage** | `lesson-files` bucket for admin/teacher PDF and Markdown uploads. |
+| **UI store** (`src/lib/store.tsx`) | In-memory `AppState` hydrated from Supabase on boot; mutations write back to Postgres. Session comes from Auth cookies only. |
+
+Signup uses the browser Supabase client (`signUp`) so it works with only the publishable key. Role and name are stored in `user_metadata`; the `handle_new_user` trigger writes `public.profiles` (and `public.student` for students). Role for authorization is always read from `profiles`, not from editable metadata.
+
+Optional: `POST /api/auth/signup` can still create pre-confirmed users when `SUPABASE_SERVICE_ROLE_KEY` is the real **service_role** secret (Dashboard → Project Settings → API). The anon/publishable JWT will return “User not allowed”. Admin user delete uses `POST /api/auth/delete-user`.
+
+Env vars are required for Auth and for seeding.
+
 ## Demo accounts
 
 Password for all demos: `ember12`
@@ -28,6 +43,8 @@ Password for all demos: `ember12`
 | Student | `student@ember12.za` |
 | Teacher | `teacher@ember12.za` |
 | Parent  | `parent@ember12.za`  |
+
+The same emails are seeded into **Supabase Auth** + `profiles` (see `supabase/seed.sql`, `npm run db:seed:app`, and `src/lib/demo-accounts.ts`). Extra demo students/teachers are created by the TypeScript seed so classes and rankings use Auth UUIDs.
 
 Login and signup use role hubs (`/login`, `/signup`) that route into `/login/[role]` and `/signup/[role]`.
 
@@ -41,9 +58,10 @@ Login and signup use role hubs (`/login`, `/signup`) that route into `/login/[ro
 
 ### Auth & profile
 
-- Role-specific login and signup flows
-- **Settings** (student / teacher / parent): name, email, password; students also set **province** and **municipality** for rankings
-- Light / dark **theme** preference (stored with mock profile data)
+- Role-specific login and signup flows backed by **Supabase Auth** + `profiles`
+- Demo accounts (after `npm run db:seed` and `npm run db:seed:app`) work on the live Auth project
+- **Settings** (student / teacher / parent): name, email, password; students also set **province** and **municipality** for rankings — updates go to Auth + `profiles`
+- Light / dark **theme** preference stored on `profiles.theme`
 
 ### Admin
 
@@ -59,7 +77,7 @@ Saving a daily lesson with uploaded PDF/Markdown **mock-generates MCQ questions*
 
 Exam papers are shown to students (walkthrough + download). Memos are admin-only and used when correcting paper+scan uploads.
 
-Files are stored as data URLs in `localStorage` (max **20 MB** per file). Admins can remove attachments and edit titles in place.
+Files are stored in Supabase Storage (`lesson-files`, max **20 MB** per file). Admins can remove attachments and edit titles in place.
 
 ### Student
 
@@ -109,19 +127,47 @@ Top Achievers boards (admin, teacher, student) rank by overall progress percent,
 
 ## Local development
 
+Create `.env.local` (do not commit it):
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+# Server/seed only — never expose to the browser.
+# Must be the service_role secret (Dashboard → Project Settings → API), not the anon/publishable key.
+SUPABASE_SERVICE_ROLE_KEY=
+```
+
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` is accepted as a fallback for the publishable key.
+
+Signup in the UI uses the **publishable** key. `SUPABASE_SERVICE_ROLE_KEY` is only needed for `npm run db:seed:app` / optional admin signup API — it must be the **service_role** secret, not the anon key.
+
 ```bash
 npm install
+npm run db:seed:curriculum
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### Database seed
+
+After linking the Supabase CLI to the project and applying migrations:
+
+```bash
+npm run db:seed
+npm run db:seed:curriculum
+npm run db:seed:app
+```
+
+`db:seed` runs `supabase/seed.sql` (core demo Auth users). `db:seed:curriculum` upserts the CAPS terms/badges JSON into `public.curriculum`. `db:seed:app` runs `supabase/seed.ts` via the service role key (extra demo accounts, progress, classes, groups, messages) — requires a valid `SUPABASE_SERVICE_ROLE_KEY`.
+
 ## Deploy to Vercel
 
 1. Push this repo to GitHub.
 2. Import the project in [Vercel](https://vercel.com/new).
-3. Framework preset: **Next.js** (defaults are fine).
-4. Deploy.
+3. Framework preset: **Next.js**.
+4. Set the same Supabase env vars as `.env.local`.
+5. Deploy.
 
 Or with the Vercel CLI:
 
@@ -136,7 +182,9 @@ vercel
 - `npm run build` — production build
 - `npm run start` — serve production build
 - `npm run lint` — ESLint
+- `npm run db:seed` — seed demo Auth users and roster on the linked Supabase project
+- `npm run db:seed:app` — seed curriculum + demo app data via service role (`supabase/seed.ts`)
 
 ## Out of scope (frontend v1)
 
-Real auth/database, live video hosting, real OCR/AI correction API, email, and payments. Those UIs are wired with mock behaviour ready for later APIs.
+Live video hosting, real OCR/AI correction, email confirmation flows, and payments. Product data lives in Supabase Postgres + Storage; the UI store is an in-memory cache only.

@@ -18,6 +18,7 @@ function LoginForm() {
   const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!role) router.replace("/login");
@@ -27,15 +28,23 @@ function LoginForm() {
     return <p className="text-sm text-muted">Redirecting…</p>;
   }
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!role) return;
-    const result = login(email, password, role);
-    if (!result.ok) {
-      setError(result.error);
-      return;
+    if (!role || loading) return;
+    setError("");
+    setLoading(true);
+    try {
+      const result = await login(email, password, role);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      router.push(`/${result.role}`);
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    router.push(`/${result.role}`);
   }
 
   const demoEmail = DEMO_EMAILS[role];
@@ -53,6 +62,7 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
           />
         </label>
         <label className="block text-sm">
@@ -63,21 +73,24 @@ function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading}
           />
         </label>
         {error ? <p className="text-sm text-danger">{error}</p> : null}
         <button
           type="submit"
-          className="w-full cursor-pointer rounded-md bg-ember-navy py-2.5 text-sm font-semibold text-white transition duration-200 hover:bg-ember-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-gold"
+          disabled={loading}
+          className="w-full cursor-pointer rounded-md bg-ember-navy py-2.5 text-sm font-semibold text-white transition duration-200 hover:bg-ember-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-gold disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Log in
+          {loading ? "Signing in…" : "Log in"}
         </button>
       </form>
       <div className="mt-6 space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted">Demo account</p>
         <button
           type="button"
-          className="flex w-full cursor-pointer items-center justify-between rounded-md border border-border px-3 py-2 text-left text-sm transition duration-200 hover:border-ember-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-gold"
+          disabled={loading}
+          className="flex w-full cursor-pointer items-center justify-between rounded-md border border-border px-3 py-2 text-left text-sm transition duration-200 hover:border-ember-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-gold disabled:cursor-not-allowed disabled:opacity-60"
           onClick={() => {
             setEmail(demoEmail);
             setPassword(DEMO_PASSWORD);

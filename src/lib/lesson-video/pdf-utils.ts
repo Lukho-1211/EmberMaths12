@@ -35,13 +35,23 @@ export async function loadPdfJs() {
   return pdfjs;
 }
 
-/** Extract plain text from an uploaded PDF resource (data URL). */
+/** Extract plain text from an uploaded PDF resource (data URL or remote Storage URL). */
 export async function extractPdfText(resource: Resource): Promise<string> {
   if (typeof window === "undefined") return "";
-  if (resource.type !== "pdf" || !resource.url.startsWith("data:")) return "";
+  if (resource.type !== "pdf") return "";
 
   const pdfjs = await loadPdfJs();
-  const data = dataUrlToUint8Array(resource.url);
+  let data: Uint8Array;
+  if (resource.url.startsWith("data:")) {
+    data = dataUrlToUint8Array(resource.url);
+  } else if (resource.url.startsWith("http://") || resource.url.startsWith("https://")) {
+    const res = await fetch(resource.url);
+    if (!res.ok) return "";
+    data = new Uint8Array(await res.arrayBuffer());
+  } else {
+    return "";
+  }
+
   const loadingTask = pdfjs.getDocument({ data });
   const pdf = await loadingTask.promise;
   const parts: string[] = [];
