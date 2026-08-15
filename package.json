@@ -10,9 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:seed": "npx supabase --yes db query --linked --project-ref ujqsecdfnbfkzunsbysq --file supabase/seed.sql",
-    "db:seed:curriculum": "npx tsx supabase/write-curriculum-seed.ts && npx supabase --yes db query --linked --project-ref ujqsecdfnbfkzunsbysq --file supabase/seed-app-state.sql",
-    "db:seed:app": "npx tsx --env-file=.env.local supabase/seed.ts"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
