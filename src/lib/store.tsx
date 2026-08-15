@@ -350,7 +350,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       applyThemeClass(next);
       if (session?.userId) void saveTheme(session.userId, next);
     },
-    [session?.userId],
+    [session],
   );
 
   const user = useMemo(
@@ -509,7 +509,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }));
       return { ok: true as const };
     },
-    [session?.userId, state.users],
+    [session, state.users],
   );
 
   const deleteUser = useCallback(async (userId: string) => {

@@ -15,8 +15,10 @@ export default function TeacherProgressPage() {
   const active = myClasses.find((c) => c.id === activeClassId) ?? myClasses[0];
 
   const roster = useMemo(() => {
-    if (!active) return [];
-    return active.studentIds.map((id) => {
+    const classes = state.classes.filter((c) => c.teacherId === user?.id);
+    const current = classes.find((c) => c.id === activeClassId) ?? classes[0];
+    if (!current) return [];
+    return current.studentIds.map((id) => {
       const student = state.users.find((u) => u.id === id);
       const progress = state.progress.find((p) => p.studentId === id);
       const insights = buildAllTermInsights(
@@ -26,7 +28,15 @@ export default function TeacherProgressPage() {
       );
       return { student, progress, insights };
     });
-  }, [active, state.users, state.progress, state.terms, state.corrections]);
+  }, [
+    activeClassId,
+    user?.id,
+    state.classes,
+    state.users,
+    state.progress,
+    state.terms,
+    state.corrections,
+  ]);
 
   return (
     <div>

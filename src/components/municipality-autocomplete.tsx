@@ -32,6 +32,7 @@ export function MunicipalityAutocomplete({
   const wrapRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
+  const [optionsKey, setOptionsKey] = useState("");
   const isDisabled = disabled || !province;
 
   const options = useMemo(
@@ -39,9 +40,11 @@ export function MunicipalityAutocomplete({
     [province, value],
   );
 
-  useEffect(() => {
+  const nextOptionsKey = options.join("\0");
+  if (nextOptionsKey !== optionsKey) {
+    setOptionsKey(nextOptionsKey);
     setHighlight(0);
-  }, [options]);
+  }
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {

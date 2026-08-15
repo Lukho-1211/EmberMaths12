@@ -35,16 +35,30 @@ export function useSlidePlayback(resources: Resource[]) {
   const [muted, setMuted] = useState(false);
 
   const cacheKey = resourcesCacheKey(resources);
+  const resourcesRef = useRef(resources);
   const deckRef = useRef<SlideDeck | null>(null);
   const playingRef = useRef(false);
   const mutedRef = useRef(false);
   const indexRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const [deckCacheKey, setDeckCacheKey] = useState(cacheKey);
 
-  playingRef.current = playing;
-  mutedRef.current = muted;
-  indexRef.current = currentIndex;
+  // Reset playback UI when lesson materials change (render-time, not in an effect).
+  if (cacheKey !== deckCacheKey) {
+    setDeckCacheKey(cacheKey);
+    setDeck(null);
+    setLoading(true);
+    setError(null);
+    setCurrentIndex(0);
+    setPlaying(false);
+  }
+
+  useEffect(() => {
+    playingRef.current = playing;
+    mutedRef.current = muted;
+    indexRef.current = currentIndex;
+  }, [playing, muted, currentIndex]);
 
   const clearAdvance = useCallback(() => {
     if (timerRef.current) {
@@ -58,16 +72,16 @@ export function useSlidePlayback(resources: Resource[]) {
   }, []);
 
   useEffect(() => {
+    resourcesRef.current = resources;
+  }, [resources]);
+
+  useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
-    setCurrentIndex(0);
-    setPlaying(false);
     clearAdvance();
 
     void (async () => {
       try {
-        const next = await buildSlideDeck(resources);
+        const next = await buildSlideDeck(resourcesRef.current);
         if (cancelled) return;
         deckRef.current = next;
         setDeck(next);
@@ -85,8 +99,6 @@ export function useSlidePlayback(resources: Resource[]) {
       cancelled = true;
       clearAdvance();
     };
-    // cacheKey captures resource identity for rebuilds
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: rebuild when uploads change
   }, [cacheKey, clearAdvance]);
 
   const goTo = useCallback(
@@ -124,12 +136,12 @@ export function useSlidePlayback(resources: Resource[]) {
         advanceFrom(index);
       };
 
-      const useTimer = () => {
+      const startFallbackTimer = () => {
         timerRef.current = setTimeout(finish, fallbackMsForText(slide.bodyText));
       };
 
       if (mutedRef.current || !speechSupported() || !slide.bodyText.trim()) {
-        useTimer();
+        startFallbackTimer();
         return;
       }
 
@@ -139,11 +151,11 @@ export function useSlidePlayback(resources: Resource[]) {
         if (voice) utter.voice = voice;
         utter.rate = 1;
         utter.onend = finish;
-        utter.onerror = () => useTimer();
+        utter.onerror = () => startFallbackTimer();
         utteranceRef.current = utter;
         window.speechSynthesis.speak(utter);
       } catch {
-        useTimer();
+        startFallbackTimer();
       }
     },
     [advanceFrom, clearAdvance],

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, Moon, Sun } from "lucide-react";
 import { MunicipalityAutocomplete } from "@/components/municipality-autocomplete";
@@ -11,29 +11,49 @@ import { useStore, type Theme } from "@/lib/store";
 const fieldClass =
   "w-full rounded-md border border-border bg-background px-3 py-2 text-foreground outline-none focus:border-ember-gold focus:ring-2 focus:ring-ember-gold/40";
 
+type ProfileForm = {
+  name: string;
+  email: string;
+  password: string;
+  province: string;
+  municipality: string;
+};
+
+const emptyForm = (): ProfileForm => ({
+  name: "",
+  email: "",
+  password: "",
+  province: "",
+  municipality: "",
+});
+
 export function SettingsPanel() {
   const { user, updateProfile, logout, theme, setTheme } = useStore();
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [province, setProvince] = useState("");
-  const [municipality, setMunicipality] = useState("");
+  const [form, setForm] = useState<ProfileForm>(emptyForm);
+  const [syncedUserKey, setSyncedUserKey] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  useEffect(() => {
-    if (!user) return;
-    setName(user.name);
-    setEmail(user.email);
-    setProvince(user.province ?? "");
-    setMunicipality(user.municipality ?? "");
-    setPassword("");
-  }, [user]);
+  const userKey = user
+    ? `${user.id}|${user.name}|${user.email}|${user.province ?? ""}|${user.municipality ?? ""}`
+    : null;
+
+  if (user && userKey !== syncedUserKey) {
+    setSyncedUserKey(userKey);
+    setForm({
+      name: user.name,
+      email: user.email,
+      password: "",
+      province: user.province ?? "",
+      municipality: user.municipality ?? "",
+    });
+  }
 
   if (!user) return null;
 
   const isStudent = user.role === "student";
+  const { name, email, password, province, municipality } = form;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -50,7 +70,7 @@ export function SettingsPanel() {
       setError(result.error);
       return;
     }
-    setPassword("");
+    setForm((prev) => ({ ...prev, password: "" }));
     setSuccess("Your details have been saved.");
   }
 
@@ -102,7 +122,7 @@ export function SettingsPanel() {
             <input
               className={fieldClass}
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
               required
             />
           </label>
@@ -112,7 +132,7 @@ export function SettingsPanel() {
               className={fieldClass}
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
               required
             />
           </label>
@@ -122,7 +142,7 @@ export function SettingsPanel() {
               className={fieldClass}
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
               minLength={6}
               placeholder="Leave blank to keep current"
               autoComplete="new-password"
@@ -136,8 +156,11 @@ export function SettingsPanel() {
                   className={fieldClass}
                   value={province}
                   onChange={(e) => {
-                    setProvince(e.target.value);
-                    setMunicipality("");
+                    setForm((prev) => ({
+                      ...prev,
+                      province: e.target.value,
+                      municipality: "",
+                    }));
                   }}
                   required
                 >
@@ -154,7 +177,9 @@ export function SettingsPanel() {
                 <MunicipalityAutocomplete
                   province={province}
                   value={municipality}
-                  onChange={setMunicipality}
+                  onChange={(next) =>
+                    setForm((prev) => ({ ...prev, municipality: next }))
+                  }
                   required
                 />
               </label>

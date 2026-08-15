@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { FileText, RefreshCw, Trash2, Upload } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import {
@@ -9,9 +9,45 @@ import {
 } from "@/lib/generate-lesson-mcqs";
 import { MAX_LESSON_FILE_BYTES, resourceFromLessonFile } from "@/lib/lesson-file";
 import { useStore } from "@/lib/store";
-import type { Resource, WeekDay } from "@/lib/types";
+import type { PastPaper, PreExam, Resource, WeekDay, WeekTest } from "@/lib/types";
 
 const DAYS: WeekDay[] = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+
+type LessonDraft = {
+  title: string;
+  description: string;
+  resources: Resource[];
+};
+
+type ExamDraft = {
+  title: string;
+  resources: Resource[];
+  memoResources: Resource[];
+};
+
+const emptyLessonDraft = (): LessonDraft => ({
+  title: "",
+  description: "",
+  resources: [],
+});
+
+const emptyExamDraft = (): ExamDraft => ({
+  title: "",
+  resources: [],
+  memoResources: [],
+});
+
+function examDraftFrom(source: {
+  title: string;
+  resources?: Resource[];
+  memoResources?: Resource[];
+}): ExamDraft {
+  return {
+    title: source.title,
+    resources: source.resources ?? [],
+    memoResources: source.memoResources ?? [],
+  };
+}
 
 function ExamFileUploader({
   resources,
@@ -124,9 +160,8 @@ export default function AdminTermsPage() {
   const [day, setDay] = useState<WeekDay>("monday");
   const lesson = week?.lessons.find((l) => l.day === day);
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [resources, setResources] = useState<Resource[]>([]);
+  const [lessonDraft, setLessonDraft] = useState<LessonDraft>(emptyLessonDraft);
+  const [lessonSyncId, setLessonSyncId] = useState<string | undefined>(undefined);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -135,59 +170,63 @@ export default function AdminTermsPage() {
   const [generateNote, setGenerateNote] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [testTitle, setTestTitle] = useState("");
-  const [testResources, setTestResources] = useState<Resource[]>([]);
-  const [testMemoResources, setTestMemoResources] = useState<Resource[]>([]);
+  const [testDraft, setTestDraft] = useState<ExamDraft>(emptyExamDraft);
+  const [testSync, setTestSync] = useState<{
+    weekId?: string;
+    weekTest?: WeekTest;
+  }>({});
   const [testSavedFlash, setTestSavedFlash] = useState(false);
-  const [preTitle, setPreTitle] = useState("");
-  const [preResources, setPreResources] = useState<Resource[]>([]);
-  const [preMemoResources, setPreMemoResources] = useState<Resource[]>([]);
+
+  const [preDraft, setPreDraft] = useState<ExamDraft>(emptyExamDraft);
+  const [preSync, setPreSync] = useState<{ termId?: string; preExam?: PreExam }>({});
   const [preSavedFlash, setPreSavedFlash] = useState(false);
-  const [pastTitle, setPastTitle] = useState("");
-  const [pastResources, setPastResources] = useState<Resource[]>([]);
-  const [pastMemoResources, setPastMemoResources] = useState<Resource[]>([]);
+
+  const [pastDraft, setPastDraft] = useState<ExamDraft>(emptyExamDraft);
+  const [pastSync, setPastSync] = useState<{ termId?: string; pastPaper?: PastPaper }>({});
   const [pastSavedFlash, setPastSavedFlash] = useState(false);
 
-  function loadLessonFields(nextDay: WeekDay, nextWeek = week) {
-    const l = nextWeek?.lessons.find((x) => x.day === nextDay);
-    setTitle(l?.title ?? "");
-    setDescription(l?.description ?? "");
-    setResources(l?.resources ?? []);
+  // Adjust draft state during render when the selected store entity changes
+  // (React-supported alternative to prop→state sync in useEffect).
+  if (lesson && lesson.id !== lessonSyncId) {
+    setLessonSyncId(lesson.id);
+    setLessonDraft({
+      title: lesson.title,
+      description: lesson.description,
+      resources: lesson.resources,
+    });
     setUploadError(null);
   }
 
-  useEffect(() => {
-    if (lesson) {
-      setTitle(lesson.title);
-      setDescription(lesson.description);
-      setResources(lesson.resources);
-    }
-  }, [lesson?.id]);
+  if (
+    week &&
+    (week.id !== testSync.weekId || week.weekTest !== testSync.weekTest)
+  ) {
+    setTestSync({ weekId: week.id, weekTest: week.weekTest });
+    setTestDraft(examDraftFrom(week.weekTest));
+  }
 
-  useEffect(() => {
-    if (!week) return;
-    setTestTitle(week.weekTest.title);
-    setTestResources(week.weekTest.resources ?? []);
-    setTestMemoResources(week.weekTest.memoResources ?? []);
-    // Sync when switching weeks or after store updates for this week test.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: week.weekTest identity
-  }, [week?.id, week?.weekTest]);
+  if (
+    term &&
+    (term.id !== preSync.termId || term.preExam !== preSync.preExam)
+  ) {
+    setPreSync({ termId: term.id, preExam: term.preExam });
+    setPreDraft(examDraftFrom(term.preExam));
+  }
 
-  useEffect(() => {
-    if (!term) return;
-    setPreTitle(term.preExam.title);
-    setPreResources(term.preExam.resources ?? []);
-    setPreMemoResources(term.preExam.memoResources ?? []);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: term.preExam identity
-  }, [term?.id, term?.preExam]);
+  if (
+    term?.pastPaper &&
+    (term.id !== pastSync.termId || term.pastPaper !== pastSync.pastPaper)
+  ) {
+    setPastSync({ termId: term.id, pastPaper: term.pastPaper });
+    setPastDraft(examDraftFrom(term.pastPaper));
+  }
 
-  useEffect(() => {
-    if (!term?.pastPaper) return;
-    setPastTitle(term.pastPaper.title);
-    setPastResources(term.pastPaper.resources ?? []);
-    setPastMemoResources(term.pastPaper.memoResources ?? []);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: term.pastPaper identity
-  }, [term?.id, term?.pastPaper]);
+  const { title, description, resources } = lessonDraft;
+  const { title: testTitle, resources: testResources, memoResources: testMemoResources } =
+    testDraft;
+  const { title: preTitle, resources: preResources, memoResources: preMemoResources } = preDraft;
+  const { title: pastTitle, resources: pastResources, memoResources: pastMemoResources } =
+    pastDraft;
 
   async function saveLesson(e: FormEvent) {
     e.preventDefault();
@@ -285,7 +324,7 @@ export default function AdminTermsPage() {
     setUploading(true);
     try {
       const resource = await resourceFromLessonFile(file);
-      setResources((prev) => [...prev, resource]);
+      setLessonDraft((prev) => ({ ...prev, resources: [...prev.resources, resource] }));
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : "Upload failed.");
     } finally {
@@ -295,7 +334,10 @@ export default function AdminTermsPage() {
   }
 
   function removeResource(id: string) {
-    setResources((prev) => prev.filter((r) => r.id !== id));
+    setLessonDraft((prev) => ({
+      ...prev,
+      resources: prev.resources.filter((r) => r.id !== id),
+    }));
   }
 
   return (
@@ -335,10 +377,6 @@ export default function AdminTermsPage() {
                   onClick={() => {
                     setWeekId(w.id);
                     setDay("monday");
-                    loadLessonFields("monday", w);
-                    setTestTitle(w.weekTest.title);
-                    setTestResources(w.weekTest.resources ?? []);
-                    setTestMemoResources(w.weekTest.memoResources ?? []);
                   }}
                   className={`rounded-md px-3 py-1.5 text-sm ${
                     week?.id === w.id ? "bg-ember-navy text-white" : "bg-surface"
@@ -357,10 +395,7 @@ export default function AdminTermsPage() {
                     <button
                       key={d}
                       type="button"
-                      onClick={() => {
-                        setDay(d);
-                        loadLessonFields(d);
-                      }}
+                      onClick={() => setDay(d)}
                       className={`rounded-full px-3 py-1 text-xs capitalize ${
                         day === d ? "bg-ember-gold font-semibold text-ember-navy" : "bg-ember-gray"
                       }`}
@@ -379,7 +414,9 @@ export default function AdminTermsPage() {
                     <input
                       className="w-full rounded-md border border-border px-3 py-2"
                       value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      onChange={(e) =>
+                        setLessonDraft((prev) => ({ ...prev, title: e.target.value }))
+                      }
                     />
                   </label>
                   <label className="block text-sm">
@@ -388,7 +425,9 @@ export default function AdminTermsPage() {
                       className="w-full rounded-md border border-border px-3 py-2"
                       rows={3}
                       value={description}
-                      onChange={(e) => setDescription(e.target.value)}
+                      onChange={(e) =>
+                        setLessonDraft((prev) => ({ ...prev, description: e.target.value }))
+                      }
                     />
                   </label>
 
@@ -522,7 +561,9 @@ export default function AdminTermsPage() {
                 <input
                   className="mt-3 w-full rounded-md border border-border px-3 py-2 text-sm"
                   value={testTitle}
-                  onChange={(e) => setTestTitle(e.target.value)}
+                  onChange={(e) =>
+                    setTestDraft((prev) => ({ ...prev, title: e.target.value }))
+                  }
                 />
                 <p className="mt-2 text-xs text-muted">
                   {week.weekTest.questions.length} questions · pass mark {week.weekTest.passMark}%
@@ -530,14 +571,18 @@ export default function AdminTermsPage() {
                 <ExamFileUploader
                   label="Week test paper"
                   resources={testResources}
-                  onChange={setTestResources}
+                  onChange={(next) =>
+                    setTestDraft((prev) => ({ ...prev, resources: next }))
+                  }
                 />
                 <ExamFileUploader
                   label="Week test memo"
                   description="Upload PDF or Markdown (.md) mark scheme used to correct learner paper scans. Not shown to students."
                   emptyLabel="No memo uploaded yet."
                   resources={testMemoResources}
-                  onChange={setTestMemoResources}
+                  onChange={(next) =>
+                    setTestDraft((prev) => ({ ...prev, memoResources: next }))
+                  }
                 />
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <button
@@ -570,7 +615,9 @@ export default function AdminTermsPage() {
               <input
                 className="mt-3 w-full rounded-md border border-border px-3 py-2 text-sm"
                 value={preTitle}
-                onChange={(e) => setPreTitle(e.target.value)}
+                onChange={(e) =>
+                  setPreDraft((prev) => ({ ...prev, title: e.target.value }))
+                }
               />
               <p className="mt-2 text-xs text-muted">
                 {term.preExam.questions.length} questions · pass mark {term.preExam.passMark}%
@@ -578,14 +625,18 @@ export default function AdminTermsPage() {
               <ExamFileUploader
                 label="Pre-exam paper"
                 resources={preResources}
-                onChange={setPreResources}
+                onChange={(next) =>
+                  setPreDraft((prev) => ({ ...prev, resources: next }))
+                }
               />
               <ExamFileUploader
                 label="Pre-exam memo"
                 description="Upload PDF or Markdown (.md) mark scheme used to correct learner paper scans. Not shown to students."
                 emptyLabel="No memo uploaded yet."
                 resources={preMemoResources}
-                onChange={setPreMemoResources}
+                onChange={(next) =>
+                  setPreDraft((prev) => ({ ...prev, memoResources: next }))
+                }
               />
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <button
@@ -620,21 +671,27 @@ export default function AdminTermsPage() {
               <input
                 className="mt-3 w-full rounded-md border border-border px-3 py-2 text-sm"
                 value={pastTitle}
-                onChange={(e) => setPastTitle(e.target.value)}
+                onChange={(e) =>
+                  setPastDraft((prev) => ({ ...prev, title: e.target.value }))
+                }
               />
               <ExamFileUploader
                 label="Past paper"
                 description="Upload PDF or Markdown (.md) previous exam papers. Students walk through, write on paper, then scan for mock correction."
                 emptyLabel="No past paper uploaded yet."
                 resources={pastResources}
-                onChange={setPastResources}
+                onChange={(next) =>
+                  setPastDraft((prev) => ({ ...prev, resources: next }))
+                }
               />
               <ExamFileUploader
                 label="Past paper memo"
                 description="Upload PDF or Markdown (.md) mark scheme used to correct learner paper scans. Not shown to students."
                 emptyLabel="No memo uploaded yet."
                 resources={pastMemoResources}
-                onChange={setPastMemoResources}
+                onChange={(next) =>
+                  setPastDraft((prev) => ({ ...prev, memoResources: next }))
+                }
               />
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <button
