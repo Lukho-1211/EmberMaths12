@@ -38,7 +38,11 @@ async function resolveInitialTheme(): Promise<"light" | "dark"> {
   }
 }
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const theme = await resolveInitialTheme();
   const htmlClass = [
     outfit.variable,
