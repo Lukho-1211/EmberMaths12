@@ -1,0 +1,57 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e202] [cursor=pointer]
+  - alert [ref=e206]: Ember Maths12 | CAPS Grade 12 Mathematics
+  - generic [ref=e255]:
+    - complementary [ref=e256]:
+      - generic [ref=e257]:
+        - link "Ember Maths12" [ref=e258] [cursor=pointer]:
+          - /url: /student
+        - paragraph [ref=e259]: student
+      - navigation [ref=e260]:
+        - link "Dashboard" [ref=e261] [cursor=pointer]:
+          - /url: /student
+        - link "Learn" [active] [ref=e265] [cursor=pointer]:
+          - /url: /student/learn
+        - link "Past papers" [ref=e268] [cursor=pointer]:
+          - /url: /student/past-papers
+        - link "Badges" [ref=e273] [cursor=pointer]:
+          - /url: /student/badges
+        - link "Top Achievers" [ref=e277] [cursor=pointer]:
+          - /url: /student/achievers
+        - link "Settings" [ref=e284] [cursor=pointer]:
+          - /url: /student/settings
+      - button "Log out" [ref=e288]
+    - generic [ref=e292]:
+      - banner [ref=e293]:
+        - generic [ref=e294]:
+          - paragraph [ref=e295]: Signed in
+          - paragraph [ref=e296]: Lerato Molefe
+        - generic [ref=e297]:
+          - generic [ref=e298]: student@ember12.za
+          - button "Log out" [ref=e299]
+      - main [ref=e303]:
+        - generic [ref=e386]:
+          - generic [ref=e387]:
+            - heading "Learn" [level=1] [ref=e388]
+            - paragraph [ref=e389]: Choose a term. Each term has Weeks 1–4 (Mon–Fri + Saturday test) and a pre-exam — take assessments on screen (MCQ) or via Paper + scan.
+          - generic [ref=e390]:
+            - link [ref=e391] [cursor=pointer]:
+              - /url: /student/learn/term-1
+              - paragraph [ref=e392]: Term 1
+              - heading "Term 1 — Patterns, Series & Functions" [level=2] [ref=e393]
+              - paragraph [ref=e394]: 0/4 weeks complete · Pre-exam pending
+            - link [ref=e395] [cursor=pointer]:
+              - /url: /student/learn/term-2
+              - paragraph [ref=e396]: Term 2
+              - heading "Term 2 — Geometry & Calculus" [level=2] [ref=e397]
+              - paragraph [ref=e398]: 0/4 weeks complete · Pre-exam pending
+            - link [ref=e399] [cursor=pointer]:
+              - /url: /student/learn/term-3
+              - paragraph [ref=e400]: Term 3
+              - heading "Term 3 — Finance, Stats & Probability" [level=2] [ref=e401]
+              - paragraph [ref=e402]: 0/4 weeks complete · Pre-exam pending
+            - link [ref=e403] [cursor=pointer]:
+              - /url: /student/learn/term-4
+              - paragraph [ref=e404]: Term 4
+              - heading "Term 4 — Revision & Exam Prep" [level=2] [ref=e405]
+              - paragraph [ref=e406]: 0/4 weeks complete · Pre-exam pending
