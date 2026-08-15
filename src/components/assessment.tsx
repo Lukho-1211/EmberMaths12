@@ -6,6 +6,7 @@ import { LessonVideoPlayer } from "@/components/lesson-video-player";
 import { MarkdownPreview } from "@/components/markdown-preview";
 import { hasVideoSources } from "@/lib/lesson-video";
 import { mockPaperGrade } from "@/lib/mock-paper-grade";
+import { meetsPassMark, scoreMcq } from "@/lib/score-mcq";
 import { useStore } from "@/lib/store";
 import type {
   AssessmentQuestion,
@@ -145,11 +146,7 @@ export function AssessmentQuiz({
   const resources = assessment.resources ?? [];
 
   function submit() {
-    let correct = 0;
-    for (const q of assessment.questions) {
-      if (answers[q.id] === q.answerIndex) correct += 1;
-    }
-    const pct = Math.round((correct / total) * 100);
+    const pct = scoreMcq(assessment.questions, answers);
     setScore(pct);
     submitTestScore(studentId, assessment.id, pct);
     onDone?.(pct);
@@ -199,8 +196,8 @@ export function AssessmentQuiz({
         </button>
       ) : (
         <p className="mt-6 rounded-md bg-ember-navy px-4 py-3 text-sm font-semibold text-white">
-          Score: {score}% — {score >= assessment.passMark ? "Pass" : "Needs improvement"} (pass mark{" "}
-          {assessment.passMark}%)
+          Score: {score}% — {meetsPassMark(score, assessment.passMark) ? "Pass" : "Needs improvement"}{" "}
+          (pass mark {assessment.passMark}%)
         </p>
       )}
     </div>
@@ -453,7 +450,7 @@ export function AssessmentPaperScan({
         <div>
           <p className="rounded-md bg-ember-navy px-4 py-3 text-sm font-semibold text-white">
             Score: {result.score}% —{" "}
-            {result.score >= assessment.passMark ? "Pass band" : "Needs improvement"} (band{" "}
+            {meetsPassMark(result.score, assessment.passMark) ? "Pass band" : "Needs improvement"} (band{" "}
             {assessment.passMark}%)
             {practiceOnly ? " · practice only" : ""}
           </p>

@@ -11,6 +11,7 @@ import { MarkdownPreview } from "@/components/markdown-preview";
 import { TermWeekNav } from "@/components/term-week-nav";
 import { primaryLessonMarkdownResource } from "@/lib/lesson-file";
 import { hasVideoSources } from "@/lib/lesson-video";
+import { meetsPassMark } from "@/lib/score-mcq";
 import { useStore } from "@/lib/store";
 import type { LessonTest, Resource, WeekDay } from "@/lib/types";
 
@@ -48,7 +49,7 @@ function StudentLessonContent() {
       ? progress.testScores[lessonTest.id]
       : null;
   const passed =
-    lessonTest != null && score != null && score >= lessonTest.passMark;
+    lessonTest != null && score != null && meetsPassMark(score, lessonTest.passMark);
   const canComplete = !lessonTest || passed;
   const initialMode = searchParams.get("mode") === "paper" ? "paper" : "mcq";
 
