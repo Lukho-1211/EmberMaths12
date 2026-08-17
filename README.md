@@ -2,7 +2,7 @@
 
 Online South African **CAPS Grade 12 Mathematics** school frontend — Udemy-style learning with Admin, Student, Teacher, and Parent portals.
 
-Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, and **Tailwind CSS 4**. **Auth, curriculum, progress, classes, and uploads** all use **Supabase** (Auth + Postgres + Storage). The React store is an in-memory cache that loads and writes through Supabase — nothing is persisted in `localStorage`.
+Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, and **Tailwind CSS 4**. Requires **Node.js 22+**. **Auth, curriculum, progress, classes, and uploads** all use **Supabase** (Auth + Postgres + Storage). The React store is an in-memory cache that loads and writes through Supabase — nothing is persisted in `localStorage`.
 
 ## Brand
 
@@ -33,18 +33,7 @@ Optional: `POST /api/auth/signup` can still create pre-confirmed users when `SUP
 
 Env vars are required for Auth and for seeding.
 
-## Demo accounts
-
-Password for all demos: `ember12`
-
-| Role    | Email                |
-| ------- | -------------------- |
-| Admin   | `admin@ember12.za`   |
-| Student | `student@ember12.za` |
-| Teacher | `teacher@ember12.za` |
-| Parent  | `parent@ember12.za`  |
-
-The same emails are seeded into **Supabase Auth** + `profiles` (see `supabase/seed.sql`, `npm run db:seed:app`, and `src/lib/demo-accounts.ts`). Extra demo students/teachers are created by the TypeScript seed so classes and rankings use Auth UUIDs.
+The same emails are seeded into **Supabase Auth** + `profiles` (see `supabase/seed.sql`, `supabase/seed.ts`, and `src/lib/demo-accounts.ts`). Extra demo students/teachers are created by the TypeScript seed so classes and rankings use Auth UUIDs.
 
 Login and signup use role hubs (`/login`, `/signup`) that route into `/login/[role]` and `/signup/[role]`.
 
@@ -59,7 +48,7 @@ Login and signup use role hubs (`/login`, `/signup`) that route into `/login/[ro
 ### Auth & profile
 
 - Role-specific login and signup flows backed by **Supabase Auth** + `profiles`
-- Demo accounts (after `npm run db:seed` and `npm run db:seed:app`) work on the live Auth project
+- Demo accounts (after SQL + TypeScript seed — see [Database seed](#database-seed)) work on the live Auth project
 - **Settings** (student / teacher / parent): name, email, password; students also set **province** and **municipality** for rankings — updates go to Auth + `profiles`
 - Light / dark **theme** preference stored on `profiles.theme`
 
@@ -139,11 +128,10 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 `NEXT_PUBLIC_SUPABASE_ANON_KEY` is accepted as a fallback for the publishable key.
 
-Signup in the UI uses the **publishable** key. `SUPABASE_SERVICE_ROLE_KEY` is only needed for `npm run db:seed:app` / optional admin signup API — it must be the **service_role** secret, not the anon key.
+Signup in the UI uses the **publishable** key. `SUPABASE_SERVICE_ROLE_KEY` is only needed for `npx tsx supabase/seed.ts` and the optional admin signup API — it must be the **service_role** secret, not the anon key.
 
 ```bash
 npm install
-npm run db:seed:curriculum
 npm run dev
 ```
 
@@ -151,15 +139,18 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Database seed
 
-After linking the Supabase CLI to the project and applying migrations:
+After linking the [Supabase CLI](https://supabase.com/docs/guides/cli) to the project and applying migrations (`supabase db push` or `supabase migration up`):
 
 ```bash
-npm run db:seed
-npm run db:seed:curriculum
-npm run db:seed:app
+npx supabase db query -f supabase/seed.sql
+npx tsx supabase/write-curriculum-seed.ts
+npx supabase db query -f supabase/seed-app-state.sql
+npx tsx supabase/seed.ts
 ```
 
-`db:seed` runs `supabase/seed.sql` (core demo Auth users). `db:seed:curriculum` upserts the CAPS terms/badges JSON into `public.curriculum`. `db:seed:app` runs `supabase/seed.ts` via the service role key (extra demo accounts, progress, classes, groups, messages) — requires a valid `SUPABASE_SERVICE_ROLE_KEY`.
+- `supabase/seed.sql` — core demo Auth users (`ember12` password).
+- `write-curriculum-seed.ts` — writes `supabase/seed-app-state.sql` from the CAPS terms/badges JSON; then query that file to upsert `public.curriculum`.
+- `supabase/seed.ts` — extra demo accounts, progress, classes, groups, and messages via the service role key.
 
 ## Deploy to Vercel
 
@@ -182,8 +173,9 @@ vercel
 - `npm run build` — production build
 - `npm run start` — serve production build
 - `npm run lint` — ESLint
-- `npm run db:seed` — seed demo Auth users and roster on the linked Supabase project
-- `npm run db:seed:app` — seed curriculum + demo app data via service role (`supabase/seed.ts`)
+- `npm run typecheck` — TypeScript (`tsc --noEmit`)
+- `npm test` — Vitest unit tests
+- `npm run test:watch` — Vitest watch mode
 
 ## Out of scope (frontend v1)
 
