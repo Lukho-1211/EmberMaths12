@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useEffect, useState } from "react";
-import { DEMO_PASSWORD } from "@/lib/mock/seed";
-import { DEMO_EMAILS, isRole, roleLabel } from "@/lib/roles";
+import { isRole, roleLabel } from "@/lib/roles";
 import { useStore } from "@/lib/store";
 
 function LoginForm() {
@@ -47,8 +46,6 @@ function LoginForm() {
     }
   }
 
-  const demoEmail = DEMO_EMAILS[role];
-
   return (
     <div className="mx-auto w-full max-w-md rounded-2xl border border-border bg-ember-white p-8 shadow-sm">
       <h1 className="font-display text-3xl text-ember-navy">{roleLabel(role)} log in</h1>
@@ -85,22 +82,6 @@ function LoginForm() {
           {loading ? "Signing in…" : "Log in"}
         </button>
       </form>
-      <div className="mt-6 space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted">Demo account</p>
-        <button
-          type="button"
-          disabled={loading}
-          className="flex w-full cursor-pointer items-center justify-between rounded-md border border-border px-3 py-2 text-left text-sm transition duration-200 hover:border-ember-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-gold disabled:cursor-not-allowed disabled:opacity-60"
-          onClick={() => {
-            setEmail(demoEmail);
-            setPassword(DEMO_PASSWORD);
-          }}
-        >
-          <span className="capitalize">{role}</span>
-          <span className="text-muted">{demoEmail}</span>
-        </button>
-        <p className="text-xs text-muted">Password: {DEMO_PASSWORD}</p>
-      </div>
       <p className="mt-6 text-sm text-muted">
         No account?{" "}
         <Link

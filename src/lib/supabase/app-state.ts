@@ -79,7 +79,7 @@ export async function loadAppState(): Promise<{
 
   const [
     profilesRes,
-    curriculumRes,
+    curriculumApi,
     progressRes,
     classesRes,
     membersRes,
@@ -92,7 +92,15 @@ export async function loadAppState(): Promise<{
     supabase
       .from("profiles")
       .select("id, name, email, role, province, municipality, parent_id, theme, created_at"),
-    supabase.from("curriculum").select("terms, badges").eq("id", "default").maybeSingle(),
+    // Curriculum (with answer keys for admins only) comes from the API — not direct table SELECT.
+    fetch("/api/curriculum", { credentials: "same-origin" }).then(async (res) => {
+      if (!res.ok) return null;
+      return (await res.json()) as {
+        ok?: boolean;
+        terms?: Term[];
+        badges?: Badge[];
+      };
+    }).catch(() => null),
     supabase
       .from("student_progress")
       .select(
@@ -150,27 +158,17 @@ export async function loadAppState(): Promise<{
     ownProfile?.theme === "dark" ? "dark" : "light";
 
   const terms =
-    curriculumRes.data?.terms &&
-    Array.isArray(curriculumRes.data.terms) &&
-    curriculumRes.data.terms.length > 0
-      ? (curriculumRes.data.terms as Term[])
+    curriculumApi?.terms &&
+    Array.isArray(curriculumApi.terms) &&
+    curriculumApi.terms.length > 0
+      ? curriculumApi.terms
       : structuredClone(SEED_TERMS);
   const badges =
-    curriculumRes.data?.badges &&
-    Array.isArray(curriculumRes.data.badges) &&
-    curriculumRes.data.badges.length > 0
-      ? (curriculumRes.data.badges as Badge[])
+    curriculumApi?.badges &&
+    Array.isArray(curriculumApi.badges) &&
+    curriculumApi.badges.length > 0
+      ? curriculumApi.badges
       : structuredClone(SEED_BADGES);
-
-  // Ensure curriculum row exists when missing (admin can update later).
-  if (!curriculumRes.data || !Array.isArray(curriculumRes.data.terms) || curriculumRes.data.terms.length === 0) {
-    await supabase.from("curriculum").upsert({
-      id: "default",
-      terms,
-      badges,
-      updated_at: new Date().toISOString(),
-    });
-  }
 
   const progress: StudentProgress[] = (progressRes.data ?? []).map((p) => ({
     studentId: p.student_id,

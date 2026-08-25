@@ -1,0 +1,60 @@
+- generic [ref=f13e1]:
+  - button "Open Next.js Dev Tools" [ref=f13e37] [cursor=pointer]
+  - alert [ref=f13e41]
+  - generic [ref=f13e43]:
+    - complementary [ref=f13e44]:
+      - generic [ref=f13e45]:
+        - link "Ember Maths12" [ref=f13e46] [cursor=pointer]:
+          - /url: /admin
+        - paragraph [ref=f13e47]: admin
+      - navigation [ref=f13e48]:
+        - link "Dashboard" [ref=f13e49] [cursor=pointer]:
+          - /url: /admin
+        - link "Terms & Lessons" [ref=f13e55] [cursor=pointer]:
+          - /url: /admin/terms
+        - link "Users & Teachers" [ref=f13e58] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Study Groups" [ref=f13e64] [cursor=pointer]:
+          - /url: /admin/groups
+        - link "Pass / Fail" [ref=f13e70] [cursor=pointer]:
+          - /url: /admin/pass-fail
+        - link "Top Achievers" [ref=f13e75] [cursor=pointer]:
+          - /url: /admin/achievers
+      - button "Log out" [ref=f13e82]
+    - generic [ref=f13e86]:
+      - banner [ref=f13e87]:
+        - generic [ref=f13e88]:
+          - paragraph [ref=f13e89]: Signed in
+          - paragraph [ref=f13e90]: Playwright Admin
+        - generic [ref=f13e91]:
+          - generic [ref=f13e92]: playwright.admin.20260825@ember12.test
+          - button "Log out" [ref=f13e93]
+      - main [ref=f13e97]:
+        - generic [ref=f13e98]:
+          - generic [ref=f13e99]:
+            - heading "Study groups" [level=1] [ref=f13e100]
+            - paragraph [ref=f13e101]: Create groups so students can revise CAPS topics together.
+          - generic [ref=f13e102]:
+            - textbox "Group name" [ref=f13e103]
+            - combobox [ref=f13e104]:
+              - option "Term 1" [selected]
+              - option "Term 2"
+              - option "Term 3"
+              - option "Term 4"
+            - textbox "Description" [ref=f13e105]
+            - button "Create group" [ref=f13e106]
+          - generic [ref=f13e108]:
+            - generic [ref=f13e109]:
+              - generic [ref=f13e110]:
+                - heading "Playwright Term 1 Revision" [level=2] [ref=f13e111]
+                - paragraph [ref=f13e112]: Browser test group for Term 1 sequences.
+              - button "Delete group" [ref=f13e113]
+            - generic [ref=f13e114]:
+              - paragraph [ref=f13e115]: Members
+              - generic [ref=f13e116]:
+                - button "+ Test Student" [ref=f13e117]
+                - button "+ mluthwana" [ref=f13e118]
+                - button "+ Phase One Verifier" [ref=f13e119]
+                - button "+ Phase One Verifier" [ref=f13e120]
+                - button "+ Simo" [ref=f13e121]
+                - button "✓ Playwright Student" [active] [ref=f13e123]

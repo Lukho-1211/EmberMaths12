@@ -5,8 +5,7 @@ import { Download, FileText } from "lucide-react";
 import { LessonVideoPlayer } from "@/components/lesson-video-player";
 import { MarkdownPreview } from "@/components/markdown-preview";
 import { hasVideoSources } from "@/lib/lesson-video";
-import { mockPaperGrade } from "@/lib/mock-paper-grade";
-import { meetsPassMark, scoreMcq } from "@/lib/score-mcq";
+import { meetsPassMark } from "@/lib/score-mcq";
 import { useStore } from "@/lib/store";
 import type {
   AssessmentQuestion,
@@ -15,6 +14,7 @@ import type {
   PastPaper,
   PreExam,
   Resource,
+  StudentProgress,
   WeekTest,
 } from "@/lib/types";
 
@@ -138,18 +138,51 @@ export function AssessmentQuiz({
   studentId: string;
   onDone?: (score: number) => void;
 }) {
-  const { submitTestScore } = useStore();
+  const { applyProgress } = useStore();
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [score, setScore] = useState<number | null>(null);
+  const [passed, setPassed] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const total = assessment.questions.length;
   const resources = assessment.resources ?? [];
 
-  function submit() {
-    const pct = scoreMcq(assessment.questions, answers);
-    setScore(pct);
-    submitTestScore(studentId, assessment.id, pct);
-    onDone?.(pct);
+  async function submit() {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/assessments/mcq", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          assessmentId: assessment.id,
+          answers,
+          // studentId ignored server-side; session is authoritative
+          studentId,
+        }),
+      });
+      const body = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        score?: number;
+        passed?: boolean;
+        progress?: StudentProgress;
+      };
+      if (!res.ok || !body.ok || body.score === undefined) {
+        setError(body.error ?? "Could not submit assessment.");
+        return;
+      }
+      if (body.progress) applyProgress(body.progress);
+      setScore(body.score);
+      setPassed(body.passed ?? false);
+      onDone?.(body.score);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not submit assessment.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -176,7 +209,7 @@ export function AssessmentQuiz({
                     name={q.id}
                     checked={answers[q.id] === oi}
                     onChange={() => setAnswers((a) => ({ ...a, [q.id]: oi }))}
-                    disabled={score !== null}
+                    disabled={score !== null || busy}
                   />
                   <span>{opt}</span>
                 </label>
@@ -185,19 +218,20 @@ export function AssessmentQuiz({
           </fieldset>
         ))}
       </div>
+      {error ? <p className="mt-4 text-sm text-danger">{error}</p> : null}
       {score === null ? (
         <button
           type="button"
-          onClick={submit}
-          disabled={Object.keys(answers).length < total}
+          onClick={() => void submit()}
+          disabled={busy || Object.keys(answers).length < total}
           className="mt-6 rounded-md bg-ember-gold px-4 py-2 text-sm font-bold text-ember-navy disabled:opacity-50"
         >
-          Submit assessment
+          {busy ? "Submitting…" : "Submit assessment"}
         </button>
       ) : (
         <p className="mt-6 rounded-md bg-ember-navy px-4 py-3 text-sm font-semibold text-white">
-          Score: {score}% — {meetsPassMark(score, assessment.passMark) ? "Pass" : "Needs improvement"}{" "}
-          (pass mark {assessment.passMark}%)
+          Score: {score}% — {passed ? "Pass" : "Needs improvement"} (pass mark{" "}
+          {assessment.passMark}%)
         </p>
       )}
     </div>
@@ -227,13 +261,13 @@ export function AssessmentPaperScan({
   assessment: AssessmentLike | PaperScanAssessment;
   studentId: string;
   onDone?: (score: number) => void;
-  /** When true, skip submitTestScore so pass/fail is unchanged. */
+  /** When true, skip pass/fail progress update (past-paper practice). */
   practiceOnly?: boolean;
   correctionMode?: CorrectionMode;
   /** Allow PDF script uploads in addition to images. */
   acceptPdf?: boolean;
 }) {
-  const { addCorrection, submitTestScore } = useStore();
+  const { applyCorrection, applyProgress } = useStore();
   const questions = assessment.questions ?? [];
   const paperOnly = questions.length === 0;
   const [step, setStep] = useState<PaperStep>("questions");
@@ -241,6 +275,7 @@ export function AssessmentPaperScan({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isPdfPreview, setIsPdfPreview] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CorrectionResult | null>(null);
 
   const resources = assessment.resources ?? [];
@@ -248,33 +283,42 @@ export function AssessmentPaperScan({
   async function runCorrection() {
     if (!fileName) return;
     setBusy(true);
+    setError(null);
+    // Keep a short delay so the mock OCR UX still feels intentional.
     await new Promise((r) => setTimeout(r, 900));
-    const graded = mockPaperGrade({
-      assessmentId: assessment.id,
-      assessmentTitle: assessment.title,
-      questions,
-      fileName,
-      passMark: assessment.passMark,
-      memoResources: assessment.memoResources,
-    });
-    const saved = addCorrection({
-      studentId,
-      fileName,
-      score: graded.score,
-      feedback: graded.feedback,
-      summary: graded.summary,
-      assessmentId: assessment.id,
-      assessmentTitle: assessment.title,
-      mode: correctionMode,
-      questionFeedback: graded.questionFeedback,
-    });
-    if (!practiceOnly) {
-      submitTestScore(studentId, assessment.id, graded.score);
+    try {
+      const res = await fetch("/api/assessments/paper-scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          assessmentId: assessment.id,
+          fileName,
+          practiceOnly,
+          correctionMode,
+          studentId,
+        }),
+      });
+      const body = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        correction?: CorrectionResult;
+        progress?: StudentProgress | null;
+      };
+      if (!res.ok || !body.ok || !body.correction) {
+        setError(body.error ?? "Could not grade paper scan.");
+        return;
+      }
+      applyCorrection(body.correction);
+      if (body.progress) applyProgress(body.progress);
+      setResult(body.correction);
+      setStep("result");
+      onDone?.(body.correction.score);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not grade paper scan.");
+    } finally {
+      setBusy(false);
     }
-    setResult(saved);
-    setStep("result");
-    setBusy(false);
-    onDone?.(graded.score);
   }
 
   function shareResult(c: CorrectionResult) {
@@ -426,6 +470,7 @@ export function AssessmentPaperScan({
             </p>
           ) : null}
           {fileName ? <p className="mt-2 text-xs text-muted">Selected: {fileName}</p> : null}
+          {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
           <div className="mt-6 flex flex-wrap gap-3">
             <button
               type="button"

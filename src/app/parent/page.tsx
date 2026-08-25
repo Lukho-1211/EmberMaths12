@@ -23,9 +23,7 @@ export default function ParentProgressPage() {
 
       {children.length === 0 ? (
         <p className="rounded-xl border border-border bg-white p-5 text-sm text-muted">
-          No linked children yet. Demo parent account{" "}
-          <code className="rounded bg-ember-gray px-1">parent@ember12.za</code> is linked to Lerato
-          Molefe.
+          No linked children yet. Ask your school admin to link your account to a learner.
         </p>
       ) : (
         <div className="space-y-8">

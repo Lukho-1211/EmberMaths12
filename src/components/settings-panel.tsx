@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 import { LogOut, Moon, Sun } from "lucide-react";
 import { MunicipalityAutocomplete } from "@/components/municipality-autocomplete";
 import { PageHeader } from "@/components/app-shell";
@@ -29,7 +28,6 @@ const emptyForm = (): ProfileForm => ({
 
 export function SettingsPanel() {
   const { user, updateProfile, logout, theme, setTheme } = useStore();
-  const router = useRouter();
   const [form, setForm] = useState<ProfileForm>(emptyForm);
   const [syncedUserKey, setSyncedUserKey] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -202,7 +200,9 @@ export function SettingsPanel() {
         <button
           type="button"
           onClick={() => {
-            void logout().then(() => router.push("/"));
+            void logout().then(() => {
+              window.location.assign("/");
+            });
           }}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
         >

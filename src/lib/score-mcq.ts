@@ -13,6 +13,7 @@ export function scoreMcq(
 
   let correct = 0;
   for (const q of questions) {
+    if (q.answerIndex === undefined) continue;
     if (answers[q.id] === q.answerIndex) correct += 1;
   }
   return Math.round((correct / total) * 100);

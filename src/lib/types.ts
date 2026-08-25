@@ -33,7 +33,8 @@ export interface AssessmentQuestion {
   id: string;
   prompt: string;
   options: string[];
-  answerIndex: number;
+  /** Present for admins / server scoring; omitted for students via stripCurriculumSecrets. */
+  answerIndex?: number;
 }
 
 export interface LessonTest {

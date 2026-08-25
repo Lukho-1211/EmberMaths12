@@ -38,6 +38,8 @@ function StudentLessonContent() {
   const done = lesson ? progress?.completedLessonIds.includes(lesson.id) : false;
   const [viewMode, setViewMode] = useState<"video" | "text">("video");
   const [openMarkdownId, setOpenMarkdownId] = useState<string | null>(null);
+  const [completeError, setCompleteError] = useState<string | null>(null);
+  const [completing, setCompleting] = useState(false);
 
   if (!term || !week || !lesson || !user) return <p>Lesson not found.</p>;
 
@@ -164,15 +166,23 @@ function StudentLessonContent() {
             <div className="space-y-2">
               <button
                 type="button"
-                disabled={!canComplete}
-                onClick={() => completeLesson(user.id, lesson.id)}
+                disabled={!canComplete || completing}
+                onClick={() => {
+                  setCompleteError(null);
+                  setCompleting(true);
+                  void completeLesson(user.id, lesson.id).then((result) => {
+                    setCompleting(false);
+                    if (!result.ok) setCompleteError(result.error);
+                  });
+                }}
                 className="rounded-md bg-ember-gold px-4 py-2 text-sm font-bold text-ember-navy disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Mark lesson complete
+                {completing ? "Saving…" : "Mark lesson complete"}
               </button>
               {!canComplete ? (
                 <p className="text-xs text-muted">Pass today’s lesson test to complete.</p>
               ) : null}
+              {completeError ? <p className="text-xs text-danger">{completeError}</p> : null}
             </div>
           ) : (
             <p className="text-sm font-semibold text-success">Lesson completed</p>

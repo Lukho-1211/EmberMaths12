@@ -1,0 +1,55 @@
+- generic [active] [ref=f15e1]:
+  - button "Open Next.js Dev Tools" [ref=f15e37] [cursor=pointer]
+  - alert [ref=f15e41]
+  - generic [ref=f15e43]:
+    - complementary [ref=f15e44]:
+      - generic [ref=f15e45]:
+        - link "Ember Maths12" [ref=f15e46] [cursor=pointer]:
+          - /url: /admin
+        - paragraph [ref=f15e47]: admin
+      - navigation [ref=f15e48]:
+        - link "Dashboard" [ref=f15e49] [cursor=pointer]:
+          - /url: /admin
+        - link "Terms & Lessons" [ref=f15e55] [cursor=pointer]:
+          - /url: /admin/terms
+        - link "Users & Teachers" [ref=f15e58] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Study Groups" [ref=f15e64] [cursor=pointer]:
+          - /url: /admin/groups
+        - link "Pass / Fail" [ref=f15e70] [cursor=pointer]:
+          - /url: /admin/pass-fail
+        - link "Top Achievers" [ref=f15e75] [cursor=pointer]:
+          - /url: /admin/achievers
+      - button "Log out" [ref=f15e82]
+    - generic [ref=f15e86]:
+      - banner [ref=f15e87]:
+        - generic [ref=f15e88]:
+          - paragraph [ref=f15e89]: Signed in
+          - paragraph [ref=f15e90]: Playwright Admin
+        - generic [ref=f15e91]:
+          - generic [ref=f15e92]: playwright.admin.20260825@ember12.test
+          - button "Log out" [ref=f15e93]
+      - main [ref=f15e97]:
+        - generic [ref=f15e98]:
+          - generic [ref=f15e99]:
+            - heading "Top achievers" [level=1] [ref=f15e100]
+            - paragraph [ref=f15e101]: Rank learners by overall progress — filter by province and municipality.
+          - generic [ref=f15e102]:
+            - generic [ref=f15e103]:
+              - generic [ref=f15e104]: Province
+              - combobox "Province" [ref=f15e105]:
+                - option "All provinces (national)"
+                - option "Eastern Cape"
+                - option "Free State"
+                - option "Gauteng"
+                - option "KwaZulu-Natal"
+                - option "Limpopo"
+                - option "Mpumalanga"
+                - option "North West"
+                - option "Northern Cape"
+                - option "Western Cape" [selected]
+            - generic [ref=f15e106]:
+              - generic [ref=f15e107]: Municipality
+              - combobox "Municipality" [ref=f15e109]
+          - paragraph [ref=f15e110]: Showing Western Cape · 0 ranked students
+          - generic [ref=f15e111]: No active students match this area yet.

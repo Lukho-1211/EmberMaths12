@@ -1,0 +1,174 @@
+- generic [ref=f9e1]:
+  - button "Open Next.js Dev Tools" [ref=f9e37] [cursor=pointer]
+  - alert [ref=f9e41]
+  - generic [ref=f9e43]:
+    - complementary [ref=f9e44]:
+      - generic [ref=f9e45]:
+        - link "Ember Maths12" [ref=f9e46] [cursor=pointer]:
+          - /url: /admin
+        - paragraph [ref=f9e47]: admin
+      - navigation [ref=f9e48]:
+        - link "Dashboard" [ref=f9e49] [cursor=pointer]:
+          - /url: /admin
+        - link "Terms & Lessons" [ref=f9e55] [cursor=pointer]:
+          - /url: /admin/terms
+        - link "Users & Teachers" [ref=f9e58] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Study Groups" [ref=f9e64] [cursor=pointer]:
+          - /url: /admin/groups
+        - link "Pass / Fail" [ref=f9e70] [cursor=pointer]:
+          - /url: /admin/pass-fail
+        - link "Top Achievers" [ref=f9e75] [cursor=pointer]:
+          - /url: /admin/achievers
+      - button "Log out" [ref=f9e82]
+    - generic [ref=f9e86]:
+      - banner [ref=f9e87]:
+        - generic [ref=f9e88]:
+          - paragraph [ref=f9e89]: Signed in
+          - paragraph [ref=f9e90]: Playwright Admin
+        - generic [ref=f9e91]:
+          - generic [ref=f9e92]: playwright.admin.20260825@ember12.test
+          - button "Log out" [ref=f9e93]
+      - main [ref=f9e97]:
+        - generic [ref=f9e98]:
+          - generic [ref=f9e99]:
+            - heading "Terms & weekly lessons" [level=1] [ref=f9e100]
+            - paragraph [ref=f9e101]: "Create and edit Term 1–4: Mon–Fri lessons, Saturday week tests, and pre-exams."
+          - generic [ref=f9e102]:
+            - button "Term 1" [ref=f9e103]
+            - button "Term 2" [active] [ref=f9e104]
+            - button "Term 3" [ref=f9e105]
+            - button "Term 4" [ref=f9e106]
+          - generic [ref=f9e107]:
+            - generic [ref=f9e108]:
+              - heading "Term 2 — Geometry & Calculus" [level=2] [ref=f9e291]
+              - generic [ref=f9e110]:
+                - button "Week 1" [ref=f9e292]
+                - button "Week 2" [ref=f9e293]
+                - button "Week 3" [ref=f9e294]
+                - button "Week 4" [ref=f9e295]
+              - paragraph [ref=f9e115]: "Topic: Euclidean Geometry Revision"
+              - generic [ref=f9e116]:
+                - button "monday" [ref=f9e117]
+                - button "tuesday" [ref=f9e118]
+                - button "wednesday" [ref=f9e119]
+                - button "thursday" [ref=f9e120]
+                - button "friday" [ref=f9e121]
+                - generic [ref=f9e122]: Saturday · Week test
+              - generic [ref=f9e123]:
+                - generic [ref=f9e124]:
+                  - generic [ref=f9e125]: Lesson title
+                  - textbox "Lesson title" [ref=f9e126]: "Monday: Similarity of polygons"
+                - generic [ref=f9e127]:
+                  - generic [ref=f9e128]: Description
+                  - textbox "Description" [ref=f9e129]: "CAPS Grade 12 — Term 2, Week 1. Focus: Similarity of polygons."
+                - generic [ref=f9e130]:
+                  - generic [ref=f9e131]:
+                    - generic [ref=f9e132]:
+                      - paragraph [ref=f9e133]: Lesson materials
+                      - paragraph [ref=f9e134]: Upload PDF or Markdown (.md) — becomes the student Video walkthrough with narration. Max 20.0 MB per file.
+                    - generic [ref=f9e135] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=f9e139]
+                  - list [ref=f9e140]:
+                    - listitem [ref=f9e296]:
+                      - generic [ref=f9e301]:
+                        - paragraph [ref=f9e302]: Similarity of polygons — Lesson notes
+                        - paragraph [ref=f9e303]: markdown · monday-notes.md · uploaded
+                      - button "Remove Similarity of polygons — Lesson notes" [ref=f9e304]
+                    - listitem [ref=f9e308]:
+                      - generic [ref=f9e313]:
+                        - paragraph [ref=f9e314]: Similarity of polygons — Notes (PDF)
+                        - paragraph [ref=f9e315]: pdf
+                      - button "Remove Similarity of polygons — Notes (PDF)" [ref=f9e316]
+                    - listitem [ref=f9e320]:
+                      - generic [ref=f9e325]:
+                        - paragraph [ref=f9e326]: Extra practice worksheet
+                        - paragraph [ref=f9e327]: worksheet
+                      - button "Remove Extra practice worksheet" [ref=f9e328]
+                    - listitem [ref=f9e332]:
+                      - generic [ref=f9e337]:
+                        - paragraph [ref=f9e338]: Learn more — CAPS topic guide
+                        - paragraph [ref=f9e339]: link · uploaded
+                      - button "Remove Learn more — CAPS topic guide" [ref=f9e340]
+                  - generic [ref=f9e189]:
+                    - paragraph [ref=f9e190]: 4 lesson-test questions · pass mark 50%
+                    - button "Regenerate questions" [ref=f9e191]
+                  - paragraph [ref=f9e197]: Questions are generated from uploaded PDF/Markdown text when you save.
+                - button "Save lesson" [ref=f9e199]
+            - generic [ref=f9e200]:
+              - generic [ref=f9e201]:
+                - heading "Saturday week test" [level=3] [ref=f9e202]
+                - textbox [ref=f9e203]: Week 1 Saturday Test — Euclidean Geometry Revision
+                - paragraph [ref=f9e204]: 3 questions · pass mark 50%
+                - generic [ref=f9e205]:
+                  - generic [ref=f9e206]:
+                    - generic [ref=f9e207]:
+                      - paragraph [ref=f9e208]: Week test paper
+                      - paragraph [ref=f9e209]: Upload PDF or Markdown (.md) — converted into a narrated student video walkthrough on the assessment page. Max 20.0 MB per file.
+                    - generic [ref=f9e210] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=f9e214]
+                  - list [ref=f9e215]:
+                    - listitem [ref=f9e216]: No exam paper uploaded yet.
+                - generic [ref=f9e217]:
+                  - generic [ref=f9e218]:
+                    - generic [ref=f9e219]:
+                      - paragraph [ref=f9e220]: Week test memo
+                      - paragraph [ref=f9e221]: Upload PDF or Markdown (.md) mark scheme used to correct learner paper scans. Not shown to students. Max 20.0 MB per file.
+                    - generic [ref=f9e222] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=f9e226]
+                  - list [ref=f9e227]:
+                    - listitem [ref=f9e228]: No memo uploaded yet.
+                - button "Update week test" [ref=f9e230]
+              - generic [ref=f9e231]:
+                - heading "Pre-exam (after Week 4)" [level=3] [ref=f9e232]
+                - textbox [ref=f9e233]: Term 2 Pre-Exam
+                - paragraph [ref=f9e234]: 4 questions · pass mark 50%
+                - generic [ref=f9e235]:
+                  - generic [ref=f9e236]:
+                    - generic [ref=f9e237]:
+                      - paragraph [ref=f9e238]: Pre-exam paper
+                      - paragraph [ref=f9e239]: Upload PDF or Markdown (.md) — converted into a narrated student video walkthrough on the assessment page. Max 20.0 MB per file.
+                    - generic [ref=f9e240] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=f9e244]
+                  - list [ref=f9e245]:
+                    - listitem [ref=f9e246]: No exam paper uploaded yet.
+                - generic [ref=f9e247]:
+                  - generic [ref=f9e248]:
+                    - generic [ref=f9e249]:
+                      - paragraph [ref=f9e250]: Pre-exam memo
+                      - paragraph [ref=f9e251]: Upload PDF or Markdown (.md) mark scheme used to correct learner paper scans. Not shown to students. Max 20.0 MB per file.
+                    - generic [ref=f9e252] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=f9e256]
+                  - list [ref=f9e257]:
+                    - listitem [ref=f9e258]: No memo uploaded yet.
+                - button "Update pre-exam" [ref=f9e260]
+              - generic [ref=f9e261]:
+                - heading "Past papers (practice)" [level=3] [ref=f9e262]
+                - paragraph [ref=f9e263]: Previous exam papers for optional student practice. Not used for pass/fail.
+                - textbox [ref=f9e264]: Term 2 past papers
+                - generic [ref=f9e265]:
+                  - generic [ref=f9e266]:
+                    - generic [ref=f9e267]:
+                      - paragraph [ref=f9e268]: Past paper
+                      - paragraph [ref=f9e269]: Upload PDF or Markdown (.md) previous exam papers. Students walk through, write on paper, then scan for mock correction. Max 20.0 MB per file.
+                    - generic [ref=f9e270] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=f9e274]
+                  - list [ref=f9e275]:
+                    - listitem [ref=f9e276]: No past paper uploaded yet.
+                - generic [ref=f9e277]:
+                  - generic [ref=f9e278]:
+                    - generic [ref=f9e279]:
+                      - paragraph [ref=f9e280]: Past paper memo
+                      - paragraph [ref=f9e281]: Upload PDF or Markdown (.md) mark scheme used to correct learner paper scans. Not shown to students. Max 20.0 MB per file.
+                    - generic [ref=f9e282] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=f9e286]
+                  - list [ref=f9e287]:
+                    - listitem [ref=f9e288]: No memo uploaded yet.
+                - button "Update past papers" [ref=f9e290]

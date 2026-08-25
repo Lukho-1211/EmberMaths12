@@ -312,11 +312,6 @@ export default function HomePage() {
             </p>
             <p>Phone: +27 11 555 1212</p>
             <p>Address: Digital campus · Serving CAPS schools across South Africa</p>
-            <p className="pt-4 text-sm text-muted">
-              Demo logins use password{" "}
-              <code className="rounded bg-ember-gray/80 px-1.5 py-0.5 text-ember-navy">ember12</code>{" "}
-              — see the README after deploy.
-            </p>
           </div>
           <div className="mt-10">
             <Link

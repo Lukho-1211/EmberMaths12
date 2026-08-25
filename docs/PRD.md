@@ -108,7 +108,7 @@ Used by: daily lesson tests, Saturday week tests, pre-exams. Past papers: paper+
 |-------|------------|
 | `/admin` | Dashboard stats, learner progress |
 | `/admin/terms` | Upload/edit lessons, week tests, pre-exams, past papers; regenerate MCQs |
-| `/admin/users` | Create teachers; delete student/parent accounts |
+| `/admin/users` | List teachers; delete student/parent accounts |
 | `/admin/groups` | Study groups, assign students, optional term link |
 | `/admin/pass-fail` | Filter by passing / failing / pending |
 | `/admin/achievers` | Leaderboard + geo filters |

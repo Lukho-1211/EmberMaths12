@@ -108,26 +108,34 @@ export function AppShell({
   role: Role;
   children: ReactNode;
 }) {
-  const { user, ready, logout } = useStore();
+  const { user, ready, logout, signingOut } = useStore();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     if (!ready) return;
     if (!user) {
+      // Logout clears the session then hard-navigates home; skip role-login redirect.
+      if (signingOut) return;
       router.replace(`/login/${role}`);
       return;
     }
     if (user.role !== role) {
       router.replace(`/${user.role}`);
     }
-  }, [ready, user, role, router]);
+  }, [ready, user, role, router, signingOut]);
 
   if (!ready || !user || user.role !== role) {
     return <AppShellSkeleton />;
   }
 
   const items = NAV[role];
+
+  function handleLogout() {
+    void logout().then(() => {
+      window.location.assign("/");
+    });
+  }
 
   return (
     <div className="min-h-screen bg-surface text-foreground">
@@ -161,9 +169,7 @@ export function AppShell({
           </nav>
           <button
             type="button"
-            onClick={() => {
-              void logout().then(() => router.push("/"));
-            }}
+            onClick={handleLogout}
             className="m-3 flex items-center gap-2 rounded-md px-3 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white"
           >
             <LogOut size={16} /> Log out
@@ -201,9 +207,7 @@ export function AppShell({
               </span>
               <button
                 type="button"
-                onClick={() => {
-                  void logout().then(() => router.push("/"));
-                }}
+                onClick={handleLogout}
                 className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition hover:bg-surface"
               >
                 <LogOut size={14} /> Log out

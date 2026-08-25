@@ -25,7 +25,6 @@ import {
   addGroupMember,
   deleteProgress,
   deleteStudyGroup,
-  insertCorrection,
   insertMessage,
   insertSchoolClass,
   insertStudyGroup,
@@ -34,7 +33,6 @@ import {
   markMessageReadDb,
   removeGroupMember,
   saveCurriculum,
-  saveProgress,
   saveTheme,
   updateProfileRow,
   upsertClassMember,
@@ -47,6 +45,7 @@ import type {
   Resource,
   Role,
   SchoolClass,
+  StudentProgress,
   StudyGroup,
   Term,
   User,
@@ -162,10 +161,16 @@ function mergeProfileUser(prev: AppState, profile: ProfileRow): AppState {
   return next;
 }
 
+function roleAccountArticle(role: Role): "a" | "an" {
+  return role === "admin" ? "an" : "a";
+}
+
 interface StoreContextValue {
   ready: boolean;
   state: AppState;
   user: User | null;
+  /** Suppress portal→login redirect while logout hard-navigates home. */
+  signingOut: boolean;
   login: (
     email: string,
     password: string,
@@ -190,11 +195,6 @@ interface StoreContextValue {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   deleteUser: (userId: string) => Promise<void>;
-  createTeacher: (input: {
-    name: string;
-    email: string;
-    password: string;
-  }) => Promise<{ ok: true } | { ok: false; error: string }>;
   updateTerms: (terms: Term[]) => void;
   upsertWeekLesson: (
     termId: string,
@@ -219,9 +219,14 @@ interface StoreContextValue {
   addMemberToGroup: (groupId: string, studentId: string) => void;
   removeMemberFromGroup: (groupId: string, studentId: string) => void;
   deleteGroup: (groupId: string) => void;
-  completeLesson: (studentId: string, lessonId: string) => void;
-  submitTestScore: (studentId: string, assessmentId: string, score: number) => void;
-  addCorrection: (correction: Omit<CorrectionResult, "id" | "createdAt">) => CorrectionResult;
+  completeLesson: (
+    studentId: string,
+    lessonId: string,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>;
+  /** Apply server-scored progress row into the in-memory cache. */
+  applyProgress: (progress: StudentProgress) => void;
+  /** Apply server-created correction into the in-memory cache. */
+  applyCorrection: (correction: CorrectionResult) => void;
   createClass: (teacherId: string, name: string) => void;
   searchStudents: (query: string) => User[];
   requestJoinClass: (classId: string, studentId: string) => void;
@@ -238,39 +243,6 @@ interface StoreContextValue {
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
-
-function recomputeProgress(
-  progress: AppState["progress"][number],
-): AppState["progress"][number] {
-  const lessonCount = Math.max(progress.completedLessonIds.length, 1);
-  const scores = Object.values(progress.testScores);
-  const avgScore =
-    scores.length === 0 ? progress.completedLessonIds.length * 4 : scores.reduce((a, b) => a + b, 0) / scores.length;
-  const overall = Math.min(
-    100,
-    Math.round(avgScore * 0.7 + Math.min(100, lessonCount * 3) * 0.3),
-  );
-  const status =
-    scores.length === 0 && progress.completedLessonIds.length === 0
-      ? "pending"
-      : overall >= 50
-        ? "passing"
-        : "failing";
-  const badgeIds = new Set(progress.badgeIds);
-  if (progress.completedLessonIds.length >= 1) badgeIds.add("badge-starter");
-  if (progress.completedLessonIds.length >= 5) badgeIds.add("badge-week");
-  if (scores.some((s) => s >= 50)) badgeIds.add("badge-test");
-  if (Object.keys(progress.testScores).some((k) => k.startsWith("preexam-") && (progress.testScores[k] ?? 0) >= 50)) {
-    badgeIds.add("badge-preexam");
-  }
-  if (overall >= 60) badgeIds.add("badge-streak");
-  return {
-    ...progress,
-    overallPercent: overall,
-    status,
-    badgeIds: Array.from(badgeIds),
-  };
-}
 
 function ensureStudentProgress(state: AppState, studentId: string): AppState {
   if (state.progress.some((p) => p.studentId === studentId)) return state;
@@ -294,16 +266,12 @@ function persistTerms(next: AppState) {
   void saveCurriculum(next.terms, next.badges);
 }
 
-function persistProgressRow(next: AppState, studentId: string) {
-  const row = next.progress.find((p) => p.studentId === studentId);
-  if (row) void saveProgress(row);
-}
-
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [state, setState] = useState<AppState>(() => createInitialState());
   const [session, setSession] = useState<Session | null>(null);
   const [theme, setThemeState] = useState<Theme>("light");
+  const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -381,7 +349,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         await supabaseSignOut();
         return {
           ok: false as const,
-          error: `This account is not a ${expectedRole} account.`,
+          error: `This account is not ${roleAccountArticle(expectedRole)} ${expectedRole} account.`,
         };
       }
       const loaded = await loadAppState();
@@ -429,7 +397,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         await supabaseSignOut();
         return {
           ok: false as const,
-          error: `This account is not a ${input.role} account.`,
+          error: `This account is not ${roleAccountArticle(input.role)} ${input.role} account.`,
         };
       }
 
@@ -438,8 +406,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       next = mergeProfileUser(next, profile);
       if (profile.role === "student") {
         next = ensureStudentProgress(next, profile.id);
-        const row = next.progress.find((p) => p.studentId === profile.id);
-        if (row) void saveProgress(row);
       }
       setState(next);
       setSession({ userId: profile.id });
@@ -451,6 +417,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
+    setSigningOut(true);
     await supabaseSignOut();
     setSession(null);
     setState(createInitialState());
@@ -539,35 +506,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }));
     setSession((s) => (s?.userId === userId ? null : s));
   }, []);
-
-  const createTeacher = useCallback(
-    async (input: { name: string; email: string; password: string }) => {
-      try {
-        const res = await fetch("/api/auth/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: input.name,
-            email: input.email,
-            password: input.password,
-            role: "teacher",
-          }),
-        });
-        const body = (await res.json()) as { ok?: boolean; userId?: string; error?: string };
-        if (!res.ok || !body.ok || !body.userId) {
-          return { ok: false as const, error: body.error ?? "Failed to create teacher." };
-        }
-        await reloadFromSupabase();
-        return { ok: true as const };
-      } catch (err) {
-        return {
-          ok: false as const,
-          error: err instanceof Error ? err.message : "Failed to create teacher.",
-        };
-      }
-    },
-    [reloadFromSupabase],
-  );
 
   const updateTerms = useCallback((terms: Term[]) => {
     setState((prev) => {
@@ -748,56 +686,52 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, groups: prev.groups.filter((g) => g.id !== groupId) }));
   }, []);
 
-  const completeLesson = useCallback((studentId: string, lessonId: string) => {
-    setState((prev) => {
-      const next = ensureStudentProgress(prev, studentId);
-      const updated: AppState = {
-        ...next,
-        progress: next.progress.map((p) => {
-          if (p.studentId !== studentId) return p;
-          if (p.completedLessonIds.includes(lessonId)) return p;
-          return recomputeProgress({
-            ...p,
-            completedLessonIds: [...p.completedLessonIds, lessonId],
-          });
-        }),
-      };
-      persistProgressRow(updated, studentId);
-      return updated;
-    });
-  }, []);
-
-  const submitTestScore = useCallback((studentId: string, assessmentId: string, score: number) => {
-    setState((prev) => {
-      const next = ensureStudentProgress(prev, studentId);
-      const updated: AppState = {
-        ...next,
-        progress: next.progress.map((p) => {
-          if (p.studentId !== studentId) return p;
-          return recomputeProgress({
-            ...p,
-            testScores: { ...p.testScores, [assessmentId]: score },
-          });
-        }),
-      };
-      persistProgressRow(updated, studentId);
-      return updated;
-    });
-  }, []);
-
-  const addCorrection = useCallback(
-    (correction: Omit<CorrectionResult, "id" | "createdAt">) => {
-      const full: CorrectionResult = {
-        ...correction,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-      };
-      void insertCorrection(full);
-      setState((prev) => ({ ...prev, corrections: [full, ...prev.corrections] }));
-      return full;
+  const completeLesson = useCallback(
+    async (studentId: string, lessonId: string) => {
+      void studentId; // session identity is authoritative on the server
+      try {
+        const res = await fetch("/api/progress/complete-lesson", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ lessonId }),
+        });
+        const body = (await res.json()) as {
+          ok?: boolean;
+          error?: string;
+          progress?: StudentProgress;
+        };
+        if (!res.ok || !body.ok || !body.progress) {
+          return { ok: false as const, error: body.error ?? "Could not complete lesson." };
+        }
+        setState((prev) => {
+          const without = prev.progress.filter((p) => p.studentId !== body.progress!.studentId);
+          return { ...prev, progress: [...without, body.progress!] };
+        });
+        return { ok: true as const };
+      } catch (err) {
+        return {
+          ok: false as const,
+          error: err instanceof Error ? err.message : "Could not complete lesson.",
+        };
+      }
     },
     [],
   );
+
+  const applyProgress = useCallback((progress: StudentProgress) => {
+    setState((prev) => {
+      const without = prev.progress.filter((p) => p.studentId !== progress.studentId);
+      return { ...prev, progress: [...without, progress] };
+    });
+  }, []);
+
+  const applyCorrection = useCallback((correction: CorrectionResult) => {
+    setState((prev) => ({
+      ...prev,
+      corrections: [correction, ...prev.corrections.filter((c) => c.id !== correction.id)],
+    }));
+  }, []);
 
   const createClass = useCallback((teacherId: string, name: string) => {
     const schoolClass: SchoolClass = {
@@ -925,6 +859,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     ready,
     state,
     user,
+    signingOut,
     login,
     signup,
     updateProfile,
@@ -932,7 +867,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     theme,
     setTheme,
     deleteUser,
-    createTeacher,
     updateTerms,
     upsertWeekLesson,
     setWeekTest,
@@ -943,8 +877,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     removeMemberFromGroup,
     deleteGroup,
     completeLesson,
-    submitTestScore,
-    addCorrection,
+    applyProgress,
+    applyCorrection,
     createClass,
     searchStudents,
     requestJoinClass,

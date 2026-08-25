@@ -35,7 +35,7 @@ Optional: `POST /api/auth/signup` can still create pre-confirmed users when `SUP
 
 Env vars are required for Auth and for seeding.
 
-The same emails are seeded into **Supabase Auth** + `profiles` (see `supabase/seed.sql`, `supabase/seed.ts`, and `src/lib/demo-accounts.ts`). Extra demo students/teachers are created by the TypeScript seed so classes and rankings use Auth UUIDs.
+The same emails are seeded into **Supabase Auth** + `profiles` (see `supabase/seed.ts` and `src/lib/demo-accounts.ts`). Extra demo students/teachers are created by the TypeScript seed so classes and rankings use Auth UUIDs.
 
 Login and signup use role hubs (`/login`, `/signup`) that route into `/login/[role]` and `/signup/[role]`.
 
@@ -50,7 +50,7 @@ Login and signup use role hubs (`/login`, `/signup`) that route into `/login/[ro
 ### Auth & profile
 
 - Role-specific login and signup flows backed by **Supabase Auth** + `profiles`
-- Demo accounts (after SQL + TypeScript seed — see [Database seed](#database-seed)) work on the live Auth project
+- Demo accounts (after TypeScript seed — see [Database seed](#database-seed)) work on the live Auth project
 - **Settings** (student / teacher / parent): name, email, password; students also set **province** and **municipality** for rankings — updates go to Auth + `profiles`
 - Light / dark **theme** preference stored on `profiles.theme`
 
@@ -144,15 +144,13 @@ Open [http://localhost:3000](http://localhost:3000).
 After linking the [Supabase CLI](https://supabase.com/docs/guides/cli) to the project and applying migrations (`supabase db push` or `supabase migration up`):
 
 ```bash
-npx supabase db query -f supabase/seed.sql
 npx tsx supabase/write-curriculum-seed.ts
 npx supabase db query -f supabase/seed-app-state.sql
 npx tsx supabase/seed.ts
 ```
 
-- `supabase/seed.sql` — core demo Auth users (`ember12` password).
 - `write-curriculum-seed.ts` — writes `supabase/seed-app-state.sql` from the CAPS terms/badges JSON; then query that file to upsert `public.curriculum`.
-- `supabase/seed.ts` — extra demo accounts, progress, classes, groups, and messages via the service role key.
+- `supabase/seed.ts` — core and extra demo accounts (`ember12` password), progress, classes, groups, and messages via the service role key.
 
 ## Deploy to Vercel
 
