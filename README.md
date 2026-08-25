@@ -20,6 +20,8 @@ Typography: **Fraunces** (display) and **Outfit** (body) via `next/font`. Design
 
 ## Architecture
 
+Canonical stack (versions and file map): [`docs/tech_stack.md`](docs/tech_stack.md).
+
 | Layer | What it does today |
 | ----- | ------------------ |
 | **Supabase Auth** | Email/password signup and login for **admin**, **student**, **teacher**, and **parent**. Cookie session refresh via `src/proxy.ts` and `@supabase/ssr` clients in `src/lib/supabase/`. |

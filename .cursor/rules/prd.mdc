@@ -1,0 +1,34 @@
+---
+description: Ember Maths12 product requirements — read docs/PRD.md for feature work
+alwaysApply: true
+---
+
+# Product requirements
+
+South African CAPS Grade 12 Mathematics school: portals `/admin`, `/student`, `/teacher`, `/parent`.
+
+**Before product, UX, routing, or feature work, read [`docs/PRD.md`](docs/PRD.md).** Treat it as product law. Stack/auth/UI conventions stay in `ember12.mdc`.
+
+## Non-negotiables
+
+- Authorization role from `profiles` only — never `user_metadata`
+- No `localStorage` app-state persistence; write through Supabase
+- Default assessment pass mark **50%**; past papers do **not** affect pass/fail
+- Day lesson complete is gated on passing `lessonTest` when one exists
+
+## MUST NOT build (v1)
+
+- Live video hosting
+- Real OCR / AI grading (keep deterministic mocks)
+- Email confirmation productization
+- Payments / billing
+
+## Gaps — do not invent unless tasked
+
+Parent–child link UI, student class-join UI, student study groups, teacher lessons in student Learn, badge copy vs earn-logic mismatch.
+
+## Later is not now
+
+Items marked `later` in `docs/PRD.md` stay unimplemented unless the task explicitly promotes them.
+
+If a request conflicts with the PRD, **follow the PRD** and say so.
