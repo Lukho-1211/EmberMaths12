@@ -3,6 +3,7 @@
 import { FormEvent, useRef, useState } from "react";
 import { FileText, RefreshCw, Trash2, Upload } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
+import { GenerateExplainerVideoPanel } from "@/components/generate-explainer-video-panel";
 import {
   generateLessonTestFromResources,
   isExtractableLessonResource,
@@ -523,6 +524,15 @@ export default function AdminTermsPage() {
                         Questions are generated from uploaded PDF/Markdown text when you save.
                       </p>
                     )}
+
+                    {lesson && term && week ? (
+                      <GenerateExplainerVideoPanel
+                        termId={term.id}
+                        weekId={week.id}
+                        lessonId={lesson.id}
+                        resources={resources}
+                      />
+                    ) : null}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">

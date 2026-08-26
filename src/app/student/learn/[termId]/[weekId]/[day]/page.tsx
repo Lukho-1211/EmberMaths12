@@ -106,7 +106,11 @@ function StudentLessonContent() {
           <div id="lesson-panel-main" role="tabpanel" aria-labelledby={`lesson-tab-${viewMode}`}>
             {viewMode === "video" ? (
               useGeneratedVideo ? (
-                <LessonVideoPlayer title={lesson.title} resources={lesson.resources} />
+                <LessonVideoPlayer
+                  title={lesson.title}
+                  resources={lesson.resources}
+                  lessonId={lesson.id}
+                />
               ) : (
                 <div className="aspect-video overflow-hidden rounded-xl border border-border bg-ember-navy">
                   <iframe

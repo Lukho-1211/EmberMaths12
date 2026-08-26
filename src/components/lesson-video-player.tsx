@@ -11,6 +11,7 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
+import { useReadyGeneratedVideo } from "@/lib/generated-video/use-ready-generated-video";
 import { hasVideoSources } from "@/lib/lesson-video";
 import { useSlidePlayback } from "@/lib/lesson-video/use-slide-playback";
 import type { Resource } from "@/lib/types";
@@ -18,14 +19,18 @@ import type { Resource } from "@/lib/types";
 export function LessonVideoPlayer({
   title,
   resources,
+  lessonId,
   className,
 }: {
   title: string;
   resources: Resource[];
+  /** When set, prefer a ready HeyGen mp4 over the PDF slideshow. */
+  lessonId?: string;
   className?: string;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  const { videoUrl, loading: videoLoading } = useReadyGeneratedVideo(lessonId);
   const playback = useSlidePlayback(resources);
 
   useEffect(() => {
@@ -36,6 +41,7 @@ export function LessonVideoPlayer({
 
   const { togglePlay, next, prev } = playback;
   useEffect(() => {
+    if (videoUrl) return;
     const el = rootRef.current;
     if (!el) return;
     const onKey = (e: KeyboardEvent) => {
@@ -52,9 +58,9 @@ export function LessonVideoPlayer({
     };
     el.addEventListener("keydown", onKey);
     return () => el.removeEventListener("keydown", onKey);
-  }, [togglePlay, next, prev]);
+  }, [togglePlay, next, prev, videoUrl]);
 
-  if (!hasVideoSources(resources)) return null;
+  if (!hasVideoSources(resources) && !videoUrl && !videoLoading) return null;
 
   async function toggleFullscreen() {
     const el = rootRef.current;
@@ -70,6 +76,55 @@ export function LessonVideoPlayer({
     }
   }
 
+  const frameClass =
+    className ??
+    "aspect-video overflow-hidden rounded-xl border border-border bg-ember-navy outline-none focus-visible:ring-2 focus-visible:ring-ember-gold";
+
+  if (videoLoading && lessonId) {
+    return (
+      <div className={frameClass} role="region" aria-label={`${title} video`}>
+        <div className="grid h-full place-items-center px-4 text-center text-sm text-white/80">
+          Checking for explainer video…
+        </div>
+      </div>
+    );
+  }
+
+  if (videoUrl) {
+    return (
+      <div
+        ref={rootRef}
+        tabIndex={0}
+        className={frameClass}
+        role="region"
+        aria-label={`${title} explainer video`}
+      >
+        <div className="relative flex h-full flex-col bg-black">
+          <video
+            key={videoUrl}
+            src={videoUrl}
+            controls
+            playsInline
+            className="h-full w-full object-contain"
+            preload="metadata"
+          >
+            <track kind="captions" />
+          </video>
+          <button
+            type="button"
+            onClick={() => void toggleFullscreen()}
+            className="absolute right-2 top-2 rounded bg-black/50 p-1.5 text-white hover:bg-black/70"
+            aria-label={fullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+          >
+            {fullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasVideoSources(resources)) return null;
+
   const slide = playback.currentSlide;
   const total = playback.deck?.slides.length ?? 0;
 
@@ -77,10 +132,7 @@ export function LessonVideoPlayer({
     <div
       ref={rootRef}
       tabIndex={0}
-      className={
-        className ??
-        "aspect-video overflow-hidden rounded-xl border border-border bg-ember-navy outline-none focus-visible:ring-2 focus-visible:ring-ember-gold"
-      }
+      className={frameClass}
       role="region"
       aria-label={`${title} video walkthrough`}
     >

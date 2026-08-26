@@ -193,6 +193,11 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 # Server/seed only — never expose to the browser.
 # Must be the service_role secret (Dashboard → Project Settings → API), not the anon/publishable key.
 SUPABASE_SERVICE_ROLE_KEY=
+
+# Optional — HeyGen explainer video pipeline (admin Generate button)
+N8N_WEBHOOK_URL=
+N8N_WEBHOOK_SECRET=
+APP_URL=http://localhost:3000
 ```
 
 `NEXT_PUBLIC_SUPABASE_ANON_KEY` is accepted as a fallback for the publishable key.

@@ -81,7 +81,12 @@ Demo accounts (password `ember12`): `admin@ember12.za`, `student@ember12.za`, `t
 - Each week: Mon–Fri lessons (each may have a **lesson test**) + **Saturday week test**
 - After Week 4: **pre-exam** and **past paper**
 - Resources: PDF, Markdown, link, worksheet; files in Storage bucket `lesson-files` (max **20 MB**)
-- Lesson player: **Video** tab = PDF/Markdown → slide deck at view time (`pdfjs-dist`); **Text** tab = uploaded Markdown preview and/or PDF page preview + downloads. Seed may include YouTube fallback URLs — **not** live hosted video
+- Lesson player **Video** tab:
+  - Prefer a **generated explainer mp4** when `lesson_generated_videos.status = ready` (admin-triggered HeyGen pipeline; files in `lesson-videos`)
+  - Else PDF/Markdown → slide deck at view time (`pdfjs-dist`) with browser TTS
+  - **Text** tab = uploaded Markdown preview and/or PDF page preview + downloads
+  - Seed may include YouTube fallback URLs when no uploadable materials exist
+  - **Not** live streaming / live video hosting
 
 ### 5.3 Assessments — `shipped` + `mock`
 
@@ -107,7 +112,7 @@ Used by: daily lesson tests, Saturday week tests, pre-exams. Past papers: paper+
 | Route | Capability |
 |-------|------------|
 | `/admin` | Dashboard stats, learner progress |
-| `/admin/terms` | Upload/edit lessons, week tests, pre-exams, past papers; regenerate MCQs |
+| `/admin/terms` | Upload/edit lessons, week tests, pre-exams, past papers; regenerate MCQs; **Generate explainer video** (manual) |
 | `/admin/users` | List teachers; delete student/parent accounts |
 | `/admin/groups` | Study groups, assign students, optional term link |
 | `/admin/pass-fail` | Filter by passing / failing / pending |
@@ -152,8 +157,8 @@ Empty state when `childIds` is empty (no self-service linking).
 
 | Item | Status |
 |------|--------|
-| Live / hosted video lessons as primary Video tab | `later` — do not build in v1 |
-| Real OCR / AI marking of paper+scan scripts | `later` — keep deterministic mocks |
+| Live / streaming video hosting | `later` — do not build; pre-rendered explainer mp4s are promoted (see §5.2 / L1) |
+| Real OCR / AI marking of paper+scan scripts | `later` — keep deterministic mocks (Math OCR for video ingestion is separate) |
 | Email confirmation, password-reset email productization | `later` |
 | Payments / subscriptions / school billing | `later` |
 
@@ -181,7 +186,7 @@ Edit this section as product priorities firm up. Cursor **MUST NOT** implement L
 
 | ID | Capability | Notes |
 |----|------------|-------|
-| L1 | Live / hosted video | Replace PDF slide-deck as primary Video experience |
+| L1 | Pre-rendered hosted lesson video (HeyGen) | **Promoted** — admin Generate button; Video tab prefers ready mp4; PDF slideshow fallback. Live streaming still later |
 | L2 | Real OCR / AI grading | Replace `mockPaperGrade` / mock MCQ generation |
 | L3 | Email confirmation & transactional email | Signup confirm, resets |
 | L4 | Payments / billing | Subscriptions or school billing |
