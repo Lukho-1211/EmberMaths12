@@ -1,0 +1,168 @@
+- generic [ref=f3e1]:
+  - button "Open Next.js Dev Tools" [ref=f3e37] [cursor=pointer]
+  - alert [ref=f3e41]
+  - generic [ref=f3e43]:
+    - complementary [ref=f3e44]:
+      - generic [ref=f3e45]:
+        - link "Ember Maths12" [ref=f3e46] [cursor=pointer]:
+          - /url: /student
+        - paragraph [ref=f3e47]: student
+      - navigation [ref=f3e48]:
+        - link "Dashboard" [ref=f3e49] [cursor=pointer]:
+          - /url: /student
+        - link "Learn" [ref=f3e53] [cursor=pointer]:
+          - /url: /student/learn
+        - link "Past papers" [ref=f3e56] [cursor=pointer]:
+          - /url: /student/past-papers
+        - link "Badges" [ref=f3e61] [cursor=pointer]:
+          - /url: /student/badges
+        - link "Top Achievers" [ref=f3e65] [cursor=pointer]:
+          - /url: /student/achievers
+        - link "Settings" [ref=f3e72] [cursor=pointer]:
+          - /url: /student/settings
+      - button "Log out" [ref=f3e76]
+    - generic [ref=f3e80]:
+      - banner [ref=f3e81]:
+        - generic [ref=f3e82]:
+          - paragraph [ref=f3e83]: Signed in
+          - paragraph [ref=f3e84]: Verify Student
+        - generic [ref=f3e85]:
+          - generic [ref=f3e86]: verify-text-190816@ember12.test
+          - button "Log out" [ref=f3e87]
+      - main [ref=f3e91]:
+        - generic [ref=f3e92]:
+          - navigation "Weeks in this term" [ref=f3e93]:
+            - link "Week 1" [ref=f3e94] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week1
+            - link "Week 2" [ref=f3e95] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week2
+            - link "Week 3" [ref=f3e96] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week3
+            - link "Week 4" [ref=f3e97] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week4
+            - link "Pre-exam" [ref=f3e98] [cursor=pointer]:
+              - /url: /student/learn/term-1/pre-exam
+          - generic [ref=f3e99]:
+            - 'heading "Monday: Revision and summary from grade 11 FUNCTIONS" [level=1] [ref=f3e100]'
+            - paragraph [ref=f3e101]: Term 1 — Patterns, Series & Functions · Week 1 · monday
+          - tablist "Lesson view" [ref=f3e102]:
+            - tab "Video" [ref=f3e103]
+            - tab "Text" [active] [selected] [ref=f3e107]
+          - generic [ref=f3e111]:
+            - generic [ref=f3e112]:
+              - tabpanel "Text" [ref=f3e280]:
+                - article [ref=f3e282]:
+                  - generic [ref=f3e283]:
+                    - paragraph [ref=f3e284]: PDF · Handbook Study-Guide-Grade-12-page-031
+                    - link "Download" [ref=f3e285] [cursor=pointer]:
+                      - /url: https://ujqsecdfnbfkzunsbysq.supabase.co/storage/v1/object/public/lesson-files/lesson-resources/2ee241a3-6adf-4b37-8798-75d28a24cf6a-Handbook_Study-Guide-Grade-12-page-031.pdf
+                  - img "Handbook Study-Guide-Grade-12-page-031 — page 1" [ref=f3e287]
+              - paragraph [ref=f3e145]: In Grade 11 you were introduced to the parabola in the forms shown in the table below. The table below summarises the properties of the parabola which you learnt in Grade 11.
+              - paragraph [ref=f3e146]: Duration ≈ 25 minutes
+              - generic [ref=f3e147]:
+                - 'heading "Lesson test — Monday: Quadratic patterns revision" [level=2] [ref=f3e148]'
+                - paragraph [ref=f3e149]: Check today’s lesson. Choose on-screen MCQ or Paper + scan. Pass to mark the lesson complete.
+                - paragraph [ref=f3e150]: Pass mark 50% — required before you can mark this lesson complete.
+                - generic [ref=f3e152]:
+                  - tablist "Assessment mode" [ref=f3e153]:
+                    - tab "On screen (MCQ)" [selected] [ref=f3e154]
+                    - tab "Paper + scan" [ref=f3e155]
+                  - generic [ref=f3e156]:
+                    - 'heading "Lesson test — Monday: Quadratic patterns revision" [level=2] [ref=f3e157]'
+                    - paragraph [ref=f3e158]: Check today’s lesson. Choose on-screen MCQ or Paper + scan. Pass to mark the lesson complete.
+                    - generic [ref=f3e160]:
+                      - heading "Exam paper / materials" [level=3] [ref=f3e161]
+                      - paragraph [ref=f3e162]: Watch the paper walkthrough before you answer, or download the PDF / Markdown.
+                      - 'region "Lesson test — Monday: Quadratic patterns revision video walkthrough" [ref=f3e164]':
+                        - generic [ref=f3e165]:
+                          - img "Handbook Study-Guide-Grade-12-page-031 — page 1" [ref=f3e167]
+                          - generic [ref=f3e168]:
+                            - progressbar "Walkthrough progress" [ref=f3e169]
+                            - generic [ref=f3e171]:
+                              - generic [ref=f3e172]:
+                                - button "Previous slide" [disabled] [ref=f3e173]
+                                - button "Play" [ref=f3e176]
+                                - button "Next slide" [disabled] [ref=f3e179]
+                                - button "Mute narration" [ref=f3e182]
+                              - generic [ref=f3e187]:
+                                - generic [ref=f3e188]: 1 / 1 · ≈ 1 min
+                                - button "Enter fullscreen" [ref=f3e189]
+                      - list [ref=f3e195]:
+                        - listitem [ref=f3e196]:
+                          - link "Handbook Study-Guide-Grade-12-page-031 pdf · Handbook Study-Guide-Grade-12-page-031.pdf" [ref=f3e197] [cursor=pointer]:
+                            - /url: https://ujqsecdfnbfkzunsbysq.supabase.co/storage/v1/object/public/lesson-files/lesson-resources/2ee241a3-6adf-4b37-8798-75d28a24cf6a-Handbook_Study-Guide-Grade-12-page-031.pdf
+                            - generic [ref=f3e201]:
+                              - generic [ref=f3e202]: Handbook Study-Guide-Grade-12-page-031
+                              - generic [ref=f3e203]: pdf · Handbook Study-Guide-Grade-12-page-031.pdf
+                    - generic [ref=f3e204]:
+                      - group "1. What is the main focus of today’s lesson (Quadratic patterns revision)?" [ref=f3e205]:
+                        - generic [ref=f3e207]:
+                          - generic [ref=f3e208] [cursor=pointer]:
+                            - radio "Unrelated enrichment only" [ref=f3e209]
+                            - generic [ref=f3e210]: Unrelated enrichment only
+                          - generic [ref=f3e211] [cursor=pointer]:
+                            - radio "Quadratic patterns revision" [ref=f3e212]
+                            - generic [ref=f3e213]: Quadratic patterns revision
+                          - generic [ref=f3e214] [cursor=pointer]:
+                            - radio "Term 4 wellness only" [ref=f3e215]
+                            - generic [ref=f3e216]: Term 4 wellness only
+                          - generic [ref=f3e217] [cursor=pointer]:
+                            - radio "Skipping CAPS content" [ref=f3e218]
+                            - generic [ref=f3e219]: Skipping CAPS content
+                      - group "2. This lesson sits inside the week topic “Number Patterns & Sequences”. Learners should…" [ref=f3e220]:
+                        - generic [ref=f3e222]:
+                          - generic [ref=f3e223] [cursor=pointer]:
+                            - radio "Ignore daily notes" [ref=f3e224]
+                            - generic [ref=f3e225]: Ignore daily notes
+                          - generic [ref=f3e226] [cursor=pointer]:
+                            - radio "Work through examples and check answers" [ref=f3e227]
+                            - generic [ref=f3e228]: Work through examples and check answers
+                          - generic [ref=f3e229] [cursor=pointer]:
+                            - radio "Wait until the Saturday test only" [ref=f3e230]
+                            - generic [ref=f3e231]: Wait until the Saturday test only
+                          - generic [ref=f3e232] [cursor=pointer]:
+                            - radio "Avoid practice questions" [ref=f3e233]
+                            - generic [ref=f3e234]: Avoid practice questions
+                      - group "3. Before marking a lesson complete in Ember Maths12, you must…" [ref=f3e235]:
+                        - generic [ref=f3e237]:
+                          - generic [ref=f3e238] [cursor=pointer]:
+                            - radio "Skip the lesson test" [ref=f3e239]
+                            - generic [ref=f3e240]: Skip the lesson test
+                          - generic [ref=f3e241] [cursor=pointer]:
+                            - radio "Pass today’s lesson test (MCQ or paper + scan)" [ref=f3e242]
+                            - generic [ref=f3e243]: Pass today’s lesson test (MCQ or paper + scan)
+                          - generic [ref=f3e244] [cursor=pointer]:
+                            - radio "Upload a memo as a student" [ref=f3e245]
+                            - generic [ref=f3e246]: Upload a memo as a student
+                          - generic [ref=f3e247] [cursor=pointer]:
+                            - radio "Finish the term pre-exam first" [ref=f3e248]
+                            - generic [ref=f3e249]: Finish the term pre-exam first
+                      - group "4. A sensible next step after studying Quadratic patterns revision is…" [ref=f3e250]:
+                        - generic [ref=f3e252]:
+                          - generic [ref=f3e253] [cursor=pointer]:
+                            - radio "Discard feedback" [ref=f3e254]
+                            - generic [ref=f3e255]: Discard feedback
+                          - generic [ref=f3e256] [cursor=pointer]:
+                            - radio "Review mistakes and retry similar problems" [ref=f3e257]
+                            - generic [ref=f3e258]: Review mistakes and retry similar problems
+                          - generic [ref=f3e259] [cursor=pointer]:
+                            - radio "Change to a different subject permanently" [ref=f3e260]
+                            - generic [ref=f3e261]: Change to a different subject permanently
+                          - generic [ref=f3e262] [cursor=pointer]:
+                            - radio "Only memorise the title" [ref=f3e263]
+                            - generic [ref=f3e264]: Only memorise the title
+                    - button "Submit assessment" [disabled] [ref=f3e265]
+              - generic [ref=f3e266]:
+                - button "Mark lesson complete" [disabled] [ref=f3e267]
+                - paragraph [ref=f3e268]: Pass today’s lesson test to complete.
+            - complementary [ref=f3e269]:
+              - heading "Resources" [level=2] [ref=f3e270]
+              - list [ref=f3e271]:
+                - listitem [ref=f3e272]:
+                  - link "Handbook Study-Guide-Grade-12-page-031 pdf" [ref=f3e273] [cursor=pointer]:
+                    - /url: https://ujqsecdfnbfkzunsbysq.supabase.co/storage/v1/object/public/lesson-files/lesson-resources/2ee241a3-6adf-4b37-8798-75d28a24cf6a-Handbook_Study-Guide-Grade-12-page-031.pdf
+                    - generic [ref=f3e277]:
+                      - generic [ref=f3e278]: Handbook Study-Guide-Grade-12-page-031
+                      - text: pdf
+              - link "← Back to week" [ref=f3e279] [cursor=pointer]:
+                - /url: /student/learn/term-1/term1-week1

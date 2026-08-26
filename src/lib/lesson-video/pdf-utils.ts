@@ -25,14 +25,45 @@ export function textFromPdfPage(items: { str?: string }[]): string {
 
 let workerConfigured = false;
 
+/**
+ * Load PDF.js legacy build (polyfills Map.getOrInsertComputed etc. for school browsers).
+ * Modern pdfjs-dist requires Chrome/Edge 145+, Firefox 144+, Safari 26.2+.
+ * Worker is served from /public (copied from pdfjs-dist/legacy) — keep versions in sync.
+ */
 export async function loadPdfJs() {
-  const pdfjs = await import("pdfjs-dist");
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
   if (!workerConfigured && typeof window !== "undefined") {
-    // Match installed package version; unpkg serves the worker for the browser.
-    pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+    pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
     workerConfigured = true;
   }
   return pdfjs;
+}
+
+/**
+ * Load PDF bytes from a data URL or remote Storage / http(s) URL.
+ * Returns null when the URL is a placeholder or fetch fails.
+ */
+export async function pdfBytesFromResource(
+  resource: Resource,
+): Promise<Uint8Array | null> {
+  if (resource.type !== "pdf") return null;
+  if (resource.url.startsWith("data:")) {
+    try {
+      return dataUrlToUint8Array(resource.url);
+    } catch {
+      return null;
+    }
+  }
+  if (resource.url.startsWith("http://") || resource.url.startsWith("https://")) {
+    try {
+      const res = await fetch(resource.url);
+      if (!res.ok) return null;
+      return new Uint8Array(await res.arrayBuffer());
+    } catch {
+      return null;
+    }
+  }
+  return null;
 }
 
 /** Extract plain text from an uploaded PDF resource (data URL or remote Storage URL). */
@@ -40,18 +71,10 @@ export async function extractPdfText(resource: Resource): Promise<string> {
   if (typeof window === "undefined") return "";
   if (resource.type !== "pdf") return "";
 
-  const pdfjs = await loadPdfJs();
-  let data: Uint8Array;
-  if (resource.url.startsWith("data:")) {
-    data = dataUrlToUint8Array(resource.url);
-  } else if (resource.url.startsWith("http://") || resource.url.startsWith("https://")) {
-    const res = await fetch(resource.url);
-    if (!res.ok) return "";
-    data = new Uint8Array(await res.arrayBuffer());
-  } else {
-    return "";
-  }
+  const data = await pdfBytesFromResource(resource);
+  if (!data) return "";
 
+  const pdfjs = await loadPdfJs();
   const loadingTask = pdfjs.getDocument({ data });
   const pdf = await loadingTask.promise;
   const parts: string[] = [];

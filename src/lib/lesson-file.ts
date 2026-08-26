@@ -4,9 +4,33 @@ import { uploadLessonFile } from "@/lib/supabase/app-state";
 /** Soft cap for lesson uploads (Supabase Storage). */
 export const MAX_LESSON_FILE_BYTES = 20 * 1024 * 1024;
 
+function isUploadedResourceUrl(url: string) {
+  return (
+    url.startsWith("data:") ||
+    url.startsWith("http://") ||
+    url.startsWith("https://")
+  );
+}
+
 /** First Markdown resource on a lesson (for Text lesson view). */
 export function primaryLessonMarkdownResource(lesson: Lesson): Resource | undefined {
-  return lesson.resources.find((r) => r.type === "markdown");
+  return lesson.resources.find(
+    (r) => r.type === "markdown" && isUploadedResourceUrl(r.url),
+  );
+}
+
+/**
+ * Uploaded Markdown and PDF materials for the student Text tab.
+ * Skips seed placeholders (`url: "#"`). Markdown first, then PDFs.
+ */
+export function lessonTextResources(lesson: Lesson): Resource[] {
+  const uploaded = lesson.resources.filter(
+    (r) =>
+      (r.type === "markdown" || r.type === "pdf") && isUploadedResourceUrl(r.url),
+  );
+  const markdown = uploaded.filter((r) => r.type === "markdown");
+  const pdfs = uploaded.filter((r) => r.type === "pdf");
+  return [...markdown, ...pdfs];
 }
 
 function isMarkdownFile(file: File) {

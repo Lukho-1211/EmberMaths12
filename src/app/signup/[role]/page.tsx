@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { MunicipalityAutocomplete } from "@/components/municipality-autocomplete";
+import { PasswordInput } from "@/components/password-input";
 import { isValidMunicipality, SA_PROVINCES } from "@/lib/sa-geography";
 import { isRole, roleLabel } from "@/lib/roles";
 import { useStore } from "@/lib/store";
@@ -106,18 +107,21 @@ export default function RoleSignupPage() {
               disabled={loading}
             />
           </label>
-          <label className="block text-sm">
-            <span className="mb-1 block font-medium">Password</span>
-            <input
+          <div className="block text-sm">
+            <label htmlFor="signup-password" className="mb-1 block font-medium">
+              Password
+            </label>
+            <PasswordInput
+              id="signup-password"
               className={fieldClass}
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
               disabled={loading}
+              autoComplete="new-password"
             />
-          </label>
+          </div>
           {role === "student" ? (
             <>
               <label className="block text-sm">

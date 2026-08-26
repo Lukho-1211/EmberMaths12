@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { LogOut, Moon, Sun } from "lucide-react";
 import { MunicipalityAutocomplete } from "@/components/municipality-autocomplete";
 import { PageHeader } from "@/components/app-shell";
+import { PasswordInput } from "@/components/password-input";
 import { SA_PROVINCES } from "@/lib/sa-geography";
 import { useStore, type Theme } from "@/lib/store";
 
@@ -134,18 +135,20 @@ export function SettingsPanel() {
               required
             />
           </label>
-          <label className="block text-sm">
-            <span className="mb-1 block font-medium text-foreground">New password</span>
-            <input
+          <div className="block text-sm">
+            <label htmlFor="settings-password" className="mb-1 block font-medium text-foreground">
+              New password
+            </label>
+            <PasswordInput
+              id="settings-password"
               className={fieldClass}
-              type="password"
               value={password}
               onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
               minLength={6}
               placeholder="Leave blank to keep current"
               autoComplete="new-password"
             />
-          </label>
+          </div>
           {isStudent ? (
             <>
               <label className="block text-sm">

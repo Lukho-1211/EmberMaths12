@@ -81,7 +81,7 @@ Demo accounts (password `ember12`): `admin@ember12.za`, `student@ember12.za`, `t
 - Each week: Mon–Fri lessons (each may have a **lesson test**) + **Saturday week test**
 - After Week 4: **pre-exam** and **past paper**
 - Resources: PDF, Markdown, link, worksheet; files in Storage bucket `lesson-files` (max **20 MB**)
-- Lesson player: **Video** tab = PDF/Markdown → slide deck at view time (`pdfjs-dist`); **Text** tab = Markdown preview + downloads. Seed may include YouTube fallback URLs — **not** live hosted video
+- Lesson player: **Video** tab = PDF/Markdown → slide deck at view time (`pdfjs-dist`); **Text** tab = uploaded Markdown preview and/or PDF page preview + downloads. Seed may include YouTube fallback URLs — **not** live hosted video
 
 ### 5.3 Assessments — `shipped` + `mock`
 

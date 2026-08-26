@@ -8,8 +8,9 @@ import { AssessmentPanel } from "@/components/assessment";
 import { PageHeader } from "@/components/app-shell";
 import { LessonVideoPlayer } from "@/components/lesson-video-player";
 import { MarkdownPreview } from "@/components/markdown-preview";
+import { PdfNotesPreview } from "@/components/pdf-notes-preview";
 import { TermWeekNav } from "@/components/term-week-nav";
-import { primaryLessonMarkdownResource } from "@/lib/lesson-file";
+import { lessonTextResources } from "@/lib/lesson-file";
 import { hasVideoSources } from "@/lib/lesson-video";
 import { meetsPassMark } from "@/lib/score-mcq";
 import { useStore } from "@/lib/store";
@@ -43,7 +44,7 @@ function StudentLessonContent() {
 
   if (!term || !week || !lesson || !user) return <p>Lesson not found.</p>;
 
-  const textResource = primaryLessonMarkdownResource(lesson);
+  const textResources = lessonTextResources(lesson);
   const useGeneratedVideo = hasVideoSources(lesson.resources);
   const lessonTest = lesson.lessonTest;
   const score =
@@ -117,16 +118,30 @@ function StudentLessonContent() {
                   />
                 </div>
               )
-            ) : textResource ? (
-              <MarkdownPreview
-                resource={textResource}
-                className="rounded-xl border border-border bg-white p-4"
-              />
+            ) : textResources.length > 0 ? (
+              <div className="space-y-4">
+                {textResources.map((resource) =>
+                  resource.type === "markdown" ? (
+                    <MarkdownPreview
+                      key={resource.id}
+                      resource={resource}
+                      className="rounded-xl border border-border bg-white p-4"
+                    />
+                  ) : (
+                    <PdfNotesPreview
+                      key={resource.id}
+                      resource={resource}
+                      className="rounded-xl border border-border bg-white p-4"
+                    />
+                  ),
+                )}
+              </div>
             ) : (
               <article className="rounded-xl border border-border bg-white p-4">
                 <p className="text-sm leading-relaxed text-ember-navy">{lesson.description}</p>
                 <p className="mt-3 text-xs text-muted">
-                  Full text notes appear here when your teacher uploads Markdown in Admin.
+                  Full text notes appear here when Admin uploads a PDF or Markdown for this
+                  lesson.
                 </p>
               </article>
             )}

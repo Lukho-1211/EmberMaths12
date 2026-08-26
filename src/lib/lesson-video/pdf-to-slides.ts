@@ -1,16 +1,18 @@
 import type { Resource } from "@/lib/types";
 import type { Slide } from "@/lib/lesson-video/types";
 import {
-  dataUrlToUint8Array,
   loadPdfJs,
+  pdfBytesFromResource,
   textFromPdfPage,
 } from "@/lib/lesson-video/pdf-utils";
 
 export async function pdfResourceToSlides(resource: Resource): Promise<Slide[]> {
   if (typeof window === "undefined") return [];
 
+  const data = await pdfBytesFromResource(resource);
+  if (!data) return [];
+
   const pdfjs = await loadPdfJs();
-  const data = dataUrlToUint8Array(resource.url);
   const loadingTask = pdfjs.getDocument({ data });
   const pdf = await loadingTask.promise;
   const slides: Slide[] = [];
