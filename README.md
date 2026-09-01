@@ -45,7 +45,7 @@ Canonical stack (versions and file map): [`docs/tech_stack.md`](docs/tech_stack.
 | ----- | ------------------ |
 | **Supabase Auth** | Email/password signup and login for **admin**, **student**, **teacher**, and **parent**. Cookie session refresh via `src/proxy.ts` and `@supabase/ssr` clients in `src/lib/supabase/`. |
 | **Postgres** | `public.profiles` (incl. theme), `public.student` roster, `curriculum`, `student_progress`, classes, groups, messages, corrections, teacher lessons. Migrations in `supabase/migrations/`. |
-| **Storage** | `lesson-files` bucket for admin/teacher PDF and Markdown uploads. |
+| **Storage** | `lesson-files` for PDF/Markdown; `lesson-videos` for admin-uploaded lesson mp4s. |
 | **UI store** (`src/lib/store.tsx`) | In-memory `AppState` hydrated from Supabase on boot; mutations write back to Postgres. Session comes from Auth cookies only. |
 
 Assessment submit, lesson complete, and curriculum fetch go through App Router API routes: the server scores MCQs, applies mock paper-scan grades, and strips answer keys/memos for non-admins.
@@ -63,8 +63,8 @@ Login and signup use role hubs (`/login`, `/signup`) that route into `/login/[ro
 ## Curriculum model (v1)
 
 - Terms **1–4** (placeholder CAPS topics from the 2025 ATP in `resourceInfo/`)
-- Each term: **Weeks 1–4** → Mon–Fri lessons (each with a **lesson test**) + **Saturday week test**
-- After Week 4: **Pre-exam** and **past paper**
+- Each term: **weeks** (seed starts with 1–4; admin can add more) → Mon–Fri lessons (each with a **lesson test**) + **Saturday week test**
+- After the term’s weeks: **Pre-exam** and **past paper**
 
 ## Features
 
@@ -88,7 +88,7 @@ Login and signup use role hubs (`/login`, `/signup`) that route into `/login/[ro
 | Route | What it does |
 | ----- | ------------ |
 | `/admin` | Dashboard stats and learner progress |
-| `/admin/terms` | Upload/edit PDF/Markdown for daily lessons, Saturday week tests, pre-exams, and past papers |
+| `/admin/terms` | Upload/edit PDF/Markdown for daily lessons, Saturday week tests, pre-exams, and past papers; upload lesson MP4 |
 | `/admin/users` | List teachers; delete student or parent accounts |
 | `/admin/groups` | Create study groups, assign students, optional term link |
 | `/admin/pass-fail` | Filter students by passing / failing / pending status |
@@ -98,7 +98,7 @@ Saving a daily lesson with uploaded PDF/Markdown **mock-generates MCQ questions*
 
 Exam papers are shown to students (walkthrough + download). Memos are admin-only and used when correcting paper+scan uploads.
 
-Files are stored in Supabase Storage (`lesson-files`, max **20 MB** per file). Admins can remove attachments and edit titles in place.
+Files are stored in Supabase Storage (`lesson-files` for PDF/Markdown, max **20 MB**; `lesson-videos` for lesson mp4s, max **~200 MB**). Admins can remove attachments and edit titles in place.
 
 ### Student
 
@@ -114,7 +114,7 @@ Files are stored in Supabase Storage (`lesson-files`, max **20 MB** per file). A
 
 **Lesson player**
 
-- **Video** — uploaded PDF/Markdown becomes a slide deck at view time (`pdfjs-dist` for PDFs): play/pause, prev/next, keyboard shortcuts, fullscreen
+- **Video** — prefers an admin-uploaded mp4 from Storage; otherwise PDF/Markdown becomes a slide deck at view time (`pdfjs-dist` for PDFs): play/pause, prev/next, keyboard shortcuts, fullscreen; seed lessons may fall back to a YouTube embed
 - **Text** — Markdown preview plus download links for PDFs and worksheets
 
 Students must **pass** the day test before **Mark lesson complete** is enabled. Dashboards show **per-term insights** (strengths, weak topics, suggested next actions).
@@ -193,11 +193,6 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 # Server/seed only — never expose to the browser.
 # Must be the service_role secret (Dashboard → Project Settings → API), not the anon/publishable key.
 SUPABASE_SERVICE_ROLE_KEY=
-
-# Optional — HeyGen explainer video pipeline (admin Generate button)
-N8N_WEBHOOK_URL=
-N8N_WEBHOOK_SECRET=
-APP_URL=http://localhost:3000
 ```
 
 `NEXT_PUBLIC_SUPABASE_ANON_KEY` is accepted as a fallback for the publishable key.

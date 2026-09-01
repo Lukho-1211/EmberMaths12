@@ -86,7 +86,9 @@ export default function StudentTermPage() {
           <Link href={`/student/learn/${term.id}/pre-exam`} className="block">
             <h2 className="font-display text-xl">{term.preExam.title}</h2>
             <p className="mt-1 text-sm text-ember-gray">
-              Available after Week 4 ·{" "}
+              {term.weeks.length > 0
+                ? `Available after Week ${Math.max(...term.weeks.map((w) => w.number))} · `
+                : "Available after the term’s weeks · "}
               {progress?.testScores[term.preExam.id] !== undefined
                 ? `Score ${progress.testScores[term.preExam.id]}%`
                 : "Not attempted"}

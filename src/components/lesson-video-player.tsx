@@ -11,7 +11,6 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import { useReadyGeneratedVideo } from "@/lib/generated-video/use-ready-generated-video";
 import { hasVideoSources } from "@/lib/lesson-video";
 import { useSlidePlayback } from "@/lib/lesson-video/use-slide-playback";
 import type { Resource } from "@/lib/types";
@@ -19,18 +18,18 @@ import type { Resource } from "@/lib/types";
 export function LessonVideoPlayer({
   title,
   resources,
-  lessonId,
+  hostedVideoUrl,
   className,
 }: {
   title: string;
   resources: Resource[];
-  /** When set, prefer a ready HeyGen mp4 over the PDF slideshow. */
-  lessonId?: string;
+  /** Direct mp4 URL (Storage). Preferred over the PDF/Markdown slideshow. */
+  hostedVideoUrl?: string | null;
   className?: string;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [fullscreen, setFullscreen] = useState(false);
-  const { videoUrl, loading: videoLoading } = useReadyGeneratedVideo(lessonId);
+  const videoUrl = hostedVideoUrl?.trim() || null;
   const playback = useSlidePlayback(resources);
 
   useEffect(() => {
@@ -60,7 +59,7 @@ export function LessonVideoPlayer({
     return () => el.removeEventListener("keydown", onKey);
   }, [togglePlay, next, prev, videoUrl]);
 
-  if (!hasVideoSources(resources) && !videoUrl && !videoLoading) return null;
+  if (!hasVideoSources(resources) && !videoUrl) return null;
 
   async function toggleFullscreen() {
     const el = rootRef.current;
@@ -80,16 +79,6 @@ export function LessonVideoPlayer({
     className ??
     "aspect-video overflow-hidden rounded-xl border border-border bg-ember-navy outline-none focus-visible:ring-2 focus-visible:ring-ember-gold";
 
-  if (videoLoading && lessonId) {
-    return (
-      <div className={frameClass} role="region" aria-label={`${title} video`}>
-        <div className="grid h-full place-items-center px-4 text-center text-sm text-white/80">
-          Checking for explainer video…
-        </div>
-      </div>
-    );
-  }
-
   if (videoUrl) {
     return (
       <div
@@ -97,7 +86,7 @@ export function LessonVideoPlayer({
         tabIndex={0}
         className={frameClass}
         role="region"
-        aria-label={`${title} explainer video`}
+        aria-label={`${title} lesson video`}
       >
         <div className="relative flex h-full flex-col bg-black">
           <video

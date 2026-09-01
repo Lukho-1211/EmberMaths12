@@ -28,12 +28,16 @@ function StudentPreExamContent() {
 
       <PageHeader
         title={term.preExam.title}
-        subtitle="Taken after Week 4 to consolidate the term."
+        subtitle={
+          term.weeks.length > 0
+            ? `Taken after Week ${Math.max(...term.weeks.map((w) => w.number))} to consolidate the term.`
+            : "Taken after the term’s weeks to consolidate the term."
+        }
       />
       {!weeksComplete ? (
         <p className="mb-4 rounded-md border border-ember-gold/40 bg-ember-gold/10 px-4 py-3 text-sm">
-          Tip: finish all Week 1–4 lessons for the best result. You can still attempt the pre-exam
-          now.
+          Tip: finish all lessons in this term for the best result. You can still attempt the
+          pre-exam now.
         </p>
       ) : null}
       <AssessmentPanel

@@ -1,9 +1,9 @@
 "use client";
 
 import { FormEvent, useRef, useState } from "react";
-import { FileText, RefreshCw, Trash2, Upload } from "lucide-react";
+import { FileText, Plus, RefreshCw, Trash2, Upload } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
-import { GenerateExplainerVideoPanel } from "@/components/generate-explainer-video-panel";
+import { UploadLessonVideoPanel } from "@/components/upload-lesson-video-panel";
 import {
   generateLessonTestFromResources,
   isExtractableLessonResource,
@@ -153,13 +153,23 @@ function ExamFileUploader({
 }
 
 export default function AdminTermsPage() {
-  const { state, upsertWeekLesson, setWeekTest, setPreExam, setPastPaper } = useStore();
+  const {
+    state,
+    addWeek,
+    removeWeek,
+    upsertWeekLesson,
+    setWeekTest,
+    setPreExam,
+    setPastPaper,
+  } = useStore();
   const [termId, setTermId] = useState(state.terms[0]?.id ?? "term-1");
   const term = state.terms.find((t) => t.id === termId) ?? state.terms[0];
   const [weekId, setWeekId] = useState(term?.weeks[0]?.id ?? "");
   const week = term?.weeks.find((w) => w.id === weekId) ?? term?.weeks[0];
   const [day, setDay] = useState<WeekDay>("monday");
   const lesson = week?.lessons.find((l) => l.day === day);
+  const [newWeekTopic, setNewWeekTopic] = useState("");
+  const canAddWeek = Boolean(term);
 
   const [lessonDraft, setLessonDraft] = useState<LessonDraft>(emptyLessonDraft);
   const [lessonSyncId, setLessonSyncId] = useState<string | undefined>(undefined);
@@ -341,6 +351,28 @@ export default function AdminTermsPage() {
     }));
   }
 
+  function onAddWeek(e: FormEvent) {
+    e.preventDefault();
+    if (!term || !canAddWeek) return;
+    const created = addWeek(term.id, newWeekTopic);
+    if (!created) return;
+    setWeekId(created.id);
+    setDay("monday");
+    setNewWeekTopic("");
+  }
+
+  function onRemoveWeek() {
+    if (!term || !week) return;
+    const ok = window.confirm(
+      `Remove Week ${week.number} (“${week.topic}”)? Lessons and the Saturday test for this week will be deleted from the curriculum.`,
+    );
+    if (!ok) return;
+    const remaining = term.weeks.filter((w) => w.id !== week.id);
+    removeWeek(term.id, week.id);
+    setWeekId(remaining[0]?.id ?? "");
+    setDay("monday");
+  }
+
   return (
     <div>
       <PageHeader
@@ -388,9 +420,48 @@ export default function AdminTermsPage() {
               ))}
             </div>
 
+            <form
+              onSubmit={onAddWeek}
+              className="mt-4 flex flex-wrap items-end gap-2 rounded-lg border border-dashed border-border bg-surface/40 p-3"
+            >
+              <label className="min-w-[12rem] flex-1 text-sm">
+                <span className="mb-1 block font-medium">New week topic</span>
+                <input
+                  className="w-full rounded-md border border-border bg-white px-3 py-2"
+                  placeholder="e.g. Functions Revision"
+                  value={newWeekTopic}
+                  onChange={(e) => setNewWeekTopic(e.target.value)}
+                  disabled={!canAddWeek}
+                  required={canAddWeek}
+                />
+              </label>
+              <button
+                type="submit"
+                disabled={!canAddWeek}
+                className="inline-flex items-center gap-1.5 rounded-md bg-ember-gold px-4 py-2 text-sm font-bold text-ember-navy disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Plus size={16} />
+                Add week
+              </button>
+              <p className="w-full text-xs text-muted">
+                Adds empty Mon–Fri lessons and a Saturday week test. Week number uses the next free
+                slot (fills gaps first, then continues past Week 4).
+              </p>
+            </form>
+
             {week ? (
               <>
-                <p className="mt-4 text-sm text-muted">Topic: {week.topic}</p>
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm text-muted">Topic: {week.topic}</p>
+                  <button
+                    type="button"
+                    onClick={onRemoveWeek}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-danger hover:border-danger hover:bg-danger/5"
+                  >
+                    <Trash2 size={14} />
+                    Remove this week
+                  </button>
+                </div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {DAYS.map((d) => (
                     <button
@@ -437,8 +508,8 @@ export default function AdminTermsPage() {
                       <div>
                         <p className="text-sm font-medium">Lesson materials</p>
                         <p className="text-xs text-muted">
-                          Upload PDF or Markdown (.md) — becomes the student Video walkthrough
-                          with narration. Max{" "}
+                          Upload PDF or Markdown (.md) for the Text tab, MCQ generation, and
+                          slideshow fallback when no MP4 is uploaded. Max{" "}
                           {(MAX_LESSON_FILE_BYTES / (1024 * 1024)).toFixed(1)} MB per file.
                         </p>
                       </div>
@@ -526,11 +597,12 @@ export default function AdminTermsPage() {
                     )}
 
                     {lesson && term && week ? (
-                      <GenerateExplainerVideoPanel
-                        termId={term.id}
-                        weekId={week.id}
+                      <UploadLessonVideoPanel
                         lessonId={lesson.id}
-                        resources={resources}
+                        videoUrl={lesson.videoUrl}
+                        onVideoUrlChange={(nextUrl) => {
+                          upsertWeekLesson(term.id, week.id, day, { videoUrl: nextUrl });
+                        }}
                       />
                     ) : null}
                   </div>
@@ -549,7 +621,12 @@ export default function AdminTermsPage() {
                   </div>
                 </form>
               </>
-            ) : null}
+            ) : (
+              <p className="mt-6 rounded-lg bg-surface px-4 py-3 text-sm text-muted">
+                No weeks in this term yet. Add a week above to create Mon–Fri lessons and a
+                Saturday test.
+              </p>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -621,7 +698,7 @@ export default function AdminTermsPage() {
                 window.setTimeout(() => setPreSavedFlash(false), 1800);
               }}
             >
-              <h3 className="font-semibold">Pre-exam (after Week 4)</h3>
+              <h3 className="font-semibold">Pre-exam (after the term’s weeks)</h3>
               <input
                 className="mt-3 w-full rounded-md border border-border px-3 py-2 text-sm"
                 value={preTitle}

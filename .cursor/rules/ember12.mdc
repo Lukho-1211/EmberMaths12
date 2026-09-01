@@ -36,6 +36,7 @@ await saveProgress(userId, progress);
 - Server RSC client: `src/lib/supabase/server.ts`
 - Service role: `src/lib/supabase/admin.ts` — **server/seed only**; never expose `SUPABASE_SERVICE_ROLE_KEY`
 - **Authorization role always comes from `profiles`**, not editable `user_metadata`
+- **Live admin verification** (browser / Playwright against this Supabase project): `/login/admin` with `aluluthospambo@gmail.com` / `Lukho@1211`. Do **not** use seeded demo `admin@ember12.za` — that email is seed-only and is not the live admin profile.
 
 ```ts
 // ❌ BAD

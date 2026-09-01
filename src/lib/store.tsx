@@ -18,6 +18,11 @@ import {
   signUpWithPassword,
   type ProfileRow,
 } from "@/lib/auth-client";
+import {
+  createEmptyWeek,
+  nextWeekNumber,
+  sortWeeksByNumber,
+} from "@/lib/curriculum/create-empty-week";
 import { createInitialState } from "@/lib/mock/seed";
 import { SEED_TERMS } from "@/lib/mock/curriculum";
 import { isValidMunicipality } from "@/lib/sa-geography";
@@ -49,6 +54,7 @@ import type {
   StudyGroup,
   Term,
   User,
+  Week,
   WeekDay,
 } from "@/lib/types";
 
@@ -196,6 +202,9 @@ interface StoreContextValue {
   setTheme: (theme: Theme) => void;
   deleteUser: (userId: string) => Promise<void>;
   updateTerms: (terms: Term[]) => void;
+  /** Append an empty week in the next free 1–4 slot, or null if the term is full. */
+  addWeek: (termId: string, topic: string) => Week | null;
+  removeWeek: (termId: string, weekId: string) => void;
   upsertWeekLesson: (
     termId: string,
     weekId: string,
@@ -510,6 +519,58 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const updateTerms = useCallback((terms: Term[]) => {
     setState((prev) => {
       const next = { ...prev, terms };
+      persistTerms(next);
+      return next;
+    });
+  }, []);
+
+  const addWeek = useCallback((termId: string, topic: string): Week | null => {
+    let created: Week | null = null;
+    setState((prev) => {
+      const term = prev.terms.find((t) => t.id === termId);
+      if (!term) return prev;
+      const weekNumber = nextWeekNumber(term.weeks);
+      // Reuse across Strict Mode double-invoke so the returned week matches state.
+      if (!created || created.number !== weekNumber) {
+        created = createEmptyWeek({
+          termNumber: term.number,
+          weekNumber,
+          topic,
+        });
+      }
+      if (term.weeks.some((w) => w.id === created!.id)) return prev;
+      const next = {
+        ...prev,
+        terms: prev.terms.map((t) =>
+          t.id !== termId
+            ? t
+            : {
+                ...t,
+                weeks: sortWeeksByNumber([...t.weeks, created!]),
+              },
+        ),
+      };
+      persistTerms(next);
+      return next;
+    });
+    return created;
+  }, []);
+
+  const removeWeek = useCallback((termId: string, weekId: string) => {
+    setState((prev) => {
+      const term = prev.terms.find((t) => t.id === termId);
+      if (!term || !term.weeks.some((w) => w.id === weekId)) return prev;
+      const next = {
+        ...prev,
+        terms: prev.terms.map((t) =>
+          t.id !== termId
+            ? t
+            : {
+                ...t,
+                weeks: t.weeks.filter((w) => w.id !== weekId),
+              },
+        ),
+      };
       persistTerms(next);
       return next;
     });
@@ -868,6 +929,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setTheme,
     deleteUser,
     updateTerms,
+    addWeek,
+    removeWeek,
     upsertWeekLesson,
     setWeekTest,
     setPreExam,

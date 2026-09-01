@@ -103,7 +103,7 @@ export interface PastPaper {
 
 export interface Week {
   id: string;
-  number: 1 | 2 | 3 | 4;
+  number: number;
   topic: string;
   lessons: Lesson[];
   weekTest: WeekTest;

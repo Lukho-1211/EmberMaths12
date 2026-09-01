@@ -1,0 +1,65 @@
+- generic [ref=f3e1]:
+  - generic [ref=f3e2]:
+    - link "Ember Maths12" [ref=f3e3] [cursor=pointer]:
+      - /url: /
+    - generic [ref=f3e4]:
+      - heading "Student sign up" [level=1] [ref=f3e5]
+      - paragraph [ref=f3e6]: Create your Ember Maths12 student account.
+      - generic [ref=f3e7]:
+        - generic [ref=f3e8]:
+          - generic [ref=f3e9]: Full name
+          - textbox "Full name" [ref=f3e10]: Week Cap Verifier
+        - generic [ref=f3e11]:
+          - generic [ref=f3e12]: Email
+          - textbox "Email" [ref=f3e13]: week.cap.verify.20260901@ember12.test
+        - generic [ref=f3e14]:
+          - generic [ref=f3e15]: Password
+          - generic [ref=f3e16]:
+            - textbox "Password" [ref=f3e17]: ember12
+            - button "Show password" [ref=f3e18] [cursor=pointer]
+        - generic [ref=f3e22]:
+          - generic [ref=f3e23]: Province
+          - combobox "Province" [ref=f3e24]:
+            - option "Select province…"
+            - option "Eastern Cape"
+            - option "Free State"
+            - option "Gauteng" [selected]
+            - option "KwaZulu-Natal"
+            - option "Limpopo"
+            - option "Mpumalanga"
+            - option "North West"
+            - option "Northern Cape"
+            - option "Western Cape"
+        - generic [ref=f3e25]:
+          - generic [ref=f3e26]: Municipality
+          - generic [ref=f3e27]:
+            - combobox "Municipality City of Johannesburg" [expanded] [active] [ref=f3e44]
+            - listbox [ref=f3e45]:
+              - option [selected] [ref=f3e46]:
+                - button "City of Johannesburg" [ref=f3e47]
+              - option [ref=f3e48]:
+                - button "City of Tshwane" [ref=f3e49]
+              - option [ref=f3e50]:
+                - button "City of Ekurhuleni" [ref=f3e51]
+              - option [ref=f3e52]:
+                - button "Emfuleni" [ref=f3e53]
+              - option [ref=f3e54]:
+                - button "Lesedi" [ref=f3e55]
+              - option [ref=f3e56]:
+                - button "Merafong City" [ref=f3e57]
+              - option [ref=f3e58]:
+                - button "Midvaal" [ref=f3e59]
+              - option [ref=f3e60]:
+                - button "Mogale City" [ref=f3e61]
+              - option [ref=f3e62]:
+                - button "Rand West City" [ref=f3e63]
+        - button "Create account" [ref=f3e29] [cursor=pointer]
+      - paragraph [ref=f3e30]:
+        - text: Already registered?
+        - link "Log in as student" [ref=f3e31] [cursor=pointer]:
+          - /url: /login/student
+      - paragraph [ref=f3e32]:
+        - link "Choose a different portal" [ref=f3e33] [cursor=pointer]:
+          - /url: /signup
+  - button "Open Next.js Dev Tools" [ref=f3e39] [cursor=pointer]
+  - alert [ref=f3e43]

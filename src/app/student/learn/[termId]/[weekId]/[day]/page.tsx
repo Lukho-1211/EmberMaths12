@@ -11,7 +11,7 @@ import { MarkdownPreview } from "@/components/markdown-preview";
 import { PdfNotesPreview } from "@/components/pdf-notes-preview";
 import { TermWeekNav } from "@/components/term-week-nav";
 import { lessonTextResources } from "@/lib/lesson-file";
-import { hasVideoSources } from "@/lib/lesson-video";
+import { hasVideoSources, isDirectVideoUrl } from "@/lib/lesson-video";
 import { meetsPassMark } from "@/lib/score-mcq";
 import { useStore } from "@/lib/store";
 import type { LessonTest, Resource, WeekDay } from "@/lib/types";
@@ -45,7 +45,8 @@ function StudentLessonContent() {
   if (!term || !week || !lesson || !user) return <p>Lesson not found.</p>;
 
   const textResources = lessonTextResources(lesson);
-  const useGeneratedVideo = hasVideoSources(lesson.resources);
+  const hostedVideoUrl = isDirectVideoUrl(lesson.videoUrl) ? lesson.videoUrl : null;
+  const useLessonPlayer = Boolean(hostedVideoUrl) || hasVideoSources(lesson.resources);
   const lessonTest = lesson.lessonTest;
   const score =
     lessonTest && progress?.testScores[lessonTest.id] !== undefined
@@ -105,13 +106,13 @@ function StudentLessonContent() {
         <div className="space-y-4">
           <div id="lesson-panel-main" role="tabpanel" aria-labelledby={`lesson-tab-${viewMode}`}>
             {viewMode === "video" ? (
-              useGeneratedVideo ? (
+              useLessonPlayer ? (
                 <LessonVideoPlayer
                   title={lesson.title}
                   resources={lesson.resources}
-                  lessonId={lesson.id}
+                  hostedVideoUrl={hostedVideoUrl}
                 />
-              ) : (
+              ) : lesson.videoUrl.trim() ? (
                 <div className="aspect-video overflow-hidden rounded-xl border border-border bg-ember-navy">
                   <iframe
                     title={lesson.title}
@@ -120,6 +121,11 @@ function StudentLessonContent() {
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
+                </div>
+              ) : (
+                <div className="grid aspect-video place-items-center rounded-xl border border-border bg-ember-navy px-4 text-center text-sm text-white/80">
+                  No lesson video yet. Admin can upload an MP4, or attach PDF/Markdown for a
+                  walkthrough.
                 </div>
               )
             ) : textResources.length > 0 ? (

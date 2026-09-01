@@ -12,7 +12,7 @@ export default function StudentLearnIndexPage() {
     <div>
       <PageHeader
         title="Learn"
-        subtitle="Choose a term. Each term has Weeks 1–4 (Mon–Fri + Saturday test) and a pre-exam — take assessments on screen (MCQ) or via Paper + scan."
+        subtitle="Choose a term. Each term has weekly lessons (Mon–Fri + Saturday test) and a pre-exam — take assessments on screen (MCQ) or via Paper + scan."
       />
       <div className="grid gap-4 md:grid-cols-2">
         {state.terms.map((term) => {
@@ -31,7 +31,7 @@ export default function StudentLearnIndexPage() {
               </p>
               <h2 className="mt-1 font-display text-2xl">{term.title}</h2>
               <p className="mt-3 text-sm text-muted">
-                {weeksDone}/4 weeks complete
+                {weeksDone}/{term.weeks.length} weeks complete
                 {preScore !== undefined ? ` · Pre-exam ${preScore}%` : " · Pre-exam pending"}
               </p>
             </Link>

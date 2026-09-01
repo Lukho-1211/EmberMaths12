@@ -65,9 +65,9 @@ Local CLI project id: `Ember12` ([`supabase/config.toml`](../supabase/config.tom
 | Bucket | Purpose |
 | ------ | ------- |
 | `lesson-files` | Admin/teacher PDF and Markdown uploads (max 20 MB per file) |
-| `lesson-videos` | Generated explainer mp4s and PDF page JPEG backgrounds (max ~200 MB) |
+| `lesson-videos` | Admin-uploaded lesson mp4s (max ~200 MB) |
 
-Generated-video job rows live in `public.lesson_generated_videos` (one row per `lesson_id`).
+Hosted lesson video URLs are stored on curriculum `Lesson.videoUrl` (no separate job table).
 
 ### UI store
 
@@ -117,9 +117,6 @@ Normal signup and login use the browser Supabase client. App Router APIs:
 | [`src/app/api/assessments/mcq/route.ts`](../src/app/api/assessments/mcq/route.ts) | Student MCQ submit — server scores against curriculum keys; updates progress |
 | [`src/app/api/assessments/paper-scan/route.ts`](../src/app/api/assessments/paper-scan/route.ts) | Student paper-scan mock grade; practice/past-paper skips pass/fail |
 | [`src/app/api/progress/complete-lesson/route.ts`](../src/app/api/progress/complete-lesson/route.ts) | Mark lesson complete; gated on passing `lessonTest` when present |
-| [`src/app/api/lessons/generate-video/route.ts`](../src/app/api/lessons/generate-video/route.ts) | Admin: queue HeyGen explainer job + n8n webhook |
-| [`src/app/api/lessons/[lessonId]/generated-video/route.ts`](../src/app/api/lessons/[lessonId]/generated-video/route.ts) | Poll generated-video job status |
-| [`src/app/api/lessons/generated-video/callback/route.ts`](../src/app/api/lessons/generated-video/callback/route.ts) | n8n shared-secret callback (status / mp4 upload) |
 
 Domain helpers (scoring, strip secrets, find assessment): [`src/lib/domain/`](../src/lib/domain/). Progress/correction writes go through security-definer RPCs (`upsert_student_progress`, `insert_correction_row`) invoked by the API with the cookie session after `profiles.role` checks — students cannot upsert those tables directly. Full curriculum (answer keys) is loaded server-side via service role / `get_curriculum_row` (service_role only) or seed fallback; clients use `GET /api/curriculum` which strips secrets for non-admins.
 
@@ -146,12 +143,9 @@ Set in `.env.local` (do not commit) and in the Vercel project:
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser, RSC, and proxy (preferred) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Fallback if the publishable key is unset |
 | `SUPABASE_SERVICE_ROLE_KEY` | [`admin.ts`](../src/lib/supabase/admin.ts), seed scripts, optional signup/delete APIs — **never** expose to the browser |
-| `N8N_WEBHOOK_URL` | Admin generate-video → n8n webhook |
-| `N8N_WEBHOOK_SECRET` | Shared secret for n8n ↔ Ember callbacks |
-| `APP_URL` | Public app base URL used as callback base for n8n |
 
 ---
 
 ## Out of stack (v1)
 
-Live / streaming video hosting, real OCR/AI grading of paper+scan scripts (MCQ and paper-scan feedback stay deterministic mocks), email confirmation productization, and payments. Pre-rendered HeyGen explainer mp4s are in-stack (admin-triggered).
+Live / streaming video hosting, real OCR/AI grading of paper+scan scripts (MCQ and paper-scan feedback stay deterministic mocks), email confirmation productization, and payments. Pre-rendered lesson mp4s are uploaded by admins (Storage `lesson-videos`).

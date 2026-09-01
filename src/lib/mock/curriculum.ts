@@ -256,7 +256,7 @@ function makePastPaper(termNum: number, focus: string): PastPaper {
 
 function makeWeek(
   termNum: number,
-  weekNum: 1 | 2 | 3 | 4,
+  weekNum: number,
   topic: string,
   dayTopics: string[],
 ): Week {

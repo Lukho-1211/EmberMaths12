@@ -50,7 +50,7 @@ Public entry: `/` (landing), `/login` → `/login/[role]`, `/signup` → `/signu
 
 | Principle | Requirement |
 |-----------|-------------|
-| Curriculum shape | Terms 1–4 → Weeks 1–4 (Mon–Fri lessons + Saturday week test) → pre-exam + past paper |
+| Curriculum shape | Terms 1–4 → Weeks (Mon–Fri lessons + Saturday week test; admin may add beyond 4) → pre-exam + past paper |
 | Authorization | Role **always** from `public.profiles`, never editable `user_metadata` |
 | Persistence | Product data in **Supabase** (Auth + Postgres + Storage). UI store is an in-memory cache only — **no** `localStorage` app state |
 | Design | Brand tokens + Fraunces/Outfit via `next/font`. Follow `design-system/embermaths12/MASTER.md`; page files under `design-system/embermaths12/pages/` override when present |
@@ -79,13 +79,13 @@ Demo accounts (password `ember12`): `admin@ember12.za`, `student@ember12.za`, `t
 
 - Terms **1–4** (placeholder CAPS topics from 2025 ATP in `resourceInfo/`)
 - Each week: Mon–Fri lessons (each may have a **lesson test**) + **Saturday week test**
-- After Week 4: **pre-exam** and **past paper**
+- After the term’s weeks: **pre-exam** and **past paper**
 - Resources: PDF, Markdown, link, worksheet; files in Storage bucket `lesson-files` (max **20 MB**)
 - Lesson player **Video** tab:
-  - Prefer a **generated explainer mp4** when `lesson_generated_videos.status = ready` (admin-triggered HeyGen pipeline; files in `lesson-videos`)
+  - Prefer a **hosted mp4** when Admin uploads one to `lesson-videos` (URL stored on `Lesson.videoUrl`)
   - Else PDF/Markdown → slide deck at view time (`pdfjs-dist`) with browser TTS
   - **Text** tab = uploaded Markdown preview and/or PDF page preview + downloads
-  - Seed may include YouTube fallback URLs when no uploadable materials exist
+  - Seed may include YouTube fallback URLs when no uploadable materials or hosted mp4 exist
   - **Not** live streaming / live video hosting
 
 ### 5.3 Assessments — `shipped` + `mock`
@@ -112,7 +112,7 @@ Used by: daily lesson tests, Saturday week tests, pre-exams. Past papers: paper+
 | Route | Capability |
 |-------|------------|
 | `/admin` | Dashboard stats, learner progress |
-| `/admin/terms` | Upload/edit lessons, week tests, pre-exams, past papers; regenerate MCQs; **Generate explainer video** (manual) |
+| `/admin/terms` | Upload/edit lessons, week tests, pre-exams, past papers; **add/remove weeks** (uncapped per term — empty Mon–Fri + Saturday test); regenerate MCQs; **upload lesson mp4** |
 | `/admin/users` | List teachers; delete student/parent accounts |
 | `/admin/groups` | Study groups, assign students, optional term link |
 | `/admin/pass-fail` | Filter by passing / failing / pending |
@@ -186,7 +186,7 @@ Edit this section as product priorities firm up. Cursor **MUST NOT** implement L
 
 | ID | Capability | Notes |
 |----|------------|-------|
-| L1 | Pre-rendered hosted lesson video (HeyGen) | **Promoted** — admin Generate button; Video tab prefers ready mp4; PDF slideshow fallback. Live streaming still later |
+| L1 | Pre-rendered hosted lesson video | **Promoted** — admin uploads external mp4; Video tab prefers hosted mp4; PDF slideshow fallback. Live streaming still later |
 | L2 | Real OCR / AI grading | Replace `mockPaperGrade` / mock MCQ generation |
 | L3 | Email confirmation & transactional email | Signup confirm, resets |
 | L4 | Payments / billing | Subscriptions or school billing |

@@ -89,7 +89,7 @@ function CapsRhythmDiagram() {
               style={{ animationDelay: `${0.08 + i * 0.06}s` }}
             >
               <p className="font-display text-lg text-ember-white">{term}</p>
-              <p className="mt-1 text-[11px] leading-snug text-ember-gray">Weeks 1–4</p>
+              <p className="mt-1 text-[11px] leading-snug text-ember-gray">Weekly lessons</p>
             </div>
           ))}
         </div>
@@ -202,7 +202,7 @@ export default function HomePage() {
             <ol className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 { step: "01", label: "Terms 1–4", detail: "Placeholder CAPS topics from the Annual Teaching Plan." },
-                { step: "02", label: "Weeks 1–4", detail: "Each week holds Mon–Fri lessons in sequence." },
+                { step: "02", label: "Weekly lessons", detail: "Each week holds Mon–Fri lessons in sequence." },
                 { step: "03", label: "Saturday test", detail: "Weekly accountability after every lesson block." },
                 { step: "04", label: "Pre-exam", detail: "Term checkpoint with paper walkthrough and memo support." },
               ].map((item, i) => (
