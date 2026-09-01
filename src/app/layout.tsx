@@ -54,7 +54,12 @@ export default async function RootLayout({
     .join(" ");
 
   return (
-    <html lang="en" className={htmlClass} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={htmlClass}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <StoreProvider>{children}</StoreProvider>
       </body>

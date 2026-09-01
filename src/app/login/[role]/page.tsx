@@ -33,8 +33,14 @@ function LoginForm() {
     if (!role || loading) return;
     setError("");
     setLoading(true);
+    // #region agent log
+    fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'C',location:'login/[role]/page.tsx:onSubmit',message:'login form submitted',data:{role,hasEmail:Boolean(email),hasPassword:Boolean(password)},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     try {
       const result = await login(email, password, role);
+      // #region agent log
+      fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'C',location:'login/[role]/page.tsx:result',message:'login form result',data:{ok:result.ok,error:result.ok?null:result.error,nextRole:result.ok?result.role:null},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       if (!result.ok) {
         setError(result.error);
         return;

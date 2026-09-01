@@ -113,6 +113,9 @@ export function AppShell({
   const pathname = usePathname();
 
   useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'E',location:'app-shell.tsx:gate',message:'AppShell gate',data:{ready,hasUser:Boolean(user),userRole:user?.role ?? null,expectedRole:role,signingOut,pathname,willRedirectToLogin:ready && !user && !signingOut,willRedirectToOwnPortal:ready && Boolean(user) && user?.role !== role},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     if (!ready) return;
     if (!user) {
       // Logout clears the session then hard-navigates home; skip role-login redirect.
