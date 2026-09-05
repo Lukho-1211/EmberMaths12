@@ -1,0 +1,34 @@
+- generic [active] [ref=f5e1]:
+  - generic [ref=f5e2]:
+    - link "Ember Maths12" [ref=f5e3] [cursor=pointer]:
+      - /url: /
+    - generic [ref=f5e4]:
+      - heading "Log in" [level=1] [ref=f5e5]
+      - paragraph [ref=f5e6]: Choose your portal to continue.
+      - list [ref=f5e7]:
+        - listitem [ref=f5e8]:
+          - link "Student →" [ref=f5e9] [cursor=pointer]:
+            - /url: /login/student
+            - generic [ref=f5e10]: Student
+            - generic [ref=f5e11]: →
+        - listitem [ref=f5e12]:
+          - link "Teacher →" [ref=f5e13] [cursor=pointer]:
+            - /url: /login/teacher
+            - generic [ref=f5e14]: Teacher
+            - generic [ref=f5e15]: →
+        - listitem [ref=f5e16]:
+          - link "Parent →" [ref=f5e17] [cursor=pointer]:
+            - /url: /login/parent
+            - generic [ref=f5e18]: Parent
+            - generic [ref=f5e19]: →
+        - listitem [ref=f5e20]:
+          - link "Admin →" [ref=f5e21] [cursor=pointer]:
+            - /url: /login/admin
+            - generic [ref=f5e22]: Admin
+            - generic [ref=f5e23]: →
+      - paragraph [ref=f5e24]:
+        - text: No account?
+        - link "Sign up" [ref=f5e25] [cursor=pointer]:
+          - /url: /signup
+  - button "Open Next.js Dev Tools" [ref=f5e31] [cursor=pointer]
+  - alert [ref=f5e35]

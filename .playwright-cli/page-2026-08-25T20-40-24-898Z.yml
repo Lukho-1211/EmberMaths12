@@ -1,0 +1,77 @@
+- generic [ref=f6e1]:
+  - button "Open Next.js Dev Tools" [ref=f6e37] [cursor=pointer]
+  - alert [ref=f6e41]
+  - generic [ref=f6e43]:
+    - complementary [ref=f6e44]:
+      - generic [ref=f6e45]:
+        - link "Ember Maths12" [ref=f6e46] [cursor=pointer]:
+          - /url: /student
+        - paragraph [ref=f6e47]: student
+      - navigation [ref=f6e48]:
+        - link "Dashboard" [ref=f6e49] [cursor=pointer]:
+          - /url: /student
+        - link "Learn" [ref=f6e53] [cursor=pointer]:
+          - /url: /student/learn
+        - link "Past papers" [ref=f6e56] [cursor=pointer]:
+          - /url: /student/past-papers
+        - link "Badges" [ref=f6e61] [cursor=pointer]:
+          - /url: /student/badges
+        - link "Top Achievers" [ref=f6e65] [cursor=pointer]:
+          - /url: /student/achievers
+        - link "Settings" [ref=f6e72] [cursor=pointer]:
+          - /url: /student/settings
+      - button "Log out" [ref=f6e76]
+    - generic [ref=f6e80]:
+      - banner [ref=f6e81]:
+        - generic [ref=f6e82]:
+          - paragraph [ref=f6e83]: Signed in
+          - paragraph [ref=f6e84]: Playwright Student
+        - generic [ref=f6e85]:
+          - generic [ref=f6e86]: playwright.student.20260825@ember12.test
+          - button "Log out" [ref=f6e87]
+      - main [ref=f6e91]:
+        - generic [ref=f6e92]:
+          - generic [ref=f6e93]:
+            - heading "Settings" [level=1] [ref=f6e94]
+            - paragraph [ref=f6e95]: Update your account, appearance, and sign out.
+          - generic [ref=f6e96]:
+            - heading "Appearance" [level=2] [ref=f6e97]
+            - paragraph [ref=f6e98]: Choose light or dark mode for Ember Maths12.
+            - generic [ref=f6e99]:
+              - button "Light" [ref=f6e100]
+              - button "Dark" [active] [ref=f6e107]
+          - generic [ref=f6e110]:
+            - heading "Account details" [level=2] [ref=f6e111]
+            - paragraph [ref=f6e112]: Signed in as student. Leave password blank to keep your current one.
+            - generic [ref=f6e113]:
+              - generic [ref=f6e114]:
+                - generic [ref=f6e115]: Full name
+                - textbox "Full name" [ref=f6e116]: Playwright Student
+              - generic [ref=f6e117]:
+                - generic [ref=f6e118]: Email
+                - textbox "Email" [ref=f6e119]: playwright.student.20260825@ember12.test
+              - generic [ref=f6e120]:
+                - generic [ref=f6e121]: New password
+                - textbox "New password" [ref=f6e122]:
+                  - /placeholder: Leave blank to keep current
+              - generic [ref=f6e123]:
+                - generic [ref=f6e124]: Province
+                - combobox "Province" [ref=f6e125]:
+                  - option "Select province…"
+                  - option "Eastern Cape"
+                  - option "Free State"
+                  - option "Gauteng" [selected]
+                  - option "KwaZulu-Natal"
+                  - option "Limpopo"
+                  - option "Mpumalanga"
+                  - option "North West"
+                  - option "Northern Cape"
+                  - option "Western Cape"
+              - generic [ref=f6e126]:
+                - generic [ref=f6e127]: Municipality
+                - combobox "Municipality" [ref=f6e129]: City of Johannesburg
+              - button "Save changes" [ref=f6e130] [cursor=pointer]
+          - generic [ref=f6e131]:
+            - heading "Session" [level=2] [ref=f6e132]
+            - paragraph [ref=f6e133]: Sign out of Ember Maths12 on this device.
+            - button "Log out" [ref=f6e134]

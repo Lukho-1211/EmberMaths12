@@ -1,0 +1,25 @@
+- generic [active] [ref=f2e1]:
+  - button "Open Next.js Dev Tools" [ref=f2e37] [cursor=pointer]
+  - alert [ref=f2e41]
+  - generic [ref=f2e42]:
+    - link "Ember Maths12" [ref=f2e43] [cursor=pointer]:
+      - /url: /
+    - generic [ref=f2e44]:
+      - heading "Student log in" [level=1] [ref=f2e45]
+      - paragraph [ref=f2e46]: Access your Ember Maths12 student portal.
+      - generic [ref=f2e47]:
+        - generic [ref=f2e48]:
+          - generic [ref=f2e49]: Email
+          - textbox "Email" [ref=f2e50]: student@ember12.za
+        - generic [ref=f2e51]:
+          - generic [ref=f2e52]: Password
+          - textbox "Password" [ref=f2e53]: wrongpassword
+        - paragraph [ref=f2e59]: Invalid email or password.
+        - button "Log in" [ref=f2e54] [cursor=pointer]
+      - paragraph [ref=f2e55]:
+        - text: No account?
+        - link "Sign up as student" [ref=f2e56] [cursor=pointer]:
+          - /url: /signup/student
+      - paragraph [ref=f2e57]:
+        - link "Choose a different portal" [ref=f2e58] [cursor=pointer]:
+          - /url: /login

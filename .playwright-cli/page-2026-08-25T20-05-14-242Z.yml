@@ -1,0 +1,10 @@
+- generic [active] [ref=f13e1]:
+  - generic "Loading" [ref=f13e2]:
+    - generic [ref=f13e3]:
+      - complementary [ref=f13e4]:
+        - navigation [ref=f13e8]
+      - generic [ref=f13e16]:
+        - banner [ref=f13e17]:
+          - paragraph [ref=f13e19]: Signed in
+        - main [ref=f13e24]
+  - button "Open Next.js Dev Tools" [ref=f13e37] [cursor=pointer]

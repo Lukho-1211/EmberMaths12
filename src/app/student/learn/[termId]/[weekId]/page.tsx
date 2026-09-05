@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/app-shell";
 import { TermWeekNav } from "@/components/term-week-nav";
+import { WeekDayNav } from "@/components/week-day-nav";
 import { AssessmentPanel } from "@/components/assessment";
 import { useStore } from "@/lib/store";
 
@@ -22,6 +23,7 @@ function StudentWeekContent() {
   return (
     <div>
       <TermWeekNav termId={term.id} weeks={term.weeks} activeWeekId={week.id} />
+      <WeekDayNav termId={term.id} weekId={week.id} lessons={week.lessons} />
 
       <PageHeader
         title={`Week ${week.number}: ${week.topic}`}

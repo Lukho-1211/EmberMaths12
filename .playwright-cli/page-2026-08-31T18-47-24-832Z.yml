@@ -1,0 +1,44 @@
+- generic [active] [ref=f5e1]:
+  - generic [ref=f5e2]:
+    - link "Ember Maths12" [ref=f5e3] [cursor=pointer]:
+      - /url: /
+    - generic [ref=f5e4]:
+      - heading "Student sign up" [level=1] [ref=f5e5]
+      - paragraph [ref=f5e6]: Create your Ember Maths12 student account.
+      - generic [ref=f5e7]:
+        - generic [ref=f5e8]:
+          - generic [ref=f5e9]: Full name
+          - textbox "Full name" [ref=f5e10]
+        - generic [ref=f5e11]:
+          - generic [ref=f5e12]: Email
+          - textbox "Email" [ref=f5e13]
+        - generic [ref=f5e14]:
+          - generic [ref=f5e15]: Password
+          - generic [ref=f5e16]:
+            - textbox "Password" [ref=f5e17]
+            - button "Show password" [ref=f5e18] [cursor=pointer]
+        - generic [ref=f5e22]:
+          - generic [ref=f5e23]: Province
+          - combobox "Province" [ref=f5e24]:
+            - option "Select province…" [selected]
+            - option "Eastern Cape"
+            - option "Free State"
+            - option "Gauteng"
+            - option "KwaZulu-Natal"
+            - option "Limpopo"
+            - option "Mpumalanga"
+            - option "North West"
+            - option "Northern Cape"
+            - option "Western Cape"
+        - generic [ref=f5e25]:
+          - generic [ref=f5e26]: Municipality
+          - combobox "Municipality" [disabled] [ref=f5e28]
+        - button "Create account" [ref=f5e29] [cursor=pointer]
+      - paragraph [ref=f5e30]:
+        - text: Already registered?
+        - link "Log in as student" [ref=f5e31] [cursor=pointer]:
+          - /url: /login/student
+      - paragraph [ref=f5e32]:
+        - link "Choose a different portal" [ref=f5e33] [cursor=pointer]:
+          - /url: /signup
+  - button "Open Next.js Dev Tools" [ref=f5e39] [cursor=pointer]

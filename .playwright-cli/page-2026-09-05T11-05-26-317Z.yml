@@ -1,0 +1,121 @@
+- generic [active] [ref=f5e1]:
+  - button "Open Next.js Dev Tools" [ref=f5e37] [cursor=pointer]
+  - alert [ref=f5e41]: "Week 1: Number Patterns & Sequences"
+  - generic [ref=f5e43]:
+    - complementary [ref=f5e44]:
+      - generic [ref=f5e45]:
+        - link "Ember Maths12" [ref=f5e46] [cursor=pointer]:
+          - /url: /student
+        - paragraph [ref=f5e47]: student
+      - navigation [ref=f5e48]:
+        - link "Dashboard" [ref=f5e49] [cursor=pointer]:
+          - /url: /student
+        - link "Learn" [ref=f5e53] [cursor=pointer]:
+          - /url: /student/learn
+        - link "Past papers" [ref=f5e56] [cursor=pointer]:
+          - /url: /student/past-papers
+        - link "Badges" [ref=f5e61] [cursor=pointer]:
+          - /url: /student/badges
+        - link "Top Achievers" [ref=f5e65] [cursor=pointer]:
+          - /url: /student/achievers
+        - link "Settings" [ref=f5e72] [cursor=pointer]:
+          - /url: /student/settings
+      - button "Log out" [ref=f5e76]
+    - generic [ref=f5e80]:
+      - banner [ref=f5e81]:
+        - generic [ref=f5e82]:
+          - paragraph [ref=f5e83]: Signed in
+          - paragraph [ref=f5e84]: Week Verify Student
+        - generic [ref=f5e85]:
+          - generic [ref=f5e86]: week.verify.20260901@ember12.test
+          - button "Log out" [ref=f5e87]
+      - main [ref=f5e91]:
+        - generic [ref=f5e169]:
+          - navigation "Weeks in this term" [ref=f5e170]:
+            - link "Week 1" [ref=f5e171] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week1
+            - link "Week 2" [ref=f5e172] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week2
+            - link "Week 3" [ref=f5e173] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week3
+            - link "Week 4" [ref=f5e174] [cursor=pointer]:
+              - /url: /student/learn/term-1/119535f2-080b-4b18-b4f2-d985469ccc22
+            - link "Week 5" [ref=f5e175] [cursor=pointer]:
+              - /url: /student/learn/term-1/5d99073d-65e9-4141-97dc-b577a96e9bbd
+            - link "Pre-exam" [ref=f5e176] [cursor=pointer]:
+              - /url: /student/learn/term-1/pre-exam
+          - generic [ref=f5e177]:
+            - 'heading "Week 1: Number Patterns & Sequences" [level=1] [ref=f5e178]'
+            - paragraph [ref=f5e179]: Term 1 — Patterns, Series & Functions · Mon–Fri lessons, then Saturday week test
+          - generic [ref=f5e180]:
+            - 'link "monday Monday: GRADE 11 REVISION OF QUADRATIC SEQUENCES Open" [ref=f5e181] [cursor=pointer]':
+              - /url: /student/learn/term-1/term1-week1/monday
+              - generic [ref=f5e182]:
+                - paragraph [ref=f5e183]: monday
+                - paragraph [ref=f5e184]: "Monday: GRADE 11 REVISION OF QUADRATIC SEQUENCES"
+              - generic [ref=f5e185]: Open
+            - 'link "tuesday Tuesday: SEQUENCES (PROGRESSIONS) Open" [ref=f5e186] [cursor=pointer]':
+              - /url: /student/learn/term-1/term1-week1/tuesday
+              - generic [ref=f5e187]:
+                - paragraph [ref=f5e188]: tuesday
+                - paragraph [ref=f5e189]: "Tuesday: SEQUENCES (PROGRESSIONS)"
+              - generic [ref=f5e190]: Open
+            - 'link "wednesday Wednesday: Arithmetic and Geometric Open" [ref=f5e191] [cursor=pointer]':
+              - /url: /student/learn/term-1/term1-week1/wednesday
+              - generic [ref=f5e192]:
+                - paragraph [ref=f5e193]: wednesday
+                - paragraph [ref=f5e194]: "Wednesday: Arithmetic and Geometric"
+              - generic [ref=f5e195]: Open
+            - 'link "thursday Thursday: Arithmetic and Geometric Open" [ref=f5e196] [cursor=pointer]':
+              - /url: /student/learn/term-1/term1-week1/thursday
+              - generic [ref=f5e197]:
+                - paragraph [ref=f5e198]: thursday
+                - paragraph [ref=f5e199]: "Thursday: Arithmetic and Geometric"
+              - generic [ref=f5e200]: Open
+            - 'link "friday Friday: Arithmetic and Geometric Open" [ref=f5e201] [cursor=pointer]':
+              - /url: /student/learn/term-1/term1-week1/friday
+              - generic [ref=f5e202]:
+                - paragraph [ref=f5e203]: friday
+                - paragraph [ref=f5e204]: "Friday: Arithmetic and Geometric"
+              - generic [ref=f5e205]: Open
+          - generic [ref=f5e206]:
+            - heading "Saturday · Week test" [level=2] [ref=f5e207]
+            - generic [ref=f5e208]:
+              - tablist "Assessment mode" [ref=f5e209]:
+                - tab "On screen (MCQ)" [ref=f5e210]
+                - tab "Paper + scan" [selected] [ref=f5e211]
+              - generic [ref=f5e212]:
+                - heading "Week 1 Saturday Test — Number Patterns & Sequences" [level=2] [ref=f5e213]
+                - paragraph [ref=f5e214]: Assess Term 1 Week 1 understanding of Number Patterns & Sequences. Choose on-screen MCQ or Paper + scan.
+                - paragraph [ref=f5e215]: "Paper path (demo): write answers on paper, then upload a scan for mock AI correction."
+                - list [ref=f5e216]:
+                  - listitem [ref=f5e217]: 1. Questions
+                  - listitem [ref=f5e218]: 2. Scan
+                  - listitem [ref=f5e219]: 3. Feedback
+                - generic [ref=f5e220]:
+                  - paragraph [ref=f5e221]: Copy these questions onto paper (or print this screen). Show full working. Options are shown as a reference only — write your own answers.
+                  - generic [ref=f5e222]:
+                    - generic [ref=f5e223]:
+                      - paragraph [ref=f5e224]: 1. Which statement best relates to Number Patterns & Sequences?
+                      - list [ref=f5e225]:
+                        - listitem [ref=f5e226]: It is unrelated to Grade 12 Maths
+                        - listitem [ref=f5e227]: It is a core CAPS focus for this week (Number Patterns & Sequences)
+                        - listitem [ref=f5e228]: It only appears in Term 4 revision
+                        - listitem [ref=f5e229]: It is optional enrichment only
+                    - generic [ref=f5e230]:
+                      - paragraph [ref=f5e231]: 2. A learner should prepare for Saturday week tests by…
+                      - list [ref=f5e232]:
+                        - listitem [ref=f5e233]: Skipping Mon–Fri lessons
+                        - listitem [ref=f5e234]: Reviewing daily lesson resources and worked examples
+                        - listitem [ref=f5e235]: Waiting until the pre-exam
+                        - listitem [ref=f5e236]: Only memorising formulas without practice
+                    - generic [ref=f5e237]:
+                      - paragraph [ref=f5e238]: 3. In the context of Number Patterns & Sequences, the next step after practice is…
+                      - list [ref=f5e239]:
+                        - listitem [ref=f5e240]: Ignore feedback
+                        - listitem [ref=f5e241]: Check solutions and correct mistakes
+                        - listitem [ref=f5e242]: Change subjects
+                        - listitem [ref=f5e243]: Skip the pre-exam
+                  - button "I'm ready to scan" [ref=f5e244]
+          - link "← Back to term" [ref=f5e245] [cursor=pointer]:
+            - /url: /student/learn/term-1

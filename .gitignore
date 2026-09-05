@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# generated curriculum SQL (regenerate with npm run db:seed:curriculum)
+supabase/seed-app-state.sql
+
 # vercel
 .vercel
 

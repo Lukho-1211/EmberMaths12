@@ -1,0 +1,59 @@
+---
+description: Ember Maths12 project conventions — stack, Supabase, auth, and UI
+alwaysApply: true
+---
+
+# Ember Maths12
+
+CAPS Grade 12 Mathematics school frontend. Portals: `/admin`, `/student`, `/teacher`, `/parent`.
+Product requirements: [`docs/PRD.md`](../../docs/PRD.md).
+
+## Stack
+
+- Next.js 16 App Router, React 19, TypeScript (strict), Tailwind CSS 4, Node 22+
+- Path alias: `@/` → `src/`
+- Before adding Next APIs, read `node_modules/next/dist/docs/` — this Next version differs from training data
+- Session refresh lives in `src/proxy.ts` (not `middleware.ts`)
+
+## Data & store
+
+- Product data: **Supabase** Auth + Postgres + Storage (`lesson-files` bucket)
+- UI state: in-memory cache in `src/lib/store.tsx`; hydrate/mutate via `src/lib/supabase/app-state.ts`
+- Do **not** persist app state in `localStorage`
+- Do **not** treat `src/generated/prisma/` as the app data layer
+
+```tsx
+// ❌ BAD — local persistence
+localStorage.setItem("ember-state", JSON.stringify(state));
+
+// ✅ GOOD — store mutation that writes through Supabase
+await saveProgress(userId, progress);
+```
+
+## Auth
+
+- Browser signup/login uses the publishable key (`src/lib/supabase/client.ts`)
+- Server RSC client: `src/lib/supabase/server.ts`
+- Service role: `src/lib/supabase/admin.ts` — **server/seed only**; never expose `SUPABASE_SERVICE_ROLE_KEY`
+- **Authorization role always comes from `profiles`**, not editable `user_metadata`
+- **Live admin verification** (browser / Playwright against this Supabase project): `/login/admin` with `aluluthospambo@gmail.com` / `Lukho@1211`. Do **not** use seeded demo `admin@ember12.za` — that email is seed-only and is not the live admin profile.
+
+```ts
+// ❌ BAD
+const role = user.user_metadata.role;
+
+// ✅ GOOD
+const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+const role = profile.role;
+```
+
+## UI
+
+- Brand tokens: `ember-gold` `#FCA311`, `ember-navy` `#14213D`, `ember-black`, `ember-white`, `ember-gray`
+- Gold CTAs use **navy** text for contrast
+- Fonts via `next/font` only: Fraunces (display) + Outfit (body) — no Google Fonts `@import`
+- Follow `design-system/embermaths12/MASTER.md`; page files under `design-system/embermaths12/pages/` override when present
+
+## Out of scope (v1)
+
+Live video hosting, real OCR/AI grading (MCQ and paper-scan feedback are deterministic mocks), email confirmation flows, payments.

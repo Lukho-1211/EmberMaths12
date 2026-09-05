@@ -1,0 +1,25 @@
+- generic [active] [ref=f16e1]:
+  - button "Open Next.js Dev Tools" [ref=f16e37] [cursor=pointer]
+  - alert [ref=f16e41]
+  - generic [ref=f16e216]: "0"
+  - generic [ref=f16e217]:
+    - link "Ember Maths12" [ref=f16e218] [cursor=pointer]:
+      - /url: /
+    - generic [ref=f16e219]:
+      - heading "Admin log in" [level=1] [ref=f16e220]
+      - paragraph [ref=f16e221]: Access your Ember Maths12 admin portal.
+      - generic [ref=f16e222]:
+        - generic [ref=f16e223]:
+          - generic [ref=f16e224]: Email
+          - textbox "Email" [ref=f16e225]
+        - generic [ref=f16e226]:
+          - generic [ref=f16e227]: Password
+          - textbox "Password" [ref=f16e228]
+        - button "Log in" [ref=f16e229] [cursor=pointer]
+      - paragraph [ref=f16e230]:
+        - text: No account?
+        - link "Sign up as admin" [ref=f16e231] [cursor=pointer]:
+          - /url: /signup/admin
+      - paragraph [ref=f16e232]:
+        - link "Choose a different portal" [ref=f16e233] [cursor=pointer]:
+          - /url: /login

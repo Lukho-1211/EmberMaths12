@@ -1,5 +1,5 @@
 import type { Resource } from "@/lib/types";
-import { markdownResourceToSlides } from "@/lib/lesson-video/markdown-to-slides";
+import { markdownResourceToSlidesAsync } from "@/lib/lesson-video/markdown-to-slides";
 import { pickVideoSources } from "@/lib/lesson-video/pick-sources";
 import { pdfResourceToSlides } from "@/lib/lesson-video/pdf-to-slides";
 import type { SlideDeck } from "@/lib/lesson-video/types";
@@ -29,7 +29,7 @@ export async function buildSlideDeck(resources: Resource[]): Promise<SlideDeck |
   const slides = [];
   for (const resource of sources) {
     if (resource.type === "markdown") {
-      slides.push(...markdownResourceToSlides(resource));
+      slides.push(...(await markdownResourceToSlidesAsync(resource)));
     } else if (resource.type === "pdf") {
       slides.push(...(await pdfResourceToSlides(resource)));
     }

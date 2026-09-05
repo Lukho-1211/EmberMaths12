@@ -1,0 +1,62 @@
+- generic [ref=f10e1]:
+  - button "Open Next.js Dev Tools" [ref=f10e24] [cursor=pointer]
+  - alert [ref=f10e28]: Admin dashboard
+  - generic [ref=f10e54]:
+    - complementary [ref=f10e55]:
+      - generic [ref=f10e56]:
+        - link "Ember Maths12" [ref=f10e57] [cursor=pointer]:
+          - /url: /admin
+        - paragraph [ref=f10e58]: admin
+      - navigation [ref=f10e59]:
+        - link "Dashboard" [ref=f10e60] [cursor=pointer]:
+          - /url: /admin
+        - link "Terms & Lessons" [ref=f10e66] [cursor=pointer]:
+          - /url: /admin/terms
+        - link "Users & Teachers" [ref=f10e69] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Study Groups" [ref=f10e75] [cursor=pointer]:
+          - /url: /admin/groups
+        - link "Pass / Fail" [ref=f10e81] [cursor=pointer]:
+          - /url: /admin/pass-fail
+        - link "Top Achievers" [ref=f10e86] [cursor=pointer]:
+          - /url: /admin/achievers
+      - button "Log out" [ref=f10e93]
+    - generic [ref=f10e97]:
+      - banner [ref=f10e98]:
+        - generic [ref=f10e99]:
+          - paragraph [ref=f10e100]: Signed in
+          - paragraph [ref=f10e101]: Playwright Admin
+        - generic [ref=f10e102]:
+          - generic [ref=f10e103]: playwright.admin.20260825@ember12.test
+          - button "Log out" [ref=f10e104]
+      - main [ref=f10e108]:
+        - generic [ref=f10e109]:
+          - generic [ref=f10e110]:
+            - heading "Admin dashboard" [level=1] [ref=f10e111]
+            - paragraph [ref=f10e112]: Overview of Ember Maths12 learners, instructors, and term health.
+          - generic [ref=f10e113]:
+            - generic [ref=f10e114]:
+              - paragraph [ref=f10e115]: Students
+              - paragraph [ref=f10e116]: "6"
+            - generic [ref=f10e117]:
+              - paragraph [ref=f10e118]: Teachers
+              - paragraph [ref=f10e119]: "0"
+            - generic [ref=f10e120]:
+              - paragraph [ref=f10e121]: Pass rate
+              - paragraph [ref=f10e122]: 17%
+              - paragraph [ref=f10e123]: 1 passing · 2 failing
+            - generic [ref=f10e124]:
+              - paragraph [ref=f10e125]: Active terms
+              - paragraph [ref=f10e126]: "4"
+              - paragraph [ref=f10e127]: Term 1–4 seeded
+          - generic [ref=f10e128]:
+            - button "Students" [ref=f10e129]
+            - button "Instructors" [active] [ref=f10e130]
+          - table [ref=f10e229]:
+            - rowgroup [ref=f10e230]:
+              - row [ref=f10e231]:
+                - columnheader "Instructor" [ref=f10e232]
+                - columnheader "Email" [ref=f10e233]
+                - columnheader "Classes" [ref=f10e234]
+            - rowgroup
+  - generic [ref=f10e228]: "0"

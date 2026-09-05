@@ -1,0 +1,200 @@
+- generic [ref=f3e1]:
+  - button "Open Next.js Dev Tools" [ref=f3e37] [cursor=pointer]
+  - alert [ref=f3e41]
+  - generic [ref=f3e43]:
+    - complementary [ref=f3e44]:
+      - generic [ref=f3e45]:
+        - link "Ember Maths12" [ref=f3e46] [cursor=pointer]:
+          - /url: /student
+        - paragraph [ref=f3e47]: student
+      - navigation [ref=f3e48]:
+        - link "Dashboard" [ref=f3e49] [cursor=pointer]:
+          - /url: /student
+        - link "Learn" [ref=f3e53] [cursor=pointer]:
+          - /url: /student/learn
+        - link "Past papers" [ref=f3e56] [cursor=pointer]:
+          - /url: /student/past-papers
+        - link "Badges" [ref=f3e61] [cursor=pointer]:
+          - /url: /student/badges
+        - link "Top Achievers" [ref=f3e65] [cursor=pointer]:
+          - /url: /student/achievers
+        - link "Settings" [ref=f3e72] [cursor=pointer]:
+          - /url: /student/settings
+      - button "Log out" [ref=f3e76]
+    - generic [ref=f3e80]:
+      - banner [ref=f3e81]:
+        - generic [ref=f3e82]:
+          - paragraph [ref=f3e83]: Signed in
+          - paragraph [ref=f3e84]: Playwright Student
+        - generic [ref=f3e85]:
+          - generic [ref=f3e86]: playwright.student.20260825@ember12.test
+          - button "Log out" [ref=f3e87]
+      - main [ref=f3e91]:
+        - generic [ref=f3e185]:
+          - navigation "Weeks in this term" [ref=f3e186]:
+            - link "Week 1" [ref=f3e187] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week1
+            - link "Week 2" [ref=f3e188] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week2
+            - link "Week 3" [ref=f3e189] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week3
+            - link "Week 4" [ref=f3e190] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week4
+            - link "Pre-exam" [ref=f3e191] [cursor=pointer]:
+              - /url: /student/learn/term-1/pre-exam
+          - generic [ref=f3e192]:
+            - 'heading "Monday: Quadratic patterns revision" [level=1] [ref=f3e193]'
+            - paragraph [ref=f3e194]: Term 1 — Patterns, Series & Functions · Week 1 · monday
+          - tablist "Lesson view" [ref=f3e195]:
+            - tab "Video" [ref=f3e196]
+            - tab "Text" [selected] [ref=f3e200]
+          - generic [ref=f3e204]:
+            - generic [ref=f3e205]:
+              - tabpanel "Text" [ref=f3e427]:
+                - article [ref=f3e428]:
+                  - generic [ref=f3e429]:
+                    - paragraph [ref=f3e430]: Markdown
+                    - link "Download" [ref=f3e431] [cursor=pointer]:
+                      - /url: data:text/markdown;charset=utf-8,…
+                  - generic [ref=f3e432]: "# Quadratic patterns revision CAPS Grade 12 — Term 1, Week 1 · Number Patterns & Sequences ## Learning focus - Revise key ideas for **Quadratic patterns revision** - Work through examples step by step - Check answers and note common errors ## Outline 1. Warm-up recall 2. Core method / formula 3. Guided examples 4. Independent practice ## Tip Switch to **Video** for the walkthrough, then return here for notes."
+              - paragraph [ref=f3e240]: "CAPS Grade 12 — Term 1, Week 1. Focus: Quadratic patterns revision."
+              - paragraph [ref=f3e241]: Duration ≈ 25 minutes
+              - generic [ref=f3e242]:
+                - 'heading "Lesson test — Monday: Quadratic patterns revision" [level=2] [ref=f3e243]'
+                - paragraph [ref=f3e244]: Check today’s lesson. Choose on-screen MCQ or Paper + scan. Pass to mark the lesson complete.
+                - paragraph [ref=f3e245]: Pass mark 50% — required before you can mark this lesson complete.
+                - generic [ref=f3e247]:
+                  - tablist "Assessment mode" [ref=f3e248]:
+                    - tab "On screen (MCQ)" [selected] [ref=f3e249]
+                    - tab "Paper + scan" [ref=f3e250]
+                  - generic [ref=f3e251]:
+                    - 'heading "Lesson test — Monday: Quadratic patterns revision" [level=2] [ref=f3e252]'
+                    - paragraph [ref=f3e253]: Check today’s lesson. Choose on-screen MCQ or Paper + scan. Pass to mark the lesson complete.
+                    - generic [ref=f3e255]:
+                      - heading "Exam paper / materials" [level=3] [ref=f3e256]
+                      - paragraph [ref=f3e257]: Watch the paper walkthrough before you answer, or download the PDF / Markdown.
+                      - 'region "Lesson test — Monday: Quadratic patterns revision video walkthrough" [ref=f3e259]':
+                        - generic [ref=f3e260]:
+                          - generic [ref=f3e262]:
+                            - heading "Quadratic patterns revision" [level=3] [ref=f3e263]
+                            - generic [ref=f3e264]: Quadratic patterns revision CAPS Grade 12 — Term 1, Week 1 · Number Patterns & Sequences
+                          - generic [ref=f3e265]:
+                            - progressbar "Walkthrough progress" [ref=f3e266]
+                            - generic [ref=f3e268]:
+                              - generic [ref=f3e269]:
+                                - button "Previous slide" [disabled] [ref=f3e270]
+                                - button "Play" [ref=f3e273]
+                                - button "Next slide" [ref=f3e276]
+                                - button "Mute narration" [ref=f3e279]
+                              - generic [ref=f3e284]:
+                                - generic [ref=f3e285]: 1 / 4 · ≈ 1 min
+                                - button "Enter fullscreen" [ref=f3e286]
+                      - list [ref=f3e292]:
+                        - listitem [ref=f3e293]:
+                          - button "Quadratic patterns revision — Lesson notes markdown · view" [ref=f3e294]:
+                            - generic [ref=f3e298]:
+                              - generic [ref=f3e299]: Quadratic patterns revision — Lesson notes
+                              - generic [ref=f3e300]: markdown · view
+                        - listitem [ref=f3e301]:
+                          - generic [ref=f3e306]:
+                            - generic [ref=f3e307]: Quadratic patterns revision — Notes (PDF)
+                            - text: pdf
+                        - listitem [ref=f3e308]:
+                          - generic [ref=f3e313]:
+                            - generic [ref=f3e314]: Extra practice worksheet
+                            - text: worksheet
+                        - listitem [ref=f3e315]:
+                          - link "Learn more — CAPS topic guide link" [ref=f3e316] [cursor=pointer]:
+                            - /url: https://www.education.gov.za/
+                            - generic [ref=f3e320]:
+                              - generic [ref=f3e321]: Learn more — CAPS topic guide
+                              - text: link
+                    - generic [ref=f3e322]:
+                      - group "1. What is the main focus of today’s lesson (Quadratic patterns revision)?" [ref=f3e323]:
+                        - generic [ref=f3e325]:
+                          - generic [ref=f3e326] [cursor=pointer]:
+                            - radio "Unrelated enrichment only" [ref=f3e327]
+                            - generic [ref=f3e328]: Unrelated enrichment only
+                          - generic [ref=f3e329] [cursor=pointer]:
+                            - radio "Quadratic patterns revision" [checked] [ref=f3e330]
+                            - generic [ref=f3e331]: Quadratic patterns revision
+                          - generic [ref=f3e332] [cursor=pointer]:
+                            - radio "Term 4 wellness only" [ref=f3e333]
+                            - generic [ref=f3e334]: Term 4 wellness only
+                          - generic [ref=f3e335] [cursor=pointer]:
+                            - radio "Skipping CAPS content" [ref=f3e336]
+                            - generic [ref=f3e337]: Skipping CAPS content
+                      - group "2. This lesson sits inside the week topic “Number Patterns & Sequences”. Learners should…" [ref=f3e338]:
+                        - generic [ref=f3e340]:
+                          - generic [ref=f3e341] [cursor=pointer]:
+                            - radio "Ignore daily notes" [ref=f3e342]
+                            - generic [ref=f3e343]: Ignore daily notes
+                          - generic [ref=f3e344] [cursor=pointer]:
+                            - radio "Work through examples and check answers" [checked] [ref=f3e345]
+                            - generic [ref=f3e346]: Work through examples and check answers
+                          - generic [ref=f3e347] [cursor=pointer]:
+                            - radio "Wait until the Saturday test only" [ref=f3e348]
+                            - generic [ref=f3e349]: Wait until the Saturday test only
+                          - generic [ref=f3e350] [cursor=pointer]:
+                            - radio "Avoid practice questions" [ref=f3e351]
+                            - generic [ref=f3e352]: Avoid practice questions
+                      - group "3. Before marking a lesson complete in Ember Maths12, you must…" [ref=f3e353]:
+                        - generic [ref=f3e355]:
+                          - generic [ref=f3e356] [cursor=pointer]:
+                            - radio "Skip the lesson test" [ref=f3e357]
+                            - generic [ref=f3e358]: Skip the lesson test
+                          - generic [ref=f3e359] [cursor=pointer]:
+                            - radio "Pass today’s lesson test (MCQ or paper + scan)" [checked] [active] [ref=f3e360]
+                            - generic [ref=f3e361]: Pass today’s lesson test (MCQ or paper + scan)
+                          - generic [ref=f3e362] [cursor=pointer]:
+                            - radio "Upload a memo as a student" [ref=f3e363]
+                            - generic [ref=f3e364]: Upload a memo as a student
+                          - generic [ref=f3e365] [cursor=pointer]:
+                            - radio "Finish the term pre-exam first" [ref=f3e366]
+                            - generic [ref=f3e367]: Finish the term pre-exam first
+                      - group "4. A sensible next step after studying Quadratic patterns revision is…" [ref=f3e368]:
+                        - generic [ref=f3e370]:
+                          - generic [ref=f3e371] [cursor=pointer]:
+                            - radio "Discard feedback" [ref=f3e372]
+                            - generic [ref=f3e373]: Discard feedback
+                          - generic [ref=f3e374] [cursor=pointer]:
+                            - radio "Review mistakes and retry similar problems" [ref=f3e375]
+                            - generic [ref=f3e376]: Review mistakes and retry similar problems
+                          - generic [ref=f3e377] [cursor=pointer]:
+                            - radio "Change to a different subject permanently" [ref=f3e378]
+                            - generic [ref=f3e379]: Change to a different subject permanently
+                          - generic [ref=f3e380] [cursor=pointer]:
+                            - radio "Only memorise the title" [ref=f3e381]
+                            - generic [ref=f3e382]: Only memorise the title
+                    - button "Submit assessment" [disabled] [ref=f3e383]
+              - generic [ref=f3e384]:
+                - button "Mark lesson complete" [disabled] [ref=f3e385]
+                - paragraph [ref=f3e386]: Pass today’s lesson test to complete.
+            - complementary [ref=f3e387]:
+              - heading "Resources" [level=2] [ref=f3e388]
+              - list [ref=f3e389]:
+                - listitem [ref=f3e390]:
+                  - button "Quadratic patterns revision — Lesson notes markdown · view" [ref=f3e391]:
+                    - generic [ref=f3e395]:
+                      - generic [ref=f3e396]: Quadratic patterns revision — Lesson notes
+                      - generic [ref=f3e397]: markdown · view
+                - listitem [ref=f3e398]:
+                  - link "Quadratic patterns revision — Notes (PDF) pdf" [ref=f3e399] [cursor=pointer]:
+                    - /url: "#"
+                    - generic [ref=f3e403]:
+                      - generic [ref=f3e404]: Quadratic patterns revision — Notes (PDF)
+                      - text: pdf
+                - listitem [ref=f3e405]:
+                  - link "Extra practice worksheet worksheet" [ref=f3e406] [cursor=pointer]:
+                    - /url: "#"
+                    - generic [ref=f3e410]:
+                      - generic [ref=f3e411]: Extra practice worksheet
+                      - text: worksheet
+                - listitem [ref=f3e412]:
+                  - link "Learn more — CAPS topic guide link" [ref=f3e413] [cursor=pointer]:
+                    - /url: https://www.education.gov.za/
+                    - generic [ref=f3e418]:
+                      - generic [ref=f3e419]: Learn more — CAPS topic guide
+                      - text: link
+              - link "← Back to week" [ref=f3e420] [cursor=pointer]:
+                - /url: /student/learn/term-1/term1-week1

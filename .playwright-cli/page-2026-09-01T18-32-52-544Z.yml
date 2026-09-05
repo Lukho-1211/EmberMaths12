@@ -1,0 +1,179 @@
+- generic [ref=f5e1]:
+  - button "Open Next.js Dev Tools" [ref=f5e37] [cursor=pointer]
+  - alert [ref=f5e41]
+  - generic [ref=f5e43]:
+    - complementary [ref=f5e44]:
+      - generic [ref=f5e45]:
+        - link "Ember Maths12" [ref=f5e46] [cursor=pointer]:
+          - /url: /admin
+        - paragraph [ref=f5e47]: admin
+      - navigation [ref=f5e48]:
+        - link "Dashboard" [ref=f5e49] [cursor=pointer]:
+          - /url: /admin
+        - link "Terms & Lessons" [ref=f5e55] [cursor=pointer]:
+          - /url: /admin/terms
+        - link "Users & Teachers" [ref=f5e58] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Study Groups" [ref=f5e64] [cursor=pointer]:
+          - /url: /admin/groups
+        - link "Pass / Fail" [ref=f5e70] [cursor=pointer]:
+          - /url: /admin/pass-fail
+        - link "Top Achievers" [ref=f5e75] [cursor=pointer]:
+          - /url: /admin/achievers
+      - button "Log out" [ref=f5e82]
+    - generic [ref=f5e86]:
+      - banner [ref=f5e87]:
+        - generic [ref=f5e88]:
+          - paragraph [ref=f5e89]: Signed in
+          - paragraph [ref=f5e90]: Alulutho
+        - generic [ref=f5e91]:
+          - generic [ref=f5e92]: aluluthospambo@gmail.com
+          - button "Log out" [ref=f5e93]
+      - main [ref=f5e97]:
+        - generic [ref=f5e98]:
+          - generic [ref=f5e99]:
+            - heading "Terms & weekly lessons" [level=1] [ref=f5e100]
+            - paragraph [ref=f5e101]: "Create and edit Term 1–4: Mon–Fri lessons, Saturday week tests, and pre-exams."
+          - generic [ref=f5e102]:
+            - button "Term 1" [ref=f5e103]
+            - button "Term 2" [ref=f5e104]
+            - button "Term 3" [ref=f5e105]
+            - button "Term 4" [ref=f5e106]
+          - generic [ref=f5e107]:
+            - generic [ref=f5e108]:
+              - heading "Term 1 — Patterns, Series & Functions" [level=2] [ref=f5e109]
+              - generic [ref=f5e110]:
+                - button "Week 1" [ref=f5e111]
+                - button "Week 2" [ref=f5e112]
+                - button "Week 3" [ref=f5e113]
+                - button "Week 4" [ref=f5e114]
+                - button "Week 5" [ref=f5e115]
+                - button "Week 6" [active] [ref=f5e116]
+              - generic [ref=f5e117]:
+                - generic [ref=f5e118]:
+                  - generic [ref=f5e119]: New week topic
+                  - textbox "New week topic" [ref=f5e120]:
+                    - /placeholder: e.g. Functions Revision
+                - button "Add week" [ref=f5e121]
+                - paragraph [ref=f5e123]: Adds empty Mon–Fri lessons and a Saturday week test. Week number uses the next free slot (fills gaps first, then continues past Week 4).
+              - generic [ref=f5e124]:
+                - paragraph [ref=f5e125]: "Topic: Week Six Practice"
+                - button "Remove this week" [ref=f5e126]
+              - generic [ref=f5e130]:
+                - button "monday" [ref=f5e131]
+                - button "tuesday" [ref=f5e132]
+                - button "wednesday" [ref=f5e133]
+                - button "thursday" [ref=f5e134]
+                - button "friday" [ref=f5e135]
+                - generic [ref=f5e136]: Saturday · Week test
+              - generic [ref=f5e137]:
+                - generic [ref=f5e138]:
+                  - generic [ref=f5e139]: Lesson title
+                  - textbox "Lesson title" [ref=f5e140]: "Monday: Untitled"
+                - generic [ref=f5e141]:
+                  - generic [ref=f5e142]: Description
+                  - textbox "Description" [ref=f5e143]
+                - generic [ref=f5e144]:
+                  - generic [ref=f5e145]:
+                    - generic [ref=f5e146]:
+                      - paragraph [ref=f5e147]: Lesson materials
+                      - paragraph [ref=f5e148]: Upload PDF or Markdown (.md) for the Text tab, MCQ generation, and slideshow fallback when no MP4 is uploaded. Max 20.0 MB per file.
+                    - generic [ref=f5e149] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=f5e153]
+                  - list [ref=f5e154]:
+                    - listitem [ref=f5e311]: No materials attached yet.
+                  - generic [ref=f5e179]:
+                    - paragraph [ref=f5e180]: No lesson test yet — save with PDF/Markdown to generate questions.
+                    - button "Regenerate questions" [ref=f5e181]
+                  - paragraph [ref=f5e187]: Questions are generated from uploaded PDF/Markdown text when you save.
+                  - generic [ref=f5e188]:
+                    - generic [ref=f5e189]:
+                      - generic [ref=f5e190]:
+                        - paragraph [ref=f5e191]: Lesson video
+                        - paragraph [ref=f5e192]: Upload an MP4 made outside Ember. Students see this on the Video tab first; otherwise the PDF/Markdown slideshow. Max 200 MB.
+                      - generic [ref=f5e193] [cursor=pointer]:
+                        - text: Upload video
+                        - button "Upload video" [ref=f5e312]
+                    - paragraph [ref=f5e313]: No hosted video yet.
+                - button "Save lesson" [ref=f5e208]
+            - generic [ref=f5e209]:
+              - generic [ref=f5e210]:
+                - heading "Saturday week test" [level=3] [ref=f5e211]
+                - textbox [ref=f5e212]: Week 6 Saturday Test — Week Six Practice
+                - paragraph [ref=f5e213]: 0 questions · pass mark 50%
+                - generic [ref=f5e214]:
+                  - generic [ref=f5e215]:
+                    - generic [ref=f5e216]:
+                      - paragraph [ref=f5e217]: Week test paper
+                      - paragraph [ref=f5e218]: Upload PDF or Markdown (.md) — converted into a narrated student video walkthrough on the assessment page. Max 20.0 MB per file.
+                    - generic [ref=f5e219] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=f5e223]
+                  - list [ref=f5e224]:
+                    - listitem [ref=f5e225]: No exam paper uploaded yet.
+                - generic [ref=f5e226]:
+                  - generic [ref=f5e227]:
+                    - generic [ref=f5e228]:
+                      - paragraph [ref=f5e229]: Week test memo
+                      - paragraph [ref=f5e230]: Upload PDF or Markdown (.md) mark scheme used to correct learner paper scans. Not shown to students. Max 20.0 MB per file.
+                    - generic [ref=f5e231] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=f5e235]
+                  - list [ref=f5e236]:
+                    - listitem [ref=f5e237]: No memo uploaded yet.
+                - button "Update week test" [ref=f5e239]
+              - generic [ref=f5e240]:
+                - heading "Pre-exam (after the term’s weeks)" [level=3] [ref=f5e241]
+                - textbox [ref=f5e242]: Term 1 Pre-Exam
+                - paragraph [ref=f5e243]: 4 questions · pass mark 50%
+                - generic [ref=f5e244]:
+                  - generic [ref=f5e245]:
+                    - generic [ref=f5e246]:
+                      - paragraph [ref=f5e247]: Pre-exam paper
+                      - paragraph [ref=f5e248]: Upload PDF or Markdown (.md) — converted into a narrated student video walkthrough on the assessment page. Max 20.0 MB per file.
+                    - generic [ref=f5e249] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=f5e253]
+                  - list [ref=f5e254]:
+                    - listitem [ref=f5e255]: No exam paper uploaded yet.
+                - generic [ref=f5e256]:
+                  - generic [ref=f5e257]:
+                    - generic [ref=f5e258]:
+                      - paragraph [ref=f5e259]: Pre-exam memo
+                      - paragraph [ref=f5e260]: Upload PDF or Markdown (.md) mark scheme used to correct learner paper scans. Not shown to students. Max 20.0 MB per file.
+                    - generic [ref=f5e261] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=f5e265]
+                  - list [ref=f5e266]:
+                    - listitem [ref=f5e267]: No memo uploaded yet.
+                - button "Update pre-exam" [ref=f5e269]
+              - generic [ref=f5e270]:
+                - heading "Past papers (practice)" [level=3] [ref=f5e271]
+                - paragraph [ref=f5e272]: Previous exam papers for optional student practice. Not used for pass/fail.
+                - textbox [ref=f5e273]: Term 1 past papers
+                - generic [ref=f5e274]:
+                  - generic [ref=f5e275]:
+                    - generic [ref=f5e276]:
+                      - paragraph [ref=f5e277]: Past paper
+                      - paragraph [ref=f5e278]: Upload PDF or Markdown (.md) previous exam papers. Students walk through, write on paper, then scan for mock correction. Max 20.0 MB per file.
+                    - generic [ref=f5e279] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=f5e283]
+                  - list [ref=f5e284]:
+                    - listitem [ref=f5e285]:
+                      - generic [ref=f5e290]:
+                        - paragraph [ref=f5e291]: tmp-qa-past-paper
+                        - paragraph [ref=f5e292]: markdown · tmp-qa-past-paper.md · uploaded
+                      - button "Remove tmp-qa-past-paper" [ref=f5e293]
+                - generic [ref=f5e297]:
+                  - generic [ref=f5e298]:
+                    - generic [ref=f5e299]:
+                      - paragraph [ref=f5e300]: Past paper memo
+                      - paragraph [ref=f5e301]: Upload PDF or Markdown (.md) mark scheme used to correct learner paper scans. Not shown to students. Max 20.0 MB per file.
+                    - generic [ref=f5e302] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=f5e306]
+                  - list [ref=f5e307]:
+                    - listitem [ref=f5e308]: No memo uploaded yet.
+                - button "Update past papers" [ref=f5e310]

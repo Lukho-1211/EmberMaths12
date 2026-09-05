@@ -7,10 +7,12 @@ import { Download, ExternalLink, FileText, Video } from "lucide-react";
 import { AssessmentPanel } from "@/components/assessment";
 import { PageHeader } from "@/components/app-shell";
 import { LessonVideoPlayer } from "@/components/lesson-video-player";
-import { MarkdownPreview } from "@/components/markdown-preview";
+import { PdfNotesPreview } from "@/components/pdf-notes-preview";
 import { TermWeekNav } from "@/components/term-week-nav";
-import { primaryLessonMarkdownResource } from "@/lib/lesson-file";
-import { hasVideoSources } from "@/lib/lesson-video";
+import { WeekDayNav } from "@/components/week-day-nav";
+import { lessonTextResources } from "@/lib/lesson-file";
+import { hasVideoSources, isDirectVideoUrl } from "@/lib/lesson-video";
+import { meetsPassMark } from "@/lib/score-mcq";
 import { useStore } from "@/lib/store";
 import type { LessonTest, Resource, WeekDay } from "@/lib/types";
 
@@ -36,25 +38,34 @@ function StudentLessonContent() {
   const progress = state.progress.find((p) => p.studentId === user?.id);
   const done = lesson ? progress?.completedLessonIds.includes(lesson.id) : false;
   const [viewMode, setViewMode] = useState<"video" | "text">("video");
-  const [openMarkdownId, setOpenMarkdownId] = useState<string | null>(null);
+  const [completeError, setCompleteError] = useState<string | null>(null);
+  const [completing, setCompleting] = useState(false);
 
   if (!term || !week || !lesson || !user) return <p>Lesson not found.</p>;
 
-  const textResource = primaryLessonMarkdownResource(lesson);
-  const useGeneratedVideo = hasVideoSources(lesson.resources);
+  const textResources = lessonTextResources(lesson);
+  const hostedVideoUrl = isDirectVideoUrl(lesson.videoUrl) ? lesson.videoUrl : null;
+  const useLessonPlayer = Boolean(hostedVideoUrl) || hasVideoSources(lesson.resources);
   const lessonTest = lesson.lessonTest;
   const score =
     lessonTest && progress?.testScores[lessonTest.id] !== undefined
       ? progress.testScores[lessonTest.id]
       : null;
   const passed =
-    lessonTest != null && score != null && score >= lessonTest.passMark;
+    lessonTest != null && score != null && meetsPassMark(score, lessonTest.passMark);
   const canComplete = !lessonTest || passed;
   const initialMode = searchParams.get("mode") === "paper" ? "paper" : "mcq";
+  const studentResources = lesson.resources.filter((r) => r.type !== "markdown");
 
   return (
     <div>
       <TermWeekNav termId={term.id} weeks={term.weeks} activeWeekId={week.id} />
+      <WeekDayNav
+        termId={term.id}
+        weekId={week.id}
+        lessons={week.lessons}
+        activeDay={lesson.day}
+      />
 
       <PageHeader title={lesson.title} subtitle={`${term.title} · Week ${week.number} · ${lesson.day}`} />
 
@@ -101,9 +112,13 @@ function StudentLessonContent() {
         <div className="space-y-4">
           <div id="lesson-panel-main" role="tabpanel" aria-labelledby={`lesson-tab-${viewMode}`}>
             {viewMode === "video" ? (
-              useGeneratedVideo ? (
-                <LessonVideoPlayer title={lesson.title} resources={lesson.resources} />
-              ) : (
+              useLessonPlayer ? (
+                <LessonVideoPlayer
+                  title={lesson.title}
+                  resources={lesson.resources}
+                  hostedVideoUrl={hostedVideoUrl}
+                />
+              ) : lesson.videoUrl.trim() ? (
                 <div className="aspect-video overflow-hidden rounded-xl border border-border bg-ember-navy">
                   <iframe
                     title={lesson.title}
@@ -113,17 +128,27 @@ function StudentLessonContent() {
                     allowFullScreen
                   />
                 </div>
+              ) : (
+                <div className="grid aspect-video place-items-center rounded-xl border border-border bg-ember-navy px-4 text-center text-sm text-white/80">
+                  No lesson video yet. Admin can upload an MP4, or attach a PDF for a
+                  walkthrough.
+                </div>
               )
-            ) : textResource ? (
-              <MarkdownPreview
-                resource={textResource}
-                className="rounded-xl border border-border bg-white p-4"
-              />
+            ) : textResources.length > 0 ? (
+              <div className="space-y-4">
+                {textResources.map((resource) => (
+                  <PdfNotesPreview
+                    key={resource.id}
+                    resource={resource}
+                    className="rounded-xl border border-border bg-white p-4"
+                  />
+                ))}
+              </div>
             ) : (
               <article className="rounded-xl border border-border bg-white p-4">
                 <p className="text-sm leading-relaxed text-ember-navy">{lesson.description}</p>
                 <p className="mt-3 text-xs text-muted">
-                  Full text notes appear here when your teacher uploads Markdown in Admin.
+                  Full text notes appear here when Admin uploads a PDF for this lesson.
                 </p>
               </article>
             )}
@@ -151,7 +176,7 @@ function StudentLessonContent() {
               )}
               <div className="mt-4">
                 <AssessmentPanel
-                  assessment={assessmentForLesson(lessonTest, lesson.resources)}
+                  assessment={assessmentForLesson(lessonTest, studentResources)}
                   studentId={user.id}
                   initialMode={initialMode}
                 />
@@ -163,15 +188,23 @@ function StudentLessonContent() {
             <div className="space-y-2">
               <button
                 type="button"
-                disabled={!canComplete}
-                onClick={() => completeLesson(user.id, lesson.id)}
+                disabled={!canComplete || completing}
+                onClick={() => {
+                  setCompleteError(null);
+                  setCompleting(true);
+                  void completeLesson(user.id, lesson.id).then((result) => {
+                    setCompleting(false);
+                    if (!result.ok) setCompleteError(result.error);
+                  });
+                }}
                 className="rounded-md bg-ember-gold px-4 py-2 text-sm font-bold text-ember-navy disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Mark lesson complete
+                {completing ? "Saving…" : "Mark lesson complete"}
               </button>
               {!canComplete ? (
                 <p className="text-xs text-muted">Pass today’s lesson test to complete.</p>
               ) : null}
+              {completeError ? <p className="text-xs text-danger">{completeError}</p> : null}
             </div>
           ) : (
             <p className="text-sm font-semibold text-success">Lesson completed</p>
@@ -181,34 +214,14 @@ function StudentLessonContent() {
         <aside className="rounded-xl border border-border bg-white p-5">
           <h2 className="font-semibold">Resources</h2>
           <ul className="mt-4 space-y-3">
-            {lesson.resources.map((r) => {
+            {studentResources.map((r) => {
               const href = resourceHref(r);
-              const isUploaded = Boolean(href?.startsWith("data:"));
-              const isMarkdown = r.type === "markdown";
-
-              if (isMarkdown && isUploaded) {
-                const open = openMarkdownId === r.id;
-                return (
-                  <li key={r.id} className="space-y-2">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setOpenMarkdownId((id) => (id === r.id ? null : r.id))
-                      }
-                      className="flex w-full items-start gap-2 text-left text-sm hover:text-ember-gold"
-                    >
-                      <FileText size={16} className="mt-0.5 shrink-0" />
-                      <span>
-                        <span className="block font-medium">{r.title}</span>
-                        <span className="text-xs uppercase text-muted">
-                          markdown · {open ? "hide" : "view"}
-                        </span>
-                      </span>
-                    </button>
-                    {open ? <MarkdownPreview resource={r} /> : null}
-                  </li>
-                );
-              }
+              const isUploaded = Boolean(
+                href &&
+                  (href.startsWith("data:") ||
+                    href.startsWith("http://") ||
+                    href.startsWith("https://")),
+              );
 
               return (
                 <li key={r.id}>
@@ -216,7 +229,7 @@ function StudentLessonContent() {
                     href={href ?? "#"}
                     className="flex items-start gap-2 text-sm hover:text-ember-gold"
                     download={
-                      r.type === "pdf" || r.type === "worksheet" || r.type === "markdown"
+                      r.type === "pdf" || r.type === "worksheet"
                         ? r.fileName ?? true
                         : undefined
                     }

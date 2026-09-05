@@ -1,0 +1,56 @@
+- generic [ref=f14e1]:
+  - button "Open Next.js Dev Tools" [ref=f14e37] [cursor=pointer]
+  - alert [ref=f14e41]
+  - generic [ref=f14e43]:
+    - complementary [ref=f14e44]:
+      - generic [ref=f14e45]:
+        - link "Ember Maths12" [ref=f14e46] [cursor=pointer]:
+          - /url: /admin
+        - paragraph [ref=f14e47]: admin
+      - navigation [ref=f14e48]:
+        - link "Dashboard" [ref=f14e49] [cursor=pointer]:
+          - /url: /admin
+        - link "Terms & Lessons" [ref=f14e55] [cursor=pointer]:
+          - /url: /admin/terms
+        - link "Users & Teachers" [ref=f14e58] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Study Groups" [ref=f14e64] [cursor=pointer]:
+          - /url: /admin/groups
+        - link "Pass / Fail" [ref=f14e70] [cursor=pointer]:
+          - /url: /admin/pass-fail
+        - link "Top Achievers" [ref=f14e75] [cursor=pointer]:
+          - /url: /admin/achievers
+      - button "Log out" [ref=f14e82]
+    - generic [ref=f14e86]:
+      - banner [ref=f14e87]:
+        - generic [ref=f14e88]:
+          - paragraph [ref=f14e89]: Signed in
+          - paragraph [ref=f14e90]: Playwright Admin
+        - generic [ref=f14e91]:
+          - generic [ref=f14e92]: playwright.admin.20260825@ember12.test
+          - button "Log out" [ref=f14e93]
+      - main [ref=f14e97]:
+        - generic [ref=f14e98]:
+          - generic [ref=f14e99]:
+            - heading "Passing & failing students" [level=1] [ref=f14e100]
+            - paragraph [ref=f14e101]: Monitor who is on track across Ember Maths12 assessments.
+          - generic [ref=f14e102]:
+            - button "all" [ref=f14e103]
+            - button "passing" [active] [ref=f14e104]
+            - button "failing" [ref=f14e105]
+            - button "pending" [ref=f14e106]
+          - table [ref=f14e108]:
+            - rowgroup [ref=f14e109]:
+              - row [ref=f14e110]:
+                - columnheader "Student" [ref=f14e111]
+                - columnheader "Lessons done" [ref=f14e112]
+                - columnheader "Progress" [ref=f14e113]
+                - columnheader "Status" [ref=f14e114]
+            - rowgroup [ref=f14e115]:
+              - row [ref=f14e151]:
+                - cell "Playwright Student playwright.student.20260825@ember12.test" [ref=f14e152]:
+                  - generic [ref=f14e153]: Playwright Student
+                  - generic [ref=f14e154]: playwright.student.20260825@ember12.test
+                - cell "1" [ref=f14e155]
+                - cell "71%" [ref=f14e156]
+                - cell "passing" [ref=f14e157]

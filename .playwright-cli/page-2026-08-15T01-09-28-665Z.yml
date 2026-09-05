@@ -1,0 +1,88 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e35] [cursor=pointer]:
+    - generic [ref=e38]:
+      - text: Rendering
+      - generic [ref=e39]:
+        - generic [ref=e40]: .
+        - generic [ref=e41]: .
+        - generic [ref=e42]: .
+  - alert [ref=e34]: Admin dashboard
+  - generic [ref=e44]:
+    - complementary [ref=e45]:
+      - generic [ref=e46]:
+        - link "Ember Maths12" [ref=e47] [cursor=pointer]:
+          - /url: /admin
+        - paragraph [ref=e48]: admin
+      - navigation [ref=e49]:
+        - link "Dashboard" [ref=e50] [cursor=pointer]:
+          - /url: /admin
+        - link "Terms & Lessons" [ref=e56] [cursor=pointer]:
+          - /url: /admin/terms
+        - link "Users & Teachers" [ref=e59] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Study Groups" [ref=e65] [cursor=pointer]:
+          - /url: /admin/groups
+        - link "Pass / Fail" [ref=e71] [cursor=pointer]:
+          - /url: /admin/pass-fail
+        - link "Top Achievers" [ref=e76] [cursor=pointer]:
+          - /url: /admin/achievers
+      - button "Log out" [ref=e83]
+    - generic [ref=e87]:
+      - banner [ref=e88]:
+        - generic [ref=e89]:
+          - paragraph [ref=e90]: Signed in
+          - paragraph [ref=e91]: Thandi Admin
+        - generic [ref=e92]:
+          - generic [ref=e93]: admin@ember12.za
+          - button "Log out" [ref=e94]
+      - main [ref=e98]:
+        - generic [ref=e99]:
+          - generic [ref=e100]:
+            - generic [ref=e101]:
+              - heading "Admin dashboard" [level=1] [ref=e102]
+              - paragraph [ref=e103]: Overview of Ember Maths12 learners, instructors, and term health.
+            - button "Clear local data" [ref=e104]
+          - generic [ref=e105]:
+            - generic [ref=e106]:
+              - paragraph [ref=e107]: Students
+              - paragraph [ref=e108]: "1"
+            - generic [ref=e109]:
+              - paragraph [ref=e110]: Teachers
+              - paragraph [ref=e111]: "0"
+            - generic [ref=e112]:
+              - paragraph [ref=e113]: Pass rate
+              - paragraph [ref=e114]: 0%
+              - paragraph [ref=e115]: 0 passing · 0 failing
+            - generic [ref=e116]:
+              - paragraph [ref=e117]: Active terms
+              - paragraph [ref=e118]: "4"
+              - paragraph [ref=e119]: Term 1–4 curriculum
+          - generic [ref=e120]:
+            - button "Students" [ref=e121]
+            - button "Instructors" [ref=e122]
+          - generic [ref=e123]:
+            - generic [ref=e124]:
+              - heading "Learner progress" [level=2] [ref=e125]
+              - application [ref=e129]:
+                - generic [ref=e139]:
+                  - generic [ref=e140]: Lerato
+                  - generic [ref=e143]:
+                    - generic [ref=e144]: "0"
+                    - generic [ref=e146]: "25"
+                    - generic [ref=e148]: "50"
+                    - generic [ref=e150]: "75"
+                    - generic [ref=e152]: "100"
+            - table [ref=e155]:
+              - rowgroup [ref=e156]:
+                - row [ref=e157]:
+                  - columnheader "Student" [ref=e158]
+                  - columnheader "Progress" [ref=e159]
+                  - columnheader "Status" [ref=e160]
+              - rowgroup [ref=e161]:
+                - row [ref=e162]:
+                  - cell "Lerato Molefe student@ember12.za" [ref=e163]:
+                    - generic [ref=e164]: Lerato Molefe
+                    - generic [ref=e165]: student@ember12.za
+                  - cell "0%" [ref=e166]
+                  - cell "pending" [ref=e167]
+  - generic [ref=e168]: "0"

@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { MunicipalityAutocomplete } from "@/components/municipality-autocomplete";
+import { PasswordInput } from "@/components/password-input";
 import { isValidMunicipality, SA_PROVINCES } from "@/lib/sa-geography";
-import { isRole, roleLabel } from "@/lib/roles";
+import { isPublicSignupRole, isRole, roleLabel } from "@/lib/roles";
 import { useStore } from "@/lib/store";
 
 const fieldClass =
-  "w-full rounded-md border border-border px-3 py-2 outline-none focus:border-ember-gold focus:ring-2 focus:ring-ember-gold/40";
+  "w-full rounded-md border border-border px-3 py-2 outline-none focus:border-ember-gold focus:ring-2 focus:ring-ember-gold/40 disabled:opacity-60";
 
 export default function RoleSignupPage() {
   const { signup } = useStore();
@@ -17,6 +18,7 @@ export default function RoleSignupPage() {
   const params = useParams<{ role: string }>();
   const roleParam = params.role;
   const role = isRole(roleParam) ? roleParam : null;
+  const canPublicSignup = role ? isPublicSignupRole(role) : false;
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -24,12 +26,19 @@ export default function RoleSignupPage() {
   const [province, setProvince] = useState("");
   const [municipality, setMunicipality] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!role) router.replace("/signup");
+    if (!role) {
+      router.replace("/signup");
+      return;
+    }
+    if (role === "admin") {
+      router.replace("/login/admin");
+    }
   }, [role, router]);
 
-  if (!role) {
+  if (!role || !canPublicSignup) {
     return (
       <div className="ember-wash flex min-h-screen flex-col items-center justify-center px-4 py-12">
         <p className="text-sm text-muted">Redirecting…</p>
@@ -37,9 +46,9 @@ export default function RoleSignupPage() {
     );
   }
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!role) return;
+    if (!role || loading) return;
     setError("");
     if (role === "student") {
       if (!province || !municipality) {
@@ -51,19 +60,26 @@ export default function RoleSignupPage() {
         return;
       }
     }
-    const result = signup({
-      name,
-      email,
-      password,
-      role,
-      province: role === "student" ? province : undefined,
-      municipality: role === "student" ? municipality : undefined,
-    });
-    if (!result.ok) {
-      setError(result.error);
-      return;
+    setLoading(true);
+    try {
+      const result = await signup({
+        name,
+        email,
+        password,
+        role,
+        province: role === "student" ? province : undefined,
+        municipality: role === "student" ? municipality : undefined,
+      });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      router.push(`/${role}`);
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    router.push(`/${role}`);
   }
 
   return (
@@ -84,6 +100,7 @@ export default function RoleSignupPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              disabled={loading}
             />
           </label>
           <label className="block text-sm">
@@ -94,19 +111,24 @@ export default function RoleSignupPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={loading}
             />
           </label>
-          <label className="block text-sm">
-            <span className="mb-1 block font-medium">Password</span>
-            <input
+          <div className="block text-sm">
+            <label htmlFor="signup-password" className="mb-1 block font-medium">
+              Password
+            </label>
+            <PasswordInput
+              id="signup-password"
               className={fieldClass}
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
+              disabled={loading}
+              autoComplete="new-password"
             />
-          </label>
+          </div>
           {role === "student" ? (
             <>
               <label className="block text-sm">
@@ -119,6 +141,7 @@ export default function RoleSignupPage() {
                     setMunicipality("");
                   }}
                   required
+                  disabled={loading}
                 >
                   <option value="">Select province…</option>
                   {SA_PROVINCES.map((p) => (
@@ -142,9 +165,10 @@ export default function RoleSignupPage() {
           {error ? <p className="text-sm text-danger">{error}</p> : null}
           <button
             type="submit"
-            className="w-full cursor-pointer rounded-md bg-ember-gold py-2.5 text-sm font-bold text-ember-navy transition duration-200 hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-gold"
+            disabled={loading}
+            className="w-full cursor-pointer rounded-md bg-ember-gold py-2.5 text-sm font-bold text-ember-navy transition duration-200 hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-gold disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Create account
+            {loading ? "Creating account…" : "Create account"}
           </button>
         </form>
         <p className="mt-6 text-sm text-muted">

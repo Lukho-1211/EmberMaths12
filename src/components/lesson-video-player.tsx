@@ -18,14 +18,18 @@ import type { Resource } from "@/lib/types";
 export function LessonVideoPlayer({
   title,
   resources,
+  hostedVideoUrl,
   className,
 }: {
   title: string;
   resources: Resource[];
+  /** Direct mp4 URL (Storage). Preferred over the PDF slideshow. */
+  hostedVideoUrl?: string | null;
   className?: string;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  const videoUrl = hostedVideoUrl?.trim() || null;
   const playback = useSlidePlayback(resources);
 
   useEffect(() => {
@@ -36,6 +40,7 @@ export function LessonVideoPlayer({
 
   const { togglePlay, next, prev } = playback;
   useEffect(() => {
+    if (videoUrl) return;
     const el = rootRef.current;
     if (!el) return;
     const onKey = (e: KeyboardEvent) => {
@@ -52,9 +57,9 @@ export function LessonVideoPlayer({
     };
     el.addEventListener("keydown", onKey);
     return () => el.removeEventListener("keydown", onKey);
-  }, [togglePlay, next, prev]);
+  }, [togglePlay, next, prev, videoUrl]);
 
-  if (!hasVideoSources(resources)) return null;
+  if (!hasVideoSources(resources) && !videoUrl) return null;
 
   async function toggleFullscreen() {
     const el = rootRef.current;
@@ -70,6 +75,45 @@ export function LessonVideoPlayer({
     }
   }
 
+  const frameClass =
+    className ??
+    "aspect-video overflow-hidden rounded-xl border border-border bg-ember-navy outline-none focus-visible:ring-2 focus-visible:ring-ember-gold";
+
+  if (videoUrl) {
+    return (
+      <div
+        ref={rootRef}
+        tabIndex={0}
+        className={frameClass}
+        role="region"
+        aria-label={`${title} lesson video`}
+      >
+        <div className="relative flex h-full flex-col bg-black">
+          <video
+            key={videoUrl}
+            src={videoUrl}
+            controls
+            playsInline
+            className="h-full w-full object-contain"
+            preload="metadata"
+          >
+            <track kind="captions" />
+          </video>
+          <button
+            type="button"
+            onClick={() => void toggleFullscreen()}
+            className="absolute right-2 top-2 rounded bg-black/50 p-1.5 text-white hover:bg-black/70"
+            aria-label={fullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+          >
+            {fullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasVideoSources(resources)) return null;
+
   const slide = playback.currentSlide;
   const total = playback.deck?.slides.length ?? 0;
 
@@ -77,10 +121,7 @@ export function LessonVideoPlayer({
     <div
       ref={rootRef}
       tabIndex={0}
-      className={
-        className ??
-        "aspect-video overflow-hidden rounded-xl border border-border bg-ember-navy outline-none focus-visible:ring-2 focus-visible:ring-ember-gold"
-      }
+      className={frameClass}
       role="region"
       aria-label={`${title} video walkthrough`}
     >

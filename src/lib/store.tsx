@@ -9,9 +9,39 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { createInitialState, SESSION_KEY, STORAGE_KEY, THEME_KEY } from "@/lib/mock/seed";
+import {
+  getProfile,
+  getProfileWithRetry,
+  getSessionUser,
+  signInWithPassword,
+  signOut as supabaseSignOut,
+  signUpWithPassword,
+  type ProfileRow,
+} from "@/lib/auth-client";
+import {
+  createEmptyWeek,
+  nextWeekNumber,
+  sortWeeksByNumber,
+} from "@/lib/curriculum/create-empty-week";
+import { createInitialState } from "@/lib/mock/seed";
 import { SEED_TERMS } from "@/lib/mock/curriculum";
 import { isValidMunicipality } from "@/lib/sa-geography";
+import {
+  addGroupMember,
+  deleteProgress,
+  deleteStudyGroup,
+  insertMessage,
+  insertSchoolClass,
+  insertStudyGroup,
+  insertTeacherLesson,
+  loadAppState,
+  markMessageReadDb,
+  removeGroupMember,
+  saveCurriculum,
+  saveTheme,
+  updateProfileRow,
+  upsertClassMember,
+} from "@/lib/supabase/app-state";
 import type {
   AppState,
   CorrectionResult,
@@ -20,9 +50,11 @@ import type {
   Resource,
   Role,
   SchoolClass,
+  StudentProgress,
   StudyGroup,
   Term,
   User,
+  Week,
   WeekDay,
 } from "@/lib/types";
 
@@ -92,15 +124,64 @@ interface Session {
   userId: string;
 }
 
+function profileToUser(profile: ProfileRow): User {
+  return {
+    id: profile.id,
+    name: profile.name,
+    email: profile.email,
+    password: "",
+    role: profile.role,
+    createdAt: profile.created_at,
+    parentId: profile.parent_id ?? undefined,
+    childIds: profile.role === "parent" ? [] : undefined,
+    classIds: profile.role === "student" || profile.role === "teacher" ? [] : undefined,
+    province: profile.province ?? undefined,
+    municipality: profile.municipality ?? undefined,
+  };
+}
+
+/** Merge a freshly loaded profile into AppState using Auth UUID as the user id. */
+function mergeProfileUser(prev: AppState, profile: ProfileRow): AppState {
+  const user = profileToUser(profile);
+  const existingIdx = prev.users.findIndex((u) => u.id === profile.id);
+  let users: User[];
+  if (existingIdx >= 0) {
+    users = prev.users.map((u, i) =>
+      i === existingIdx
+        ? {
+            ...u,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            parentId: user.parentId,
+            province: user.province,
+            municipality: user.municipality,
+          }
+        : u,
+    );
+  } else {
+    users = [...prev.users, user];
+  }
+  let next: AppState = { ...prev, users };
+  if (user.role === "student") next = ensureStudentProgress(next, user.id);
+  return next;
+}
+
+function roleAccountArticle(role: Role): "a" | "an" {
+  return role === "admin" ? "an" : "a";
+}
+
 interface StoreContextValue {
   ready: boolean;
   state: AppState;
   user: User | null;
+  /** Suppress portal→login redirect while logout hard-navigates home. */
+  signingOut: boolean;
   login: (
     email: string,
     password: string,
     expectedRole: Role,
-  ) => { ok: true; role: Role } | { ok: false; error: string };
+  ) => Promise<{ ok: true; role: Role } | { ok: false; error: string }>;
   signup: (input: {
     name: string;
     email: string;
@@ -108,21 +189,27 @@ interface StoreContextValue {
     role: Role;
     province?: string;
     municipality?: string;
-  }) => { ok: true } | { ok: false; error: string };
+  }) => Promise<{ ok: true } | { ok: false; error: string }>;
   updateProfile: (input: {
     name: string;
     email: string;
     password?: string;
     province?: string;
     municipality?: string;
-  }) => { ok: true } | { ok: false; error: string };
-  logout: () => void;
+  }) => Promise<{ ok: true } | { ok: false; error: string }>;
+  logout: () => Promise<void>;
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  resetDemo: () => void;
-  deleteUser: (userId: string) => void;
-  createTeacher: (input: { name: string; email: string; password: string }) => void;
+  deleteUser: (userId: string) => Promise<void>;
+  createAdmin: (input: {
+    name: string;
+    email: string;
+    password: string;
+  }) => Promise<{ ok: true } | { ok: false; error: string }>;
   updateTerms: (terms: Term[]) => void;
+  /** Append an empty week in the next free 1–4 slot, or null if the term is full. */
+  addWeek: (termId: string, topic: string) => Week | null;
+  removeWeek: (termId: string, weekId: string) => void;
   upsertWeekLesson: (
     termId: string,
     weekId: string,
@@ -146,9 +233,14 @@ interface StoreContextValue {
   addMemberToGroup: (groupId: string, studentId: string) => void;
   removeMemberFromGroup: (groupId: string, studentId: string) => void;
   deleteGroup: (groupId: string) => void;
-  completeLesson: (studentId: string, lessonId: string) => void;
-  submitTestScore: (studentId: string, assessmentId: string, score: number) => void;
-  addCorrection: (correction: Omit<CorrectionResult, "id" | "createdAt">) => CorrectionResult;
+  completeLesson: (
+    studentId: string,
+    lessonId: string,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>;
+  /** Apply server-scored progress row into the in-memory cache. */
+  applyProgress: (progress: StudentProgress) => void;
+  /** Apply server-created correction into the in-memory cache. */
+  applyCorrection: (correction: CorrectionResult) => void;
   createClass: (teacherId: string, name: string) => void;
   searchStudents: (query: string) => User[];
   requestJoinClass: (classId: string, studentId: string) => void;
@@ -165,39 +257,6 @@ interface StoreContextValue {
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
-
-function recomputeProgress(
-  progress: AppState["progress"][number],
-): AppState["progress"][number] {
-  const lessonCount = Math.max(progress.completedLessonIds.length, 1);
-  const scores = Object.values(progress.testScores);
-  const avgScore =
-    scores.length === 0 ? progress.completedLessonIds.length * 4 : scores.reduce((a, b) => a + b, 0) / scores.length;
-  const overall = Math.min(
-    100,
-    Math.round(avgScore * 0.7 + Math.min(100, lessonCount * 3) * 0.3),
-  );
-  const status =
-    scores.length === 0 && progress.completedLessonIds.length === 0
-      ? "pending"
-      : overall >= 50
-        ? "passing"
-        : "failing";
-  const badgeIds = new Set(progress.badgeIds);
-  if (progress.completedLessonIds.length >= 1) badgeIds.add("badge-starter");
-  if (progress.completedLessonIds.length >= 5) badgeIds.add("badge-week");
-  if (scores.some((s) => s >= 50)) badgeIds.add("badge-test");
-  if (Object.keys(progress.testScores).some((k) => k.startsWith("preexam-") && (progress.testScores[k] ?? 0) >= 50)) {
-    badgeIds.add("badge-preexam");
-  }
-  if (overall >= 60) badgeIds.add("badge-streak");
-  return {
-    ...progress,
-    overallPercent: overall,
-    status,
-    badgeIds: Array.from(badgeIds),
-  };
-}
 
 function ensureStudentProgress(state: AppState, studentId: string): AppState {
   if (state.progress.some((p) => p.studentId === studentId)) return state;
@@ -217,75 +276,132 @@ function ensureStudentProgress(state: AppState, studentId: string): AppState {
   };
 }
 
+function persistTerms(next: AppState) {
+  void saveCurriculum(next.terms, next.badges);
+}
+
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [state, setState] = useState<AppState>(() => createInitialState());
   const [session, setSession] = useState<Session | null>(null);
   const [theme, setThemeState] = useState<Theme>("light");
+  const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setState(normalizeAppState(JSON.parse(raw) as AppState));
-      const sess = localStorage.getItem(SESSION_KEY);
-      if (sess) setSession(JSON.parse(sess) as Session);
-      const storedTheme = localStorage.getItem(THEME_KEY);
-      if (storedTheme === "light" || storedTheme === "dark") {
-        setThemeState(storedTheme);
-        applyThemeClass(storedTheme);
+    let cancelled = false;
+    const bootGen = Date.now();
+
+    async function boot() {
+      try {
+        // #region agent log
+        fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'A',location:'store.tsx:boot-start',message:'boot started',data:{bootGen,cancelled},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
+        const authUser = await getSessionUser();
+        // #region agent log
+        fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'A',location:'store.tsx:boot-auth',message:'boot getSessionUser',data:{bootGen,cancelled,hasAuthUser:Boolean(authUser),authUserId:authUser?.id ?? null},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
+        if (!authUser) {
+          if (!cancelled) {
+            setState(createInitialState());
+            setSession(null);
+            setThemeState("light");
+            applyThemeClass("light");
+            setReady(true);
+          }
+          return;
+        }
+
+        const loaded = await loadAppState();
+        if (cancelled) return;
+        const userIds = loaded.state.users.map((u) => u.id);
+        // #region agent log
+        fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'B',location:'store.tsx:boot-loaded',message:'boot loadAppState',data:{bootGen,userCount:loaded.state.users.length,termCount:loaded.state.terms.length,weekCounts:loaded.state.terms.map((t)=>({id:t.id,weeks:t.weeks.length})),sessionUserInUsers:loaded.userId ? userIds.includes(loaded.userId) : false,loadedUserId:loaded.userId},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
+        setState(normalizeAppState(loaded.state));
+        setSession(loaded.userId ? { userId: loaded.userId } : null);
+        setThemeState(loaded.theme);
+        applyThemeClass(loaded.theme);
+        setReady(true);
+      } catch (err) {
+        // #region agent log
+        fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'A',location:'store.tsx:boot-catch',message:'boot threw',data:{bootGen,error:err instanceof Error ? err.message : 'unknown'},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
+        if (!cancelled) {
+          setState(createInitialState());
+          setSession(null);
+          setReady(true);
+        }
       }
-    } catch {
-      /* ignore corrupt storage */
     }
-    setReady(true);
+
+    void boot();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  useEffect(() => {
-    if (!ready) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state, ready]);
-
-  useEffect(() => {
-    if (!ready) return;
-    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    else localStorage.removeItem(SESSION_KEY);
-  }, [session, ready]);
-
-  useEffect(() => {
-    if (!ready) return;
-    localStorage.setItem(THEME_KEY, theme);
-    applyThemeClass(theme);
-  }, [theme, ready]);
-
-  const setTheme = useCallback((next: Theme) => {
-    setThemeState(next);
-  }, []);
+  const setTheme = useCallback(
+    (next: Theme) => {
+      setThemeState(next);
+      applyThemeClass(next);
+      if (session?.userId) void saveTheme(session.userId, next);
+    },
+    [session],
+  );
 
   const user = useMemo(
     () => state.users.find((u) => u.id === session?.userId) ?? null,
     [state.users, session],
   );
 
+  const reloadFromSupabase = useCallback(async () => {
+    const loaded = await loadAppState();
+    setState(normalizeAppState(loaded.state));
+    setSession(loaded.userId ? { userId: loaded.userId } : null);
+    setThemeState(loaded.theme);
+    applyThemeClass(loaded.theme);
+  }, []);
+
   const login = useCallback(
-    (email: string, password: string, expectedRole: Role) => {
-      const found = state.users.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password,
-      );
-      if (!found) return { ok: false as const, error: "Invalid email or password." };
-      if (found.role !== expectedRole) {
+    async (email: string, password: string, expectedRole: Role) => {
+      // #region agent log
+      fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'C',location:'store.tsx:login-start',message:'login started',data:{expectedRole,emailDomain:email.includes('@')?email.split('@')[1]:'none'},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      const auth = await signInWithPassword(email, password);
+      if (!auth.ok) {
+        // #region agent log
+        fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'C',location:'store.tsx:login-auth-fail',message:'signIn failed',data:{expectedRole},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
+        return { ok: false as const, error: "Invalid email or password." };
+      }
+      const profile = await getProfile(auth.user.id);
+      if (!profile) {
+        await supabaseSignOut();
+        return { ok: false as const, error: "Profile not found. Contact support." };
+      }
+      if (profile.role !== expectedRole) {
+        await supabaseSignOut();
         return {
           ok: false as const,
-          error: `This account is not a ${expectedRole} account.`,
+          error: `This account is not ${roleAccountArticle(expectedRole)} ${expectedRole} account.`,
         };
       }
-      setSession({ userId: found.id });
-      return { ok: true as const, role: found.role };
+      const loaded = await loadAppState();
+      const userIds = loaded.state.users.map((u) => u.id);
+      // #region agent log
+      fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'B',location:'store.tsx:login-loaded',message:'login loadAppState',data:{profileId:profile.id,profileRole:profile.role,userCount:loaded.state.users.length,sessionUserInUsers:userIds.includes(profile.id),termCount:loaded.state.terms.length,weekCounts:loaded.state.terms.map((t)=>({id:t.id,weeks:t.weeks.length}))},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      setState(normalizeAppState(loaded.state));
+      setSession({ userId: profile.id });
+      setThemeState(loaded.theme);
+      applyThemeClass(loaded.theme);
+      return { ok: true as const, role: profile.role };
     },
-    [state.users],
+    [],
   );
 
   const signup = useCallback(
-    (input: {
+    async (input: {
       name: string;
       email: string;
       password: string;
@@ -293,43 +409,68 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       province?: string;
       municipality?: string;
     }) => {
-      if (state.users.some((u) => u.email.toLowerCase() === input.email.toLowerCase())) {
-        return { ok: false as const, error: "An account with this email already exists." };
-      }
-      if (input.role === "student" && (!input.province || !input.municipality)) {
+      if (input.role === "admin") {
         return {
           ok: false as const,
-          error: "Province and municipality are required for students.",
+          error: "Admin accounts cannot be created via public signup.",
         };
       }
-      const id = `${input.role}-${crypto.randomUUID().slice(0, 8)}`;
-      const newUser: User = {
-        id,
-        name: input.name,
-        email: input.email,
-        password: input.password,
-        role: input.role,
-        createdAt: new Date().toISOString(),
-        childIds: input.role === "parent" ? [] : undefined,
-        classIds: input.role === "student" || input.role === "teacher" ? [] : undefined,
-        province: input.role === "student" ? input.province : undefined,
-        municipality: input.role === "student" ? input.municipality : undefined,
-      };
-      setState((prev) => {
-        let next = { ...prev, users: [...prev.users, newUser] };
-        if (input.role === "student") next = ensureStudentProgress(next, id);
-        return next;
-      });
-      setSession({ userId: id });
+      if (input.role === "student") {
+        if (!input.province || !input.municipality) {
+          return {
+            ok: false as const,
+            error: "Province and municipality are required for students.",
+          };
+        }
+        if (!isValidMunicipality(input.province, input.municipality)) {
+          return {
+            ok: false as const,
+            error: "Please select a valid municipality for the chosen province.",
+          };
+        }
+      }
+
+      const created = await signUpWithPassword(input);
+      if (!created.ok) return created;
+
+      const profile = await getProfileWithRetry(created.userId);
+      if (!profile) {
+        return { ok: false as const, error: "Account created but profile missing." };
+      }
+      if (profile.role !== input.role) {
+        await supabaseSignOut();
+        return {
+          ok: false as const,
+          error: `This account is not ${roleAccountArticle(input.role)} ${input.role} account.`,
+        };
+      }
+
+      const loaded = await loadAppState();
+      let next = normalizeAppState(loaded.state);
+      next = mergeProfileUser(next, profile);
+      if (profile.role === "student") {
+        next = ensureStudentProgress(next, profile.id);
+      }
+      setState(next);
+      setSession({ userId: profile.id });
+      setThemeState(loaded.theme);
+      applyThemeClass(loaded.theme);
       return { ok: true as const };
     },
-    [state.users],
+    [],
   );
 
-  const logout = useCallback(() => setSession(null), []);
+  const logout = useCallback(async () => {
+    setSigningOut(true);
+    await supabaseSignOut();
+    setSession(null);
+    setState(createInitialState());
+    setThemeState("light");
+    applyThemeClass("light");
+  }, []);
 
   const updateProfile = useCallback(
-    (input: {
+    async (input: {
       name: string;
       email: string;
       password?: string;
@@ -342,12 +483,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const current = state.users.find((u) => u.id === session.userId);
       if (!current) {
         return { ok: false as const, error: "User not found." };
-      }
-      const emailTaken = state.users.some(
-        (u) => u.id !== current.id && u.email.toLowerCase() === input.email.toLowerCase(),
-      );
-      if (emailTaken) {
-        return { ok: false as const, error: "An account with this email already exists." };
       }
       if (current.role === "student") {
         if (!input.province || !input.municipality) {
@@ -363,11 +498,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           };
         }
       }
-      const password =
-        input.password && input.password.trim().length > 0 ? input.password : current.password;
       if (input.password && input.password.trim().length > 0 && input.password.trim().length < 6) {
         return { ok: false as const, error: "Password must be at least 6 characters." };
       }
+
+      const result = await updateProfileRow(session.userId, input);
+      if (!result.ok) return result;
+
       setState((prev) => ({
         ...prev,
         users: prev.users.map((u) => {
@@ -375,8 +512,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           return {
             ...u,
             name: input.name.trim(),
-            email: input.email.trim(),
-            password,
+            email: input.email.trim().toLowerCase(),
             province: u.role === "student" ? input.province : u.province,
             municipality: u.role === "student" ? input.municipality : u.municipality,
           };
@@ -384,75 +520,165 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }));
       return { ok: true as const };
     },
-    [session?.userId, state.users],
+    [session, state.users],
   );
 
-  const resetDemo = useCallback(() => {
-    const initial = createInitialState();
-    setState(initial);
-    setSession(null);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
-    localStorage.removeItem(SESSION_KEY);
-  }, []);
-
-  const deleteUser = useCallback((userId: string) => {
-    setState((prev) => ({
-      ...prev,
-      users: prev.users.filter((u) => u.id !== userId && u.role !== "admin"),
-      progress: prev.progress.filter((p) => p.studentId !== userId),
-      classes: prev.classes.map((c) => ({
-        ...c,
-        studentIds: c.studentIds.filter((id) => id !== userId),
-        pendingStudentIds: c.pendingStudentIds.filter((id) => id !== userId),
-      })),
-      groups: prev.groups.map((g) => ({
-        ...g,
-        memberIds: g.memberIds.filter((id) => id !== userId),
-      })),
-    }));
+  const deleteUser = useCallback(async (userId: string) => {
+    try {
+      await fetch("/api/auth/delete-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+    } catch {
+      /* ignore network errors; still clear local cache */
+    }
+    void deleteProgress(userId);
+    setState((prev) => {
+      const users = prev.users.filter((u) => u.role === "admin" || u.id !== userId);
+      // #region agent log
+      fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'post-fix',hypothesisId:'F',location:'store.tsx:deleteUser',message:'deleteUser local cache update',data:{remainingUserCount:users.length,remainingAdminCount:users.filter((u)=>u.role==='admin').length},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      return {
+        ...prev,
+        users,
+        progress: prev.progress.filter((p) => p.studentId !== userId),
+        classes: prev.classes.map((c) => ({
+          ...c,
+          studentIds: c.studentIds.filter((id) => id !== userId),
+          pendingStudentIds: c.pendingStudentIds.filter((id) => id !== userId),
+        })),
+        groups: prev.groups.map((g) => ({
+          ...g,
+          memberIds: g.memberIds.filter((id) => id !== userId),
+        })),
+      };
+    });
     setSession((s) => (s?.userId === userId ? null : s));
   }, []);
 
-  const createTeacher = useCallback((input: { name: string; email: string; password: string }) => {
+  const createAdmin = useCallback(
+    async (input: { name: string; email: string; password: string }) => {
+      const name = input.name.trim();
+      const email = input.email.trim().toLowerCase();
+      const password = input.password;
+      if (!name || !email || !password) {
+        return { ok: false as const, error: "Name, email, and password are required." };
+      }
+      if (password.length < 6) {
+        return { ok: false as const, error: "Password must be at least 6 characters." };
+      }
+
+      try {
+        const res = await fetch("/api/auth/create-admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password }),
+        });
+        const data = (await res.json()) as {
+          ok?: boolean;
+          error?: string;
+          user?: ProfileRow;
+        };
+        if (!res.ok || !data.ok || !data.user) {
+          return {
+            ok: false as const,
+            error: data.error ?? "Failed to create admin account.",
+          };
+        }
+        setState((prev) => mergeProfileUser(prev, data.user as ProfileRow));
+        return { ok: true as const };
+      } catch {
+        return { ok: false as const, error: "Failed to create admin account." };
+      }
+    },
+    [],
+  );
+
+  const updateTerms = useCallback((terms: Term[]) => {
     setState((prev) => {
-      if (prev.users.some((u) => u.email.toLowerCase() === input.email.toLowerCase())) return prev;
-      const teacher: User = {
-        id: `teacher-${crypto.randomUUID().slice(0, 8)}`,
-        name: input.name,
-        email: input.email,
-        password: input.password,
-        role: "teacher",
-        classIds: [],
-        createdAt: new Date().toISOString(),
-      };
-      return { ...prev, users: [...prev.users, teacher] };
+      const next = { ...prev, terms };
+      persistTerms(next);
+      return next;
     });
   }, []);
 
-  const updateTerms = useCallback((terms: Term[]) => {
-    setState((prev) => ({ ...prev, terms }));
+  const addWeek = useCallback((termId: string, topic: string): Week | null => {
+    let created: Week | null = null;
+    setState((prev) => {
+      const term = prev.terms.find((t) => t.id === termId);
+      if (!term) return prev;
+      const weekNumber = nextWeekNumber(term.weeks);
+      // Reuse across Strict Mode double-invoke so the returned week matches state.
+      if (!created || created.number !== weekNumber) {
+        created = createEmptyWeek({
+          termNumber: term.number,
+          weekNumber,
+          topic,
+        });
+      }
+      if (term.weeks.some((w) => w.id === created!.id)) return prev;
+      const next = {
+        ...prev,
+        terms: prev.terms.map((t) =>
+          t.id !== termId
+            ? t
+            : {
+                ...t,
+                weeks: sortWeeksByNumber([...t.weeks, created!]),
+              },
+        ),
+      };
+      persistTerms(next);
+      return next;
+    });
+    return created;
+  }, []);
+
+  const removeWeek = useCallback((termId: string, weekId: string) => {
+    setState((prev) => {
+      const term = prev.terms.find((t) => t.id === termId);
+      if (!term || !term.weeks.some((w) => w.id === weekId)) return prev;
+      const next = {
+        ...prev,
+        terms: prev.terms.map((t) =>
+          t.id !== termId
+            ? t
+            : {
+                ...t,
+                weeks: t.weeks.filter((w) => w.id !== weekId),
+              },
+        ),
+      };
+      persistTerms(next);
+      return next;
+    });
   }, []);
 
   const upsertWeekLesson = useCallback(
     (termId: string, weekId: string, day: WeekDay, patch: Partial<Lesson>) => {
-      setState((prev) => ({
-        ...prev,
-        terms: prev.terms.map((term) => {
-          if (term.id !== termId) return term;
-          return {
-            ...term,
-            weeks: term.weeks.map((week) => {
-              if (week.id !== weekId) return week;
-              return {
-                ...week,
-                lessons: week.lessons.map((lesson) =>
-                  lesson.day === day ? { ...lesson, ...patch } : lesson,
-                ),
-              };
-            }),
-          };
-        }),
-      }));
+      setState((prev) => {
+        const next = {
+          ...prev,
+          terms: prev.terms.map((term) => {
+            if (term.id !== termId) return term;
+            return {
+              ...term,
+              weeks: term.weeks.map((week) => {
+                if (week.id !== weekId) return week;
+                return {
+                  ...week,
+                  lessons: week.lessons.map((lesson) =>
+                    lesson.day === day ? { ...lesson, ...patch } : lesson,
+                  ),
+                };
+              }),
+            };
+          }),
+        };
+        persistTerms(next);
+        return next;
+      });
     },
     [],
   );
@@ -463,33 +689,37 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       weekId: string,
       patch: { title?: string; resources?: Resource[]; memoResources?: Resource[] },
     ) => {
-      setState((prev) => ({
-        ...prev,
-        terms: prev.terms.map((term) =>
-          term.id !== termId
-            ? term
-            : {
-                ...term,
-                weeks: term.weeks.map((w) =>
-                  w.id !== weekId
-                    ? w
-                    : {
-                        ...w,
-                        weekTest: {
-                          ...w.weekTest,
-                          ...(patch.title !== undefined ? { title: patch.title } : {}),
-                          ...(patch.resources !== undefined
-                            ? { resources: patch.resources }
-                            : {}),
-                          ...(patch.memoResources !== undefined
-                            ? { memoResources: patch.memoResources }
-                            : {}),
+      setState((prev) => {
+        const next = {
+          ...prev,
+          terms: prev.terms.map((term) =>
+            term.id !== termId
+              ? term
+              : {
+                  ...term,
+                  weeks: term.weeks.map((w) =>
+                    w.id !== weekId
+                      ? w
+                      : {
+                          ...w,
+                          weekTest: {
+                            ...w.weekTest,
+                            ...(patch.title !== undefined ? { title: patch.title } : {}),
+                            ...(patch.resources !== undefined
+                              ? { resources: patch.resources }
+                              : {}),
+                            ...(patch.memoResources !== undefined
+                              ? { memoResources: patch.memoResources }
+                              : {}),
+                          },
                         },
-                      },
-                ),
-              },
-        ),
-      }));
+                  ),
+                },
+          ),
+        };
+        persistTerms(next);
+        return next;
+      });
     },
     [],
   );
@@ -499,24 +729,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       termId: string,
       patch: { title?: string; resources?: Resource[]; memoResources?: Resource[] },
     ) => {
-      setState((prev) => ({
-        ...prev,
-        terms: prev.terms.map((term) =>
-          term.id !== termId
-            ? term
-            : {
-                ...term,
-                preExam: {
-                  ...term.preExam,
-                  ...(patch.title !== undefined ? { title: patch.title } : {}),
-                  ...(patch.resources !== undefined ? { resources: patch.resources } : {}),
-                  ...(patch.memoResources !== undefined
-                    ? { memoResources: patch.memoResources }
-                    : {}),
+      setState((prev) => {
+        const next = {
+          ...prev,
+          terms: prev.terms.map((term) =>
+            term.id !== termId
+              ? term
+              : {
+                  ...term,
+                  preExam: {
+                    ...term.preExam,
+                    ...(patch.title !== undefined ? { title: patch.title } : {}),
+                    ...(patch.resources !== undefined ? { resources: patch.resources } : {}),
+                    ...(patch.memoResources !== undefined
+                      ? { memoResources: patch.memoResources }
+                      : {}),
+                  },
                 },
-              },
-        ),
-      }));
+          ),
+        };
+        persistTerms(next);
+        return next;
+      });
     },
     [],
   );
@@ -526,41 +760,47 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       termId: string,
       patch: { title?: string; resources?: Resource[]; memoResources?: Resource[] },
     ) => {
-      setState((prev) => ({
-        ...prev,
-        terms: prev.terms.map((term) =>
-          term.id !== termId
-            ? term
-            : {
-                ...term,
-                pastPaper: {
-                  ...term.pastPaper,
-                  ...(patch.title !== undefined ? { title: patch.title } : {}),
-                  ...(patch.resources !== undefined ? { resources: patch.resources } : {}),
-                  ...(patch.memoResources !== undefined
-                    ? { memoResources: patch.memoResources }
-                    : {}),
+      setState((prev) => {
+        const next = {
+          ...prev,
+          terms: prev.terms.map((term) =>
+            term.id !== termId
+              ? term
+              : {
+                  ...term,
+                  pastPaper: {
+                    ...term.pastPaper,
+                    ...(patch.title !== undefined ? { title: patch.title } : {}),
+                    ...(patch.resources !== undefined ? { resources: patch.resources } : {}),
+                    ...(patch.memoResources !== undefined
+                      ? { memoResources: patch.memoResources }
+                      : {}),
+                  },
                 },
-              },
-        ),
-      }));
+          ),
+        };
+        persistTerms(next);
+        return next;
+      });
     },
     [],
   );
 
   const createGroup = useCallback((input: { name: string; description: string; termId?: string }) => {
     const group: StudyGroup = {
-      id: `group-${crypto.randomUUID().slice(0, 8)}`,
+      id: crypto.randomUUID(),
       name: input.name,
       description: input.description,
       termId: input.termId,
       memberIds: [],
       createdAt: new Date().toISOString(),
     };
+    void insertStudyGroup(group);
     setState((prev) => ({ ...prev, groups: [...prev.groups, group] }));
   }, []);
 
   const addMemberToGroup = useCallback((groupId: string, studentId: string) => {
+    void addGroupMember(groupId, studentId);
     setState((prev) => ({
       ...prev,
       groups: prev.groups.map((g) =>
@@ -572,6 +812,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const removeMemberFromGroup = useCallback((groupId: string, studentId: string) => {
+    void removeGroupMember(groupId, studentId);
     setState((prev) => ({
       ...prev,
       groups: prev.groups.map((g) =>
@@ -581,64 +822,67 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const deleteGroup = useCallback((groupId: string) => {
+    void deleteStudyGroup(groupId);
     setState((prev) => ({ ...prev, groups: prev.groups.filter((g) => g.id !== groupId) }));
   }, []);
 
-  const completeLesson = useCallback((studentId: string, lessonId: string) => {
-    setState((prev) => {
-      const next = ensureStudentProgress(prev, studentId);
-      return {
-        ...next,
-        progress: next.progress.map((p) => {
-          if (p.studentId !== studentId) return p;
-          if (p.completedLessonIds.includes(lessonId)) return p;
-          return recomputeProgress({
-            ...p,
-            completedLessonIds: [...p.completedLessonIds, lessonId],
-          });
-        }),
-      };
-    });
-  }, []);
-
-  const submitTestScore = useCallback((studentId: string, assessmentId: string, score: number) => {
-    setState((prev) => {
-      const next = ensureStudentProgress(prev, studentId);
-      return {
-        ...next,
-        progress: next.progress.map((p) => {
-          if (p.studentId !== studentId) return p;
-          return recomputeProgress({
-            ...p,
-            testScores: { ...p.testScores, [assessmentId]: score },
-          });
-        }),
-      };
-    });
-  }, []);
-
-  const addCorrection = useCallback(
-    (correction: Omit<CorrectionResult, "id" | "createdAt">) => {
-      const full: CorrectionResult = {
-        ...correction,
-        id: `corr-${crypto.randomUUID().slice(0, 8)}`,
-        createdAt: new Date().toISOString(),
-      };
-      setState((prev) => ({ ...prev, corrections: [full, ...prev.corrections] }));
-      return full;
+  const completeLesson = useCallback(
+    async (studentId: string, lessonId: string) => {
+      void studentId; // session identity is authoritative on the server
+      try {
+        const res = await fetch("/api/progress/complete-lesson", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ lessonId }),
+        });
+        const body = (await res.json()) as {
+          ok?: boolean;
+          error?: string;
+          progress?: StudentProgress;
+        };
+        if (!res.ok || !body.ok || !body.progress) {
+          return { ok: false as const, error: body.error ?? "Could not complete lesson." };
+        }
+        setState((prev) => {
+          const without = prev.progress.filter((p) => p.studentId !== body.progress!.studentId);
+          return { ...prev, progress: [...without, body.progress!] };
+        });
+        return { ok: true as const };
+      } catch (err) {
+        return {
+          ok: false as const,
+          error: err instanceof Error ? err.message : "Could not complete lesson.",
+        };
+      }
     },
     [],
   );
 
+  const applyProgress = useCallback((progress: StudentProgress) => {
+    setState((prev) => {
+      const without = prev.progress.filter((p) => p.studentId !== progress.studentId);
+      return { ...prev, progress: [...without, progress] };
+    });
+  }, []);
+
+  const applyCorrection = useCallback((correction: CorrectionResult) => {
+    setState((prev) => ({
+      ...prev,
+      corrections: [correction, ...prev.corrections.filter((c) => c.id !== correction.id)],
+    }));
+  }, []);
+
   const createClass = useCallback((teacherId: string, name: string) => {
     const schoolClass: SchoolClass = {
-      id: `class-${crypto.randomUUID().slice(0, 8)}`,
+      id: crypto.randomUUID(),
       name,
       teacherId,
       studentIds: [],
       pendingStudentIds: [],
       createdAt: new Date().toISOString(),
     };
+    void insertSchoolClass(schoolClass);
     setState((prev) => ({
       ...prev,
       classes: [...prev.classes, schoolClass],
@@ -663,6 +907,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const requestJoinClass = useCallback((classId: string, studentId: string) => {
+    void upsertClassMember(classId, studentId, "pending");
     setState((prev) => ({
       ...prev,
       classes: prev.classes.map((c) => {
@@ -674,6 +919,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const acceptStudent = useCallback((classId: string, studentId: string) => {
+    void upsertClassMember(classId, studentId, "enrolled");
     setState((prev) => ({
       ...prev,
       classes: prev.classes.map((c) => {
@@ -695,6 +941,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addStudentToClass = useCallback((classId: string, studentId: string) => {
+    void upsertClassMember(classId, studentId, "enrolled");
     setState((prev) => ({
       ...prev,
       classes: prev.classes.map((c) => {
@@ -717,15 +964,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const createTeacherLesson = useCallback((lesson: Omit<Lesson, "id"> & { id?: string }) => {
     const full: Lesson = {
       ...lesson,
-      id: lesson.id ?? `tl-${crypto.randomUUID().slice(0, 8)}`,
+      id: lesson.id ?? crypto.randomUUID(),
     };
+    void insertTeacherLesson(full);
     setState((prev) => ({ ...prev, teacherLessons: [...prev.teacherLessons, full] }));
   }, []);
 
   const sendMessage = useCallback(
     (input: { fromUserId: string; toUserId: string; studentId?: string; body: string }) => {
       const message: Message = {
-        id: `msg-${crypto.randomUUID().slice(0, 8)}`,
+        id: crypto.randomUUID(),
         fromUserId: input.fromUserId,
         toUserId: input.toUserId,
         studentId: input.studentId,
@@ -733,12 +981,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         createdAt: new Date().toISOString(),
         read: false,
       };
+      void insertMessage(message);
       setState((prev) => ({ ...prev, messages: [message, ...prev.messages] }));
     },
     [],
   );
 
   const markMessageRead = useCallback((messageId: string) => {
+    void markMessageReadDb(messageId);
     setState((prev) => ({
       ...prev,
       messages: prev.messages.map((m) => (m.id === messageId ? { ...m, read: true } : m)),
@@ -749,16 +999,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     ready,
     state,
     user,
+    signingOut,
     login,
     signup,
     updateProfile,
     logout,
     theme,
     setTheme,
-    resetDemo,
     deleteUser,
-    createTeacher,
+    createAdmin,
     updateTerms,
+    addWeek,
+    removeWeek,
     upsertWeekLesson,
     setWeekTest,
     setPreExam,
@@ -768,8 +1020,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     removeMemberFromGroup,
     deleteGroup,
     completeLesson,
-    submitTestScore,
-    addCorrection,
+    applyProgress,
+    applyCorrection,
     createClass,
     searchStudents,
     requestJoinClass,

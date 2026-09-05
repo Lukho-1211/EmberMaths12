@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useEffect, useState } from "react";
-import { DEMO_PASSWORD } from "@/lib/mock/seed";
-import { DEMO_EMAILS, isRole, roleLabel } from "@/lib/roles";
+import { PasswordInput } from "@/components/password-input";
+import { isRole, roleLabel } from "@/lib/roles";
 import { useStore } from "@/lib/store";
 
 function LoginForm() {
@@ -18,6 +18,7 @@ function LoginForm() {
   const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!role) router.replace("/login");
@@ -27,18 +28,30 @@ function LoginForm() {
     return <p className="text-sm text-muted">Redirecting…</p>;
   }
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!role) return;
-    const result = login(email, password, role);
-    if (!result.ok) {
-      setError(result.error);
-      return;
+    if (!role || loading) return;
+    setError("");
+    setLoading(true);
+    // #region agent log
+    fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'C',location:'login/[role]/page.tsx:onSubmit',message:'login form submitted',data:{role,hasEmail:Boolean(email),hasPassword:Boolean(password)},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+    try {
+      const result = await login(email, password, role);
+      // #region agent log
+      fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'C',location:'login/[role]/page.tsx:result',message:'login form result',data:{ok:result.ok,error:result.ok?null:result.error,nextRole:result.ok?result.role:null},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      router.push(`/${result.role}`);
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    router.push(`/${result.role}`);
   }
-
-  const demoEmail = DEMO_EMAILS[role];
 
   return (
     <div className="mx-auto w-full max-w-md rounded-2xl border border-border bg-ember-white p-8 shadow-sm">
@@ -53,51 +66,44 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
           />
         </label>
-        <label className="block text-sm">
-          <span className="mb-1 block font-medium">Password</span>
-          <input
+        <div className="block text-sm">
+          <label htmlFor="login-password" className="mb-1 block font-medium">
+            Password
+          </label>
+          <PasswordInput
+            id="login-password"
             className="w-full rounded-md border border-border px-3 py-2 outline-none focus:border-ember-gold focus:ring-2 focus:ring-ember-gold/40"
-            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading}
+            autoComplete="current-password"
           />
-        </label>
+        </div>
         {error ? <p className="text-sm text-danger">{error}</p> : null}
         <button
           type="submit"
-          className="w-full cursor-pointer rounded-md bg-ember-navy py-2.5 text-sm font-semibold text-white transition duration-200 hover:bg-ember-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-gold"
+          disabled={loading}
+          className="w-full cursor-pointer rounded-md bg-ember-navy py-2.5 text-sm font-semibold text-white transition duration-200 hover:bg-ember-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-gold disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Log in
+          {loading ? "Signing in…" : "Log in"}
         </button>
       </form>
-      <div className="mt-6 space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted">Demo account</p>
-        <button
-          type="button"
-          className="flex w-full cursor-pointer items-center justify-between rounded-md border border-border px-3 py-2 text-left text-sm transition duration-200 hover:border-ember-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-gold"
-          onClick={() => {
-            setEmail(demoEmail);
-            setPassword(DEMO_PASSWORD);
-          }}
-        >
-          <span className="capitalize">{role}</span>
-          <span className="text-muted">{demoEmail}</span>
-        </button>
-        <p className="text-xs text-muted">Password: {DEMO_PASSWORD}</p>
-      </div>
-      <p className="mt-6 text-sm text-muted">
-        No account?{" "}
-        <Link
-          href={`/signup/${role}`}
-          className="font-semibold text-ember-navy underline decoration-ember-gold"
-        >
-          Sign up as {roleLabel(role).toLowerCase()}
-        </Link>
-      </p>
-      <p className="mt-2 text-sm text-muted">
+      {role !== "admin" ? (
+        <p className="mt-6 text-sm text-muted">
+          No account?{" "}
+          <Link
+            href={`/signup/${role}`}
+            className="font-semibold text-ember-navy underline decoration-ember-gold"
+          >
+            Sign up as {roleLabel(role).toLowerCase()}
+          </Link>
+        </p>
+      ) : null}
+      <p className={`${role !== "admin" ? "mt-2" : "mt-6"} text-sm text-muted`}>
         <Link href="/login" className="font-semibold text-ember-navy underline decoration-ember-gold">
           Choose a different portal
         </Link>

@@ -1,11 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download, FileText } from "lucide-react";
-import { LessonVideoPlayer } from "@/components/lesson-video-player";
-import { MarkdownPreview } from "@/components/markdown-preview";
-import { hasVideoSources } from "@/lib/lesson-video";
-import { mockPaperGrade } from "@/lib/mock-paper-grade";
+import { Download } from "lucide-react";
+import { meetsPassMark } from "@/lib/score-mcq";
 import { useStore } from "@/lib/store";
 import type {
   AssessmentQuestion,
@@ -14,6 +11,7 @@ import type {
   PastPaper,
   PreExam,
   Resource,
+  StudentProgress,
   WeekTest,
 } from "@/lib/types";
 
@@ -34,77 +32,35 @@ type AssessmentMode = "mcq" | "paper";
 type PaperStep = "questions" | "upload" | "result";
 type CorrectionMode = "paper-scan" | "past-paper";
 
-export function AssessmentMaterials({
-  resources,
-  assessmentTitle,
-}: {
-  resources: Resource[];
-  assessmentTitle: string;
-}) {
-  const [openMarkdownId, setOpenMarkdownId] = useState<string | null>(null);
-  if (resources.length === 0) return null;
-
-  const showVideo = hasVideoSources(resources);
+export function AssessmentMaterials({ resources }: { resources: Resource[] }) {
+  const studentResources = resources.filter((r) => r.type !== "markdown");
+  if (studentResources.length === 0) return null;
 
   return (
     <div className="mb-6 rounded-lg border border-dashed border-border bg-surface/50 p-4">
       <h3 className="text-sm font-semibold">Exam paper / materials</h3>
       <p className="mt-1 text-xs text-muted">
-        {showVideo
-          ? "Watch the paper walkthrough before you answer, or download the PDF / Markdown."
-          : "Download the PDF or view the Markdown paper before answering."}
+        Download the PDF or other materials before answering.
       </p>
-      {showVideo ? (
-        <div className="mt-3">
-          <LessonVideoPlayer title={assessmentTitle} resources={resources} />
-        </div>
-      ) : null}
       <ul className="mt-3 space-y-2">
-        {resources.map((r) => {
-          const isUploaded = r.url.startsWith("data:");
-          const isMarkdown = r.type === "markdown";
-
-          if (isMarkdown && isUploaded) {
-            const open = openMarkdownId === r.id;
-            return (
-              <li key={r.id} className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => setOpenMarkdownId((id) => (id === r.id ? null : r.id))}
-                  className="flex w-full items-start gap-2 text-left text-sm hover:text-ember-gold"
-                >
-                  <FileText size={16} className="mt-0.5 shrink-0" />
-                  <span>
-                    <span className="block font-medium">{r.title}</span>
-                    <span className="text-xs uppercase text-muted">
-                      markdown · {open ? "hide" : "view"}
-                    </span>
-                  </span>
-                </button>
-                {open ? (
-                  <MarkdownPreview
-                    resource={r}
-                    className="rounded-lg border border-border bg-white p-3"
-                  />
-                ) : null}
-              </li>
-            );
-          }
+        {studentResources.map((r) => {
+          const isUploaded =
+            r.url.startsWith("data:") ||
+            r.url.startsWith("http://") ||
+            r.url.startsWith("https://");
 
           return (
             <li key={r.id}>
               <a
                 href={r.url === "#" ? undefined : r.url}
                 className="flex items-start gap-2 text-sm hover:text-ember-gold"
-                download={
-                  r.type === "pdf" || r.type === "markdown" ? r.fileName ?? true : undefined
-                }
+                download={r.type === "pdf" ? r.fileName ?? true : undefined}
                 target={r.type === "pdf" && isUploaded ? "_blank" : undefined}
                 rel="noreferrer"
                 onClick={(e) => {
                   if (!r.url || r.url === "#") {
                     e.preventDefault();
-                    alert("Placeholder resource — upload a PDF or Markdown in Admin → Terms.");
+                    alert("Placeholder resource — upload a PDF in Admin → Terms.");
                   }
                 }}
               >
@@ -134,22 +90,51 @@ export function AssessmentQuiz({
   studentId: string;
   onDone?: (score: number) => void;
 }) {
-  const { submitTestScore } = useStore();
+  const { applyProgress } = useStore();
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [score, setScore] = useState<number | null>(null);
+  const [passed, setPassed] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const total = assessment.questions.length;
   const resources = assessment.resources ?? [];
 
-  function submit() {
-    let correct = 0;
-    for (const q of assessment.questions) {
-      if (answers[q.id] === q.answerIndex) correct += 1;
+  async function submit() {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/assessments/mcq", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          assessmentId: assessment.id,
+          answers,
+          // studentId ignored server-side; session is authoritative
+          studentId,
+        }),
+      });
+      const body = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        score?: number;
+        passed?: boolean;
+        progress?: StudentProgress;
+      };
+      if (!res.ok || !body.ok || body.score === undefined) {
+        setError(body.error ?? "Could not submit assessment.");
+        return;
+      }
+      if (body.progress) applyProgress(body.progress);
+      setScore(body.score);
+      setPassed(body.passed ?? false);
+      onDone?.(body.score);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not submit assessment.");
+    } finally {
+      setBusy(false);
     }
-    const pct = Math.round((correct / total) * 100);
-    setScore(pct);
-    submitTestScore(studentId, assessment.id, pct);
-    onDone?.(pct);
   }
 
   return (
@@ -157,7 +142,7 @@ export function AssessmentQuiz({
       <h2 className="font-display text-2xl">{assessment.title}</h2>
       <p className="mt-1 text-sm text-muted">{assessment.description}</p>
       <div className="mt-6">
-        <AssessmentMaterials resources={resources} assessmentTitle={assessment.title} />
+        <AssessmentMaterials resources={resources} />
       </div>
       <div className="space-y-6">
         {assessment.questions.map((q, idx) => (
@@ -176,7 +161,7 @@ export function AssessmentQuiz({
                     name={q.id}
                     checked={answers[q.id] === oi}
                     onChange={() => setAnswers((a) => ({ ...a, [q.id]: oi }))}
-                    disabled={score !== null}
+                    disabled={score !== null || busy}
                   />
                   <span>{opt}</span>
                 </label>
@@ -185,18 +170,19 @@ export function AssessmentQuiz({
           </fieldset>
         ))}
       </div>
+      {error ? <p className="mt-4 text-sm text-danger">{error}</p> : null}
       {score === null ? (
         <button
           type="button"
-          onClick={submit}
-          disabled={Object.keys(answers).length < total}
+          onClick={() => void submit()}
+          disabled={busy || Object.keys(answers).length < total}
           className="mt-6 rounded-md bg-ember-gold px-4 py-2 text-sm font-bold text-ember-navy disabled:opacity-50"
         >
-          Submit assessment
+          {busy ? "Submitting…" : "Submit assessment"}
         </button>
       ) : (
         <p className="mt-6 rounded-md bg-ember-navy px-4 py-3 text-sm font-semibold text-white">
-          Score: {score}% — {score >= assessment.passMark ? "Pass" : "Needs improvement"} (pass mark{" "}
+          Score: {score}% — {passed ? "Pass" : "Needs improvement"} (pass mark{" "}
           {assessment.passMark}%)
         </p>
       )}
@@ -227,13 +213,13 @@ export function AssessmentPaperScan({
   assessment: AssessmentLike | PaperScanAssessment;
   studentId: string;
   onDone?: (score: number) => void;
-  /** When true, skip submitTestScore so pass/fail is unchanged. */
+  /** When true, skip pass/fail progress update (past-paper practice). */
   practiceOnly?: boolean;
   correctionMode?: CorrectionMode;
   /** Allow PDF script uploads in addition to images. */
   acceptPdf?: boolean;
 }) {
-  const { addCorrection, submitTestScore } = useStore();
+  const { applyCorrection, applyProgress } = useStore();
   const questions = assessment.questions ?? [];
   const paperOnly = questions.length === 0;
   const [step, setStep] = useState<PaperStep>("questions");
@@ -241,6 +227,7 @@ export function AssessmentPaperScan({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isPdfPreview, setIsPdfPreview] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CorrectionResult | null>(null);
 
   const resources = assessment.resources ?? [];
@@ -248,33 +235,42 @@ export function AssessmentPaperScan({
   async function runCorrection() {
     if (!fileName) return;
     setBusy(true);
+    setError(null);
+    // Keep a short delay so the mock OCR UX still feels intentional.
     await new Promise((r) => setTimeout(r, 900));
-    const graded = mockPaperGrade({
-      assessmentId: assessment.id,
-      assessmentTitle: assessment.title,
-      questions,
-      fileName,
-      passMark: assessment.passMark,
-      memoResources: assessment.memoResources,
-    });
-    const saved = addCorrection({
-      studentId,
-      fileName,
-      score: graded.score,
-      feedback: graded.feedback,
-      summary: graded.summary,
-      assessmentId: assessment.id,
-      assessmentTitle: assessment.title,
-      mode: correctionMode,
-      questionFeedback: graded.questionFeedback,
-    });
-    if (!practiceOnly) {
-      submitTestScore(studentId, assessment.id, graded.score);
+    try {
+      const res = await fetch("/api/assessments/paper-scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          assessmentId: assessment.id,
+          fileName,
+          practiceOnly,
+          correctionMode,
+          studentId,
+        }),
+      });
+      const body = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        correction?: CorrectionResult;
+        progress?: StudentProgress | null;
+      };
+      if (!res.ok || !body.ok || !body.correction) {
+        setError(body.error ?? "Could not grade paper scan.");
+        return;
+      }
+      applyCorrection(body.correction);
+      if (body.progress) applyProgress(body.progress);
+      setResult(body.correction);
+      setStep("result");
+      onDone?.(body.correction.score);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not grade paper scan.");
+    } finally {
+      setBusy(false);
     }
-    setResult(saved);
-    setStep("result");
-    setBusy(false);
-    onDone?.(graded.score);
   }
 
   function shareResult(c: CorrectionResult) {
@@ -327,7 +323,7 @@ export function AssessmentPaperScan({
       </p>
 
       <div className="mt-6">
-        <AssessmentMaterials resources={resources} assessmentTitle={assessment.title} />
+        <AssessmentMaterials resources={resources} />
       </div>
 
       <ol className="mb-4 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
@@ -350,8 +346,8 @@ export function AssessmentPaperScan({
           {paperOnly ? (
             <>
               <p className="mb-4 text-sm text-muted">
-                Download or walk through the past paper above. Write full working on paper (or
-                print the PDF). When you are done, scan your script for mock feedback.
+                Download the past paper above. Write full working on paper (or print the PDF).
+                When you are done, scan your script for mock feedback.
               </p>
               {resources.length === 0 ? (
                 <p className="mb-4 rounded-md border border-ember-gold/40 bg-ember-gold/10 px-3 py-2 text-sm">
@@ -426,6 +422,7 @@ export function AssessmentPaperScan({
             </p>
           ) : null}
           {fileName ? <p className="mt-2 text-xs text-muted">Selected: {fileName}</p> : null}
+          {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
           <div className="mt-6 flex flex-wrap gap-3">
             <button
               type="button"
@@ -450,7 +447,7 @@ export function AssessmentPaperScan({
         <div>
           <p className="rounded-md bg-ember-navy px-4 py-3 text-sm font-semibold text-white">
             Score: {result.score}% —{" "}
-            {result.score >= assessment.passMark ? "Pass band" : "Needs improvement"} (band{" "}
+            {meetsPassMark(result.score, assessment.passMark) ? "Pass band" : "Needs improvement"} (band{" "}
             {assessment.passMark}%)
             {practiceOnly ? " · practice only" : ""}
           </p>

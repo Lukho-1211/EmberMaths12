@@ -2,95 +2,153 @@
 
 Online South African **CAPS Grade 12 Mathematics** school frontend — Udemy-style learning with Admin, Student, Teacher, and Parent portals.
 
-Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, and **Tailwind CSS 4**. Auth and data are **mocked in the browser** (`localStorage`) so you can demo the full product on Vercel without a backend.
+Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, and **Tailwind CSS 4**. Requires **Node.js 22+**. **Auth, curriculum, progress, classes, and uploads** all use **Supabase** (Auth + Postgres + Storage). The React store is an in-memory cache that loads and writes through Supabase — nothing is persisted in `localStorage`.
+
+## Documentation
+
+| Doc | Purpose |
+| --- | ------- |
+| [`docs/PRD.md`](docs/PRD.md) | Product requirements (product law for features, gaps, and later work) |
+| [`docs/tech_stack.md`](docs/tech_stack.md) | As-built stack: versions, clients, env vars, file map |
+| [`design-system/embermaths12/MASTER.md`](design-system/embermaths12/MASTER.md) | Design tokens and component rules |
+
+## Portals
+
+| Portal | Base path |
+| ------ | --------- |
+| Admin | `/admin` |
+| Student | `/student` |
+| Teacher | `/teacher` |
+| Parent | `/parent` |
+
+Public entry: `/` (landing), `/login` → `/login/[role]`, `/signup` → `/signup/[role]` (student, teacher, parent). Admin is login-only; new admins are created by an existing admin.
 
 ## Brand
 
 Palette from `resourceInfo/colors.jpg` (Black & Gold Elegance):
 
-| Token      | Hex       |
-| ---------- | --------- |
-| White      | `#FFFFFF` |
-| Light gray | `#E5E5E5` |
-| Gold       | `#FCA311` |
-| Navy       | `#14213D` |
-| Black      | `#000000` |
+| Token | Hex |
+| ----- | --- |
+| `ember-white` | `#FFFFFF` |
+| `ember-gray` | `#E5E5E5` |
+| `ember-gold` | `#FCA311` |
+| `ember-navy` | `#14213D` |
+| `ember-black` | `#000000` |
 
-Typography: **Fraunces** (display) and **Outfit** (body) via `next/font`. Design tokens and component rules live in `design-system/embermaths12/`.
+Typography: **Fraunces** (display) and **Outfit** (body) via `next/font`. Gold CTAs use **navy** text for contrast. Design tokens and component rules live in `design-system/embermaths12/`.
 
-## Demo accounts
+## Architecture
 
-Password for all demos: `ember12`
+Canonical stack (versions and file map): [`docs/tech_stack.md`](docs/tech_stack.md).
 
-| Role    | Email                |
-| ------- | -------------------- |
-| Admin   | `admin@ember12.za`   |
-| Student | `student@ember12.za` |
-| Teacher | `teacher@ember12.za` |
-| Parent  | `parent@ember12.za`  |
+| Layer | What it does today |
+| ----- | ------------------ |
+| **Supabase Auth** | Email/password login for **admin**, **student**, **teacher**, and **parent**; public signup for student/teacher/parent. Cookie session refresh via `src/proxy.ts` and `@supabase/ssr` clients in `src/lib/supabase/`. |
+| **Postgres** | `public.profiles` (incl. theme), `public.student` roster, `curriculum`, `student_progress`, classes, groups, messages, corrections, teacher lessons. Migrations in `supabase/migrations/`. |
+| **Storage** | `lesson-files` for PDF/Markdown; `lesson-videos` for admin-uploaded lesson mp4s. |
+| **UI store** (`src/lib/store.tsx`) | In-memory `AppState` hydrated from Supabase on boot; mutations write back to Postgres. Curriculum loads via `GET /api/curriculum` (not a direct table SELECT). Session comes from Auth cookies only. |
 
-Login and signup use role hubs (`/login`, `/signup`) that route into `/login/[role]` and `/signup/[role]`.
+Assessment submit, lesson complete, and curriculum fetch go through App Router API routes: the server scores MCQs, applies mock paper-scan grades, updates progress via security-definer RPCs, and strips answer keys/memos for non-admins. Clients do not upsert `student_progress` or `corrections` directly.
+
+Signup uses the browser Supabase client (`signUp`) so it works with only the publishable key. Role and name are stored in `user_metadata`; the `handle_new_user` trigger writes `public.profiles` (and `public.student` for students). **Admin assignment** requires Auth `app_metadata.role = admin` (via `POST /api/auth/create-admin` or seed); crafted `user_metadata.role = admin` on public signup becomes `student` (migration `20260905102918`). Role for authorization is always read from `profiles`, not from editable metadata.
+
+Optional: `POST /api/auth/signup` can still create pre-confirmed users (non-admin) when `SUPABASE_SERVICE_ROLE_KEY` is the real **service_role** secret (Dashboard → Project Settings → API). The anon/publishable JWT will return “User not allowed”. Admin creation uses `POST /api/auth/create-admin`; user delete uses `POST /api/auth/delete-user`.
+
+Env vars are required for Auth and for seeding.
+
+The same emails are seeded into **Supabase Auth** + `profiles` (see `supabase/seed.ts` and `src/lib/demo-accounts.ts`). Extra demo students/teachers are created by the TypeScript seed so classes and rankings use Auth UUIDs.
+
+Login uses role hubs (`/login` → `/login/[role]`). Public signup is student/teacher/parent only (`/signup` → `/signup/[role]`); admin accounts are created from `/admin/users`.
 
 ## Curriculum model (v1)
 
 - Terms **1–4** (placeholder CAPS topics from the 2025 ATP in `resourceInfo/`)
-- Each term: **Weeks 1–4** → Mon–Fri lessons (each with a **lesson test**) + **Saturday week test**
-- After Week 4: **Pre-exam**
+- Each term: **weeks** (seed starts with 1–4; admin can add more) → Mon–Fri lessons (each with a **lesson test**) + **Saturday week test**
+- After the term’s weeks: **Pre-exam** and **past paper**
 
 ## Features
 
 ### Auth & profile
 
-- Role-specific login and signup flows
-- **Settings** (student / teacher / parent): name, email, password; students also set **province** and **municipality** for rankings
-- Light / dark **theme** preference (stored with mock profile data)
+- Role-specific login (all roles) and public signup (student/teacher/parent) backed by **Supabase Auth** + `profiles`
+- Seed demo accounts (after TypeScript seed — see [Database seed](#database-seed)):
+
+| Role | Email | Password |
+| ---- | ----- | -------- |
+| Admin | `admin@ember12.za` | `ember12` |
+| Teacher | `teacher@ember12.za` | `ember12` |
+| Student | `student@ember12.za` | `ember12` |
+| Parent | `parent@ember12.za` | `ember12` |
+
+  Seeded `admin@ember12.za` is for local/seed demos. Live-project admin verification credentials live in `.cursor/rules/ember12.mdc` — do not assume the seed admin exists on the linked Supabase project.
+
+- **Settings** (student / teacher / parent): name, email, password; students also set **province** and **municipality** for rankings — updates go to Auth + `profiles`
+- Light / dark **theme** preference stored on `profiles.theme`
 
 ### Admin
 
-| Area | What it does |
-| ---- | ------------ |
-| **Terms & Lessons** | Upload PDF/Markdown for daily lessons, Saturday week tests, pre-exams, and past papers |
-| **Users & Teachers** | Manage demo users |
-| **Study Groups** | Create groups, assign students, optional term link |
-| **Pass / Fail** | Filter students by passing / failing / pending status |
-| **Top Achievers** | Leaderboard with province / municipality filters |
+| Route | What it does |
+| ----- | ------------ |
+| `/admin` | Dashboard stats and learner progress |
+| `/admin/terms` | Upload/edit PDF/Markdown for daily lessons, Saturday week tests, pre-exams, and past papers; upload lesson MP4 |
+| `/admin/users` | List admins/teachers; create admin accounts; delete student or parent accounts |
+| `/admin/groups` | Create study groups, assign students, optional term link |
+| `/admin/pass-fail` | Filter students by passing / failing / pending status |
+| `/admin/achievers` | Leaderboard with province / municipality filters |
 
-Saving a daily lesson with uploaded PDF/Markdown **mock-generates MCQ questions** from the document text (deterministic demo generation, not a live AI API). Admins can **Regenerate questions** from current materials.
+Saving a daily lesson with uploaded **Markdown** **mock-generates MCQ questions** from the document text (deterministic demo generation, not a live AI API). Admins can **Regenerate questions** from the current Markdown. PDFs remain lesson materials only and are not used for question generation.
 
 Exam papers are shown to students (walkthrough + download). Memos are admin-only and used when correcting paper+scan uploads.
 
-Files are stored as data URLs in `localStorage` (max **20 MB** per file). Admins can remove attachments and edit titles in place.
+Files are stored in Supabase Storage (`lesson-files` for PDF/Markdown, max **20 MB**; `lesson-videos` for lesson mp4s, max **~200 MB**). Admins can remove attachments and edit titles in place.
 
 ### Student
 
-| Area | What it does |
-| ---- | ------------ |
-| **Learn** | Term → week → day lessons with Video / Text tabs; required day tests; week tests & pre-exams |
-| **Past papers** | Practice loop separate from pass/fail (download, scan script, mock feedback) |
-| **Badges** | Milestone badges earned from progress |
-| **Top Achievers** | Geographic rankings board |
-| **Settings** | Profile, location, theme |
+| Route | What it does |
+| ----- | ------------ |
+| `/student` | Progress ring, term insights, continue learning |
+| `/student/learn` … `/[termId]/[weekId]/[day]` | Term → week → day lessons with Video / Text tabs; day test; mark complete |
+| `/student/learn/[termId]/pre-exam` | Term pre-exam |
+| `/student/past-papers` … | Practice loop (download, walkthrough, scan, mock feedback, share) |
+| `/student/badges` | Milestone badges earned from progress |
+| `/student/achievers` | Geographic rankings board |
+| `/student/settings` | Profile, location, theme |
 
 **Lesson player**
 
-- **Video** — uploaded PDF/Markdown becomes a slide deck at view time (`pdfjs-dist` for PDFs): play/pause, prev/next, keyboard shortcuts, fullscreen
-- **Text** — Markdown preview plus download links for PDFs and worksheets
+- **Video** — prefers an admin-uploaded mp4 from Storage (`lesson-videos`); otherwise **PDF** becomes a slide deck at view time (`pdfjs-dist`) with browser TTS: play/pause, prev/next, keyboard shortcuts, fullscreen; seed lessons may fall back to a YouTube embed when no hosted mp4 or PDF exists
+- **Text** — uploaded **PDF page preview** plus download links for PDFs and worksheets. **Markdown** is admin-only (mock MCQ generation) and is stripped from student/teacher/parent curriculum payloads
 
 Students must **pass** the day test before **Mark lesson complete** is enabled. Dashboards show **per-term insights** (strengths, weak topics, suggested next actions).
 
 ### Teacher
 
-Dashboard, **Classes**, **Progress**, **Top Achievers** (class-scoped rankings), **Lessons**, **Parent Messages**, and **Settings**.
+| Route | What it does |
+| ----- | ------------ |
+| `/teacher` | Dashboard |
+| `/teacher/classes` | Create classes; search and enroll students |
+| `/teacher/progress` | Per-class roster and term insights |
+| `/teacher/achievers` | Class-scoped or geo rankings |
+| `/teacher/lessons` | Create class-scoped lessons (not shown in student Learn — see [Known v1 gaps](#known-v1-gaps)) |
+| `/teacher/messages` | Message parents of class students |
+| `/teacher/settings` | Profile, theme |
 
 ### Parent
 
-Linked-child **Progress** (including practice attempts) and **Settings**.
+| Route | What it does |
+| ----- | ------------ |
+| `/parent` | Linked-child progress, badges, scores, term insights, past-paper attempts, and teacher messages |
+| `/parent/settings` | Profile, theme |
+
+Empty state when no child is linked (no self-service linking UI — see [Known v1 gaps](#known-v1-gaps)).
 
 ### Assessments
 
-Daily lesson tests, Saturday week tests, and pre-exams support two modes:
+Default pass mark is **50%** for daily lesson tests, Saturday week tests, and pre-exams. Past papers are practice-only and **do not** affect pass/fail.
 
-1. **On-screen MCQ** — answer in the browser; score against the pass mark.
+Two modes (submitted via server API routes):
+
+1. **On-screen MCQ** — answer in the browser; server scores against curriculum keys and the pass mark.
 2. **Paper + scan** — read the questions, work on paper, upload a photo/PDF of your script, then receive a **mock mark and per-question feedback** (deterministic demo grading, not real OCR).
 
 ### Past papers (practice)
@@ -105,9 +163,44 @@ Extreme-corner practice loop (separate from pass/fail):
 
 ### Rankings & geography
 
-Top Achievers boards (admin, teacher, student) rank by overall progress percent, with optional **province** and **municipality** filters (South African geography helpers in `src/lib/sa-geography.ts`).
+Top Achievers boards (admin, teacher, student) rank by overall progress percent, with optional **province** and **municipality** filters (South African geography helpers in `src/lib/sa-geography.ts`). Progress status is `pending` / `passing` (≥ 50%) / `failing`.
+
+## API routes
+
+| Route | Purpose |
+| ----- | ------- |
+| `POST /api/auth/signup` | Optional pre-confirmed signup (non-admin) when the real **service_role** secret is set |
+| `POST /api/auth/create-admin` | Admin-only: create another admin account |
+| `POST /api/auth/delete-user` | Admin user delete (service role) |
+| `GET /api/curriculum` | Authed curriculum fetch — admins get answer keys/memos; others get stripped |
+| `POST /api/assessments/mcq` | Student MCQ submit — server scores against curriculum keys; updates progress |
+| `POST /api/assessments/paper-scan` | Student paper-scan mock grade; practice/past-paper skips pass/fail |
+| `POST /api/progress/complete-lesson` | Mark lesson complete; gated on passing `lessonTest` when present |
+
+## Known v1 gaps
+
+Do not invent these unless a task asks for them (full detail in [`docs/PRD.md`](docs/PRD.md) §7):
+
+- No parent–child linking UI (schema + seed/SQL only; parent empty state may mention admin, but `/admin` has no link UI)
+- No student class-join UI (teachers enroll students directly)
+- Teacher lessons are not integrated into student Learn
+- Study groups are admin-managed only (no student group experience)
 
 ## Local development
+
+Create `.env.local` (do not commit it):
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+# Server/seed only — never expose to the browser.
+# Must be the service_role secret (Dashboard → Project Settings → API), not the anon/publishable key.
+SUPABASE_SERVICE_ROLE_KEY=
+```
+
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` is accepted as a fallback for the publishable key.
+
+Signup in the UI uses the **publishable** key (student/teacher/parent). `SUPABASE_SERVICE_ROLE_KEY` is needed for `npx tsx supabase/seed.ts`, `POST /api/auth/create-admin`, and the optional signup API — it must be the **service_role** secret, not the anon key.
 
 ```bash
 npm install
@@ -116,12 +209,26 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### Database seed
+
+After linking the [Supabase CLI](https://supabase.com/docs/guides/cli) to the project and applying migrations (`supabase db push` or `supabase migration up`):
+
+```bash
+npx tsx supabase/write-curriculum-seed.ts
+npx supabase db query -f supabase/seed-app-state.sql
+npx tsx supabase/seed.ts
+```
+
+- `write-curriculum-seed.ts` — generates `supabase/seed-app-state.sql` (gitignored) from the CAPS terms/badges JSON; then query that file to upsert `public.curriculum`.
+- `supabase/seed.ts` — core and extra demo accounts (`ember12` password), progress, classes, groups, and messages via the service role key.
+
 ## Deploy to Vercel
 
 1. Push this repo to GitHub.
 2. Import the project in [Vercel](https://vercel.com/new).
-3. Framework preset: **Next.js** (defaults are fine).
-4. Deploy.
+3. Framework preset: **Next.js**.
+4. Set the same Supabase env vars as `.env.local`.
+5. Deploy.
 
 Or with the Vercel CLI:
 
@@ -136,7 +243,14 @@ vercel
 - `npm run build` — production build
 - `npm run start` — serve production build
 - `npm run lint` — ESLint
+- `npm run typecheck` — TypeScript (`tsc --noEmit`)
+- `npm test` — Vitest unit tests (`tests/unit/`; config in `vitest.config.mts`)
+- `npm run test:watch` — Vitest watch mode
+
+## CI
+
+GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) on push and pull request (Node 22): `npm run lint` → `npm run typecheck` → `npm test` (Vitest unit tests under `tests/unit/`).
 
 ## Out of scope (frontend v1)
 
-Real auth/database, live video hosting, real OCR/AI correction API, email, and payments. Those UIs are wired with mock behaviour ready for later APIs.
+Live video hosting, real OCR/AI correction, email confirmation flows, and payments. Product data lives in Supabase Postgres + Storage; the UI store is an in-memory cache only.

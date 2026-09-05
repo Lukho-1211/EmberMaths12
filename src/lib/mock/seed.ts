@@ -382,7 +382,3 @@ export function createInitialState(): AppState {
     teacherLessons: [],
   };
 }
-
-export const STORAGE_KEY = "ember12-app-state-v3";
-export const SESSION_KEY = "ember12-session-v1";
-export const THEME_KEY = "ember12-theme-v1";

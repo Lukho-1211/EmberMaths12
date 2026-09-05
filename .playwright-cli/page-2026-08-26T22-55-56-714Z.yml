@@ -1,0 +1,175 @@
+- generic [ref=e1]:
+  - alert [ref=e24]: Ember Maths12 | CAPS Grade 12 Mathematics
+  - generic [ref=e28]:
+    - complementary [ref=e29]:
+      - generic [ref=e30]:
+        - link "Ember Maths12" [ref=e31] [cursor=pointer]:
+          - /url: /admin
+        - paragraph [ref=e32]: admin
+      - navigation [ref=e33]:
+        - link "Dashboard" [ref=e34] [cursor=pointer]:
+          - /url: /admin
+        - link "Terms & Lessons" [active] [ref=e40] [cursor=pointer]:
+          - /url: /admin/terms
+        - link "Users & Teachers" [ref=e43] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Study Groups" [ref=e49] [cursor=pointer]:
+          - /url: /admin/groups
+        - link "Pass / Fail" [ref=e55] [cursor=pointer]:
+          - /url: /admin/pass-fail
+        - link "Top Achievers" [ref=e60] [cursor=pointer]:
+          - /url: /admin/achievers
+      - button "Log out" [ref=e67]
+    - generic [ref=e71]:
+      - banner [ref=e72]:
+        - generic [ref=e73]:
+          - paragraph [ref=e74]: Signed in
+          - paragraph [ref=e75]: Alulutho
+        - generic [ref=e76]:
+          - generic [ref=e77]: aluluthospambo@gmail.com
+          - button "Log out" [ref=e78]
+      - main [ref=e82]:
+        - generic [ref=e211]:
+          - generic [ref=e212]:
+            - heading "Terms & weekly lessons" [level=1] [ref=e213]
+            - paragraph [ref=e214]: "Create and edit Term 1–4: Mon–Fri lessons, Saturday week tests, and pre-exams."
+          - generic [ref=e215]:
+            - button "Term 1" [ref=e216]
+            - button "Term 2" [ref=e217]
+            - button "Term 3" [ref=e218]
+            - button "Term 4" [ref=e219]
+          - generic [ref=e220]:
+            - generic [ref=e221]:
+              - heading "Term 1 — Patterns, Series & Functions" [level=2] [ref=e222]
+              - generic [ref=e223]:
+                - button "Week 1" [ref=e224]
+                - button "Week 2" [ref=e225]
+                - button "Week 3" [ref=e226]
+                - button "Week 4" [ref=e227]
+              - paragraph [ref=e228]: "Topic: Number Patterns & Sequences"
+              - generic [ref=e229]:
+                - button "monday" [ref=e230]
+                - button "tuesday" [ref=e231]
+                - button "wednesday" [ref=e232]
+                - button "thursday" [ref=e233]
+                - button "friday" [ref=e234]
+                - generic [ref=e235]: Saturday · Week test
+              - generic [ref=e236]:
+                - generic [ref=e237]:
+                  - generic [ref=e238]: Lesson title
+                  - textbox "Lesson title" [ref=e239]: "Monday: Revision and summary from grade 11 FUNCTIONS"
+                - generic [ref=e240]:
+                  - generic [ref=e241]: Description
+                  - textbox "Description" [ref=e242]: In Grade 11 you were introduced to the parabola in the forms shown in the table below. The table below summarises the properties of the parabola which you learnt in Grade 11.
+                - generic [ref=e243]:
+                  - generic [ref=e244]:
+                    - generic [ref=e245]:
+                      - paragraph [ref=e246]: Lesson materials
+                      - paragraph [ref=e247]: Upload PDF or Markdown (.md) — becomes the student Video walkthrough with narration. Max 20.0 MB per file.
+                    - generic [ref=e248] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=e252]
+                  - list [ref=e253]:
+                    - listitem [ref=e254]:
+                      - generic [ref=e259]:
+                        - paragraph [ref=e260]: Handbook Study-Guide-Grade-12-page-031
+                        - paragraph [ref=e261]: pdf · Handbook Study-Guide-Grade-12-page-031.pdf · uploaded
+                      - button "Remove Handbook Study-Guide-Grade-12-page-031" [ref=e262]
+                    - listitem [ref=e266]:
+                      - generic [ref=e271]:
+                        - paragraph [ref=e272]: Handbook Study-Guide-Grade-12-page-032
+                        - paragraph [ref=e273]: pdf · Handbook Study-Guide-Grade-12-page-032.pdf · uploaded
+                      - button "Remove Handbook Study-Guide-Grade-12-page-032" [ref=e274]
+                  - generic [ref=e278]:
+                    - paragraph [ref=e279]: 4 lesson-test questions · pass mark 50%
+                    - button "Regenerate questions" [ref=e280]
+                  - paragraph [ref=e286]: Questions are generated from uploaded PDF/Markdown text when you save.
+                  - generic [ref=e287]:
+                    - generic [ref=e288]:
+                      - generic [ref=e289]:
+                        - paragraph [ref=e290]: Explainer video (HeyGen)
+                        - paragraph [ref=e291]: Manual generate — talking-head avatar explaining this lesson PDF. Students see the mp4 when ready; otherwise the slide walkthrough.
+                      - button "Generate explainer video" [ref=e292]
+                    - paragraph [ref=e298]: Loading video status…
+                - button "Save lesson" [ref=e300]
+            - generic [ref=e301]:
+              - generic [ref=e302]:
+                - heading "Saturday week test" [level=3] [ref=e303]
+                - textbox [ref=e304]: Week 1 Saturday Test — Number Patterns & Sequences
+                - paragraph [ref=e305]: 3 questions · pass mark 50%
+                - generic [ref=e306]:
+                  - generic [ref=e307]:
+                    - generic [ref=e308]:
+                      - paragraph [ref=e309]: Week test paper
+                      - paragraph [ref=e310]: Upload PDF or Markdown (.md) — converted into a narrated student video walkthrough on the assessment page. Max 20.0 MB per file.
+                    - generic [ref=e311] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=e315]
+                  - list [ref=e316]:
+                    - listitem [ref=e317]: No exam paper uploaded yet.
+                - generic [ref=e318]:
+                  - generic [ref=e319]:
+                    - generic [ref=e320]:
+                      - paragraph [ref=e321]: Week test memo
+                      - paragraph [ref=e322]: Upload PDF or Markdown (.md) mark scheme used to correct learner paper scans. Not shown to students. Max 20.0 MB per file.
+                    - generic [ref=e323] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=e327]
+                  - list [ref=e328]:
+                    - listitem [ref=e329]: No memo uploaded yet.
+                - button "Update week test" [ref=e331]
+              - generic [ref=e332]:
+                - heading "Pre-exam (after Week 4)" [level=3] [ref=e333]
+                - textbox [ref=e334]: Term 1 Pre-Exam
+                - paragraph [ref=e335]: 4 questions · pass mark 50%
+                - generic [ref=e336]:
+                  - generic [ref=e337]:
+                    - generic [ref=e338]:
+                      - paragraph [ref=e339]: Pre-exam paper
+                      - paragraph [ref=e340]: Upload PDF or Markdown (.md) — converted into a narrated student video walkthrough on the assessment page. Max 20.0 MB per file.
+                    - generic [ref=e341] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=e345]
+                  - list [ref=e346]:
+                    - listitem [ref=e347]: No exam paper uploaded yet.
+                - generic [ref=e348]:
+                  - generic [ref=e349]:
+                    - generic [ref=e350]:
+                      - paragraph [ref=e351]: Pre-exam memo
+                      - paragraph [ref=e352]: Upload PDF or Markdown (.md) mark scheme used to correct learner paper scans. Not shown to students. Max 20.0 MB per file.
+                    - generic [ref=e353] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=e357]
+                  - list [ref=e358]:
+                    - listitem [ref=e359]: No memo uploaded yet.
+                - button "Update pre-exam" [ref=e361]
+              - generic [ref=e362]:
+                - heading "Past papers (practice)" [level=3] [ref=e363]
+                - paragraph [ref=e364]: Previous exam papers for optional student practice. Not used for pass/fail.
+                - textbox [ref=e365]: Term 1 past papers
+                - generic [ref=e366]:
+                  - generic [ref=e367]:
+                    - generic [ref=e368]:
+                      - paragraph [ref=e369]: Past paper
+                      - paragraph [ref=e370]: Upload PDF or Markdown (.md) previous exam papers. Students walk through, write on paper, then scan for mock correction. Max 20.0 MB per file.
+                    - generic [ref=e371] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=e375]
+                  - list [ref=e376]:
+                    - listitem [ref=e377]:
+                      - generic [ref=e382]:
+                        - paragraph [ref=e383]: tmp-qa-past-paper
+                        - paragraph [ref=e384]: markdown · tmp-qa-past-paper.md · uploaded
+                      - button "Remove tmp-qa-past-paper" [ref=e385]
+                - generic [ref=e389]:
+                  - generic [ref=e390]:
+                    - generic [ref=e391]:
+                      - paragraph [ref=e392]: Past paper memo
+                      - paragraph [ref=e393]: Upload PDF or Markdown (.md) mark scheme used to correct learner paper scans. Not shown to students. Max 20.0 MB per file.
+                    - generic [ref=e394] [cursor=pointer]:
+                      - text: Add PDF / Markdown
+                      - button "Add PDF / Markdown" [ref=e398]
+                  - list [ref=e399]:
+                    - listitem [ref=e400]: No memo uploaded yet.
+                - button "Update past papers" [ref=e402]
+  - generic [ref=e210]: "0"

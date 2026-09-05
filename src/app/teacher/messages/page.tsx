@@ -6,10 +6,10 @@ import { useStore } from "@/lib/store";
 
 export default function TeacherMessagesPage() {
   const { user, state, sendMessage, markMessageRead } = useStore();
-  const myClasses = state.classes.filter((c) => c.teacherId === user?.id);
-  const studentIds = Array.from(new Set(myClasses.flatMap((c) => c.studentIds)));
 
   const parentOptions = useMemo(() => {
+    const myClasses = state.classes.filter((c) => c.teacherId === user?.id);
+    const studentIds = Array.from(new Set(myClasses.flatMap((c) => c.studentIds)));
     return studentIds
       .map((sid) => {
         const student = state.users.find((u) => u.id === sid);
@@ -21,7 +21,7 @@ export default function TeacherMessagesPage() {
       student: { id: string; name: string };
       parent: { id: string; name: string; email: string };
     }[];
-  }, [studentIds, state.users]);
+  }, [user?.id, state.classes, state.users]);
 
   const [toUserId, setToUserId] = useState(parentOptions[0]?.parent.id ?? "");
   const [studentId, setStudentId] = useState(parentOptions[0]?.student.id ?? "");

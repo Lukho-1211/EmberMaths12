@@ -1,0 +1,156 @@
+- generic [ref=f11e1]:
+  - button "Open Next.js Dev Tools" [ref=f11e37] [cursor=pointer]
+  - alert [ref=f11e41]
+  - generic [ref=f11e43]:
+    - complementary [ref=f11e44]:
+      - generic [ref=f11e45]:
+        - link "Ember Maths12" [ref=f11e46] [cursor=pointer]:
+          - /url: /student
+        - paragraph [ref=f11e47]: student
+      - navigation [ref=f11e48]:
+        - link "Dashboard" [ref=f11e49] [cursor=pointer]:
+          - /url: /student
+        - link "Learn" [ref=f11e53] [cursor=pointer]:
+          - /url: /student/learn
+        - link "Past papers" [ref=f11e56] [cursor=pointer]:
+          - /url: /student/past-papers
+        - link "Badges" [ref=f11e61] [cursor=pointer]:
+          - /url: /student/badges
+        - link "Top Achievers" [ref=f11e65] [cursor=pointer]:
+          - /url: /student/achievers
+        - link "Settings" [ref=f11e72] [cursor=pointer]:
+          - /url: /student/settings
+      - button "Log out" [ref=f11e76]
+    - generic [ref=f11e80]:
+      - banner [ref=f11e81]:
+        - generic [ref=f11e82]:
+          - paragraph [ref=f11e83]: Signed in
+          - paragraph [ref=f11e84]: Week Verify Student
+        - generic [ref=f11e85]:
+          - generic [ref=f11e86]: week.verify.20260901@ember12.test
+          - button "Log out" [ref=f11e87]
+      - main [ref=f11e91]:
+        - generic [ref=f11e92]:
+          - navigation "Weeks in this term" [ref=f11e93]:
+            - link "Week 1" [ref=f11e94] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week1
+            - link "Week 2" [ref=f11e95] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week2
+            - link "Week 3" [ref=f11e96] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week3
+            - link "Week 4" [ref=f11e97] [cursor=pointer]:
+              - /url: /student/learn/term-1/119535f2-080b-4b18-b4f2-d985469ccc22
+            - link "Week 5" [ref=f11e98] [cursor=pointer]:
+              - /url: /student/learn/term-1/5d99073d-65e9-4141-97dc-b577a96e9bbd
+            - link "Pre-exam" [ref=f11e99] [cursor=pointer]:
+              - /url: /student/learn/term-1/pre-exam
+          - generic [ref=f11e100]:
+            - 'heading "Monday: GRADE 11 REVISION OF QUADRATIC SEQUENCES" [level=1] [ref=f11e101]'
+            - paragraph [ref=f11e102]: Term 1 — Patterns, Series & Functions · Week 1 · monday
+          - tablist "Lesson view" [ref=f11e103]:
+            - tab "Video" [ref=f11e104]
+            - tab "Text" [active] [selected] [ref=f11e108]
+          - generic [ref=f11e112]:
+            - generic [ref=f11e113]:
+              - tabpanel "Text" [ref=f11e243]:
+                - article [ref=f11e245]:
+                  - generic [ref=f11e246]:
+                    - paragraph [ref=f11e247]: PDF · Handbook Study-Guide-Grade-12-page-010
+                    - link "Download" [ref=f11e248] [cursor=pointer]:
+                      - /url: https://ujqsecdfnbfkzunsbysq.supabase.co/storage/v1/object/public/lesson-files/lesson-resources/9e85ba14-a777-474f-a23c-61d3c0d5323a-Handbook_Study-Guide-Grade-12-page-010.pdf
+                  - img "Handbook Study-Guide-Grade-12-page-010 — page 1" [ref=f11e250]
+              - paragraph [ref=f11e124]: A quadratic sequence is a number pattern where the second difference between consecutive terms is constant
+              - paragraph [ref=f11e125]: Duration ≈ 25 minutes
+              - generic [ref=f11e126]:
+                - 'heading "Lesson test — Monday: GRADE 11 REVISION OF QUADRATIC SEQUENCES" [level=2] [ref=f11e127]'
+                - paragraph [ref=f11e128]: Check today’s lesson. Choose on-screen MCQ or Paper + scan. Pass to mark the lesson complete.
+                - paragraph [ref=f11e129]: Pass mark 50% — required before you can mark this lesson complete.
+                - generic [ref=f11e131]:
+                  - tablist "Assessment mode" [ref=f11e132]:
+                    - tab "On screen (MCQ)" [selected] [ref=f11e133]
+                    - tab "Paper + scan" [ref=f11e134]
+                  - generic [ref=f11e135]:
+                    - 'heading "Lesson test — Monday: GRADE 11 REVISION OF QUADRATIC SEQUENCES" [level=2] [ref=f11e136]'
+                    - paragraph [ref=f11e137]: Check today’s lesson. Choose on-screen MCQ or Paper + scan. Pass to mark the lesson complete.
+                    - generic [ref=f11e139]:
+                      - heading "Exam paper / materials" [level=3] [ref=f11e140]
+                      - paragraph [ref=f11e141]: Watch the paper walkthrough before you answer, or download the PDF.
+                      - 'region "Lesson test — Monday: GRADE 11 REVISION OF QUADRATIC SEQUENCES video walkthrough" [ref=f11e143]':
+                        - generic [ref=f11e144]:
+                          - img "Handbook Study-Guide-Grade-12-page-010 — page 1" [ref=f11e251]
+                          - generic [ref=f11e147]:
+                            - progressbar "Walkthrough progress" [ref=f11e148]
+                            - generic [ref=f11e149]:
+                              - generic [ref=f11e150]:
+                                - button "Previous slide" [disabled] [ref=f11e151]
+                                - button "Play" [ref=f11e154]
+                                - button "Next slide" [disabled] [ref=f11e157]
+                                - button "Mute narration" [ref=f11e160]
+                              - generic [ref=f11e165]:
+                                - generic [ref=f11e166]: 1 / 1 · ≈ 1 min
+                                - button "Enter fullscreen" [ref=f11e167]
+                      - list [ref=f11e173]:
+                        - listitem [ref=f11e174]:
+                          - link "Handbook Study-Guide-Grade-12-page-010 pdf · Handbook Study-Guide-Grade-12-page-010.pdf" [ref=f11e175] [cursor=pointer]:
+                            - /url: https://ujqsecdfnbfkzunsbysq.supabase.co/storage/v1/object/public/lesson-files/lesson-resources/9e85ba14-a777-474f-a23c-61d3c0d5323a-Handbook_Study-Guide-Grade-12-page-010.pdf
+                            - generic [ref=f11e179]:
+                              - generic [ref=f11e180]: Handbook Study-Guide-Grade-12-page-010
+                              - generic [ref=f11e181]: pdf · Handbook Study-Guide-Grade-12-page-010.pdf
+                    - generic [ref=f11e182]:
+                      - 'group "1. According to today’s lesson materials on “Monday: GRADE 11 REVISION OF QUADRATIC SEQUENCES”, which statement is correct?" [ref=f11e183]':
+                        - generic [ref=f11e185]:
+                          - generic [ref=f11e186] [cursor=pointer]:
+                            - radio "Ignore feedback and move on immediately" [ref=f11e187]
+                            - generic [ref=f11e188]: Ignore feedback and move on immediately
+                          - generic [ref=f11e189] [cursor=pointer]:
+                            - radio "Memorise formulas without working examples" [ref=f11e190]
+                            - generic [ref=f11e191]: Memorise formulas without working examples
+                          - generic [ref=f11e192] [cursor=pointer]:
+                            - radio "GRADE 11 REVISION OF QUADRATIC SEQUENCES A quadratic sequence is a sequence in which the second difference is constant." [ref=f11e193]
+                            - generic [ref=f11e194]: GRADE 11 REVISION OF QUADRATIC SEQUENCES A quadratic sequence is a sequence in which the second difference is constant.
+                          - generic [ref=f11e195] [cursor=pointer]:
+                            - radio "Only study on Saturdays before week tests" [ref=f11e196]
+                            - generic [ref=f11e197]: Only study on Saturdays before week tests
+                      - group "2. From the uploaded lesson notes, which idea best matches this lesson?" [ref=f11e198]:
+                        - generic [ref=f11e200]:
+                          - generic [ref=f11e201] [cursor=pointer]:
+                            - radio "Replace daily practice with last-minute cramming" [ref=f11e202]
+                            - generic [ref=f11e203]: Replace daily practice with last-minute cramming
+                          - generic [ref=f11e204] [cursor=pointer]:
+                            - radio "Skip this topic until Term 4 revision only" [ref=f11e205]
+                            - generic [ref=f11e206]: Skip this topic until Term 4 revision only
+                          - generic [ref=f11e207] [cursor=pointer]:
+                            - radio "This is unrelated to Grade 12 CAPS Mathematics" [ref=f11e208]
+                            - generic [ref=f11e209]: This is unrelated to Grade 12 CAPS Mathematics
+                          - generic [ref=f11e210] [cursor=pointer]:
+                            - radio "GRADE 11 REVISION OF QUADRATIC SEQUENCES A quadratic sequence is a sequence in which the second difference is constant." [ref=f11e211]
+                            - generic [ref=f11e212]: GRADE 11 REVISION OF QUADRATIC SEQUENCES A quadratic sequence is a sequence in which the second difference is constant.
+                      - group "3. Which statement reflects what learners should take from this lesson?" [ref=f11e213]:
+                        - generic [ref=f11e215]:
+                          - generic [ref=f11e216] [cursor=pointer]:
+                            - radio "GRADE 11 REVISION OF QUADRATIC SEQUENCES A quadratic sequence is a sequence in which the second difference is constant." [ref=f11e217]
+                            - generic [ref=f11e218]: GRADE 11 REVISION OF QUADRATIC SEQUENCES A quadratic sequence is a sequence in which the second difference is constant.
+                          - generic [ref=f11e219] [cursor=pointer]:
+                            - radio "This is unrelated to Grade 12 CAPS Mathematics" [ref=f11e220]
+                            - generic [ref=f11e221]: This is unrelated to Grade 12 CAPS Mathematics
+                          - generic [ref=f11e222] [cursor=pointer]:
+                            - radio "Skip this topic until Term 4 revision only" [ref=f11e223]
+                            - generic [ref=f11e224]: Skip this topic until Term 4 revision only
+                          - generic [ref=f11e225] [cursor=pointer]:
+                            - radio "Ignore feedback and move on immediately" [ref=f11e226]
+                            - generic [ref=f11e227]: Ignore feedback and move on immediately
+                    - button "Submit assessment" [disabled] [ref=f11e228]
+              - generic [ref=f11e229]:
+                - button "Mark lesson complete" [disabled] [ref=f11e230]
+                - paragraph [ref=f11e231]: Pass today’s lesson test to complete.
+            - complementary [ref=f11e232]:
+              - heading "Resources" [level=2] [ref=f11e233]
+              - list [ref=f11e234]:
+                - listitem [ref=f11e235]:
+                  - link "Handbook Study-Guide-Grade-12-page-010 pdf" [ref=f11e236] [cursor=pointer]:
+                    - /url: https://ujqsecdfnbfkzunsbysq.supabase.co/storage/v1/object/public/lesson-files/lesson-resources/9e85ba14-a777-474f-a23c-61d3c0d5323a-Handbook_Study-Guide-Grade-12-page-010.pdf
+                    - generic [ref=f11e240]:
+                      - generic [ref=f11e241]: Handbook Study-Guide-Grade-12-page-010
+                      - text: pdf
+              - link "← Back to week" [ref=f11e242] [cursor=pointer]:
+                - /url: /student/learn/term-1/term1-week1

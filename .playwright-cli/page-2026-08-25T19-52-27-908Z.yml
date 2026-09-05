@@ -1,0 +1,57 @@
+- generic [active] [ref=f2e1]:
+  - button "Open Next.js Dev Tools" [ref=f2e37] [cursor=pointer]
+  - alert [ref=f2e41]
+  - generic [ref=f2e95]:
+    - complementary [ref=f2e96]:
+      - generic [ref=f2e97]:
+        - link "Ember Maths12" [ref=f2e98] [cursor=pointer]:
+          - /url: /student
+        - paragraph [ref=f2e99]: student
+      - navigation [ref=f2e100]:
+        - link "Dashboard" [ref=f2e101] [cursor=pointer]:
+          - /url: /student
+        - link "Learn" [ref=f2e105] [cursor=pointer]:
+          - /url: /student/learn
+        - link "Past papers" [ref=f2e108] [cursor=pointer]:
+          - /url: /student/past-papers
+        - link "Badges" [ref=f2e113] [cursor=pointer]:
+          - /url: /student/badges
+        - link "Top Achievers" [ref=f2e117] [cursor=pointer]:
+          - /url: /student/achievers
+        - link "Settings" [ref=f2e124] [cursor=pointer]:
+          - /url: /student/settings
+      - button "Log out" [ref=f2e128]
+    - generic [ref=f2e132]:
+      - banner [ref=f2e133]:
+        - generic [ref=f2e134]:
+          - paragraph [ref=f2e135]: Signed in
+          - paragraph [ref=f2e136]: Playwright Student
+        - generic [ref=f2e137]:
+          - generic [ref=f2e138]: playwright.student.20260825@ember12.test
+          - button "Log out" [ref=f2e139]
+      - main [ref=f2e143]:
+        - generic [ref=f2e226]:
+          - generic [ref=f2e227]:
+            - heading "Learn" [level=1] [ref=f2e228]
+            - paragraph [ref=f2e229]: Choose a term. Each term has Weeks 1–4 (Mon–Fri + Saturday test) and a pre-exam — take assessments on screen (MCQ) or via Paper + scan.
+          - generic [ref=f2e230]:
+            - link [ref=f2e231] [cursor=pointer]:
+              - /url: /student/learn/term-1
+              - paragraph [ref=f2e232]: Term 1
+              - heading "Term 1 — Patterns, Series & Functions" [level=2] [ref=f2e233]
+              - paragraph [ref=f2e234]: 0/4 weeks complete · Pre-exam pending
+            - link [ref=f2e235] [cursor=pointer]:
+              - /url: /student/learn/term-2
+              - paragraph [ref=f2e236]: Term 2
+              - heading "Term 2 — Geometry & Calculus" [level=2] [ref=f2e237]
+              - paragraph [ref=f2e238]: 0/4 weeks complete · Pre-exam pending
+            - link [ref=f2e239] [cursor=pointer]:
+              - /url: /student/learn/term-3
+              - paragraph [ref=f2e240]: Term 3
+              - heading "Term 3 — Finance, Stats & Probability" [level=2] [ref=f2e241]
+              - paragraph [ref=f2e242]: 0/4 weeks complete · Pre-exam pending
+            - link [ref=f2e243] [cursor=pointer]:
+              - /url: /student/learn/term-4
+              - paragraph [ref=f2e244]: Term 4
+              - heading "Term 4 — Revision & Exam Prep" [level=2] [ref=f2e245]
+              - paragraph [ref=f2e246]: 0/4 weeks complete · Pre-exam pending

@@ -1,0 +1,114 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e202] [cursor=pointer]
+  - alert [ref=e206]: Term 1 — Patterns, Series & Functions
+  - generic [ref=e255]:
+    - complementary [ref=e256]:
+      - generic [ref=e257]:
+        - link "Ember Maths12" [ref=e258] [cursor=pointer]:
+          - /url: /student
+        - paragraph [ref=e259]: student
+      - navigation [ref=e260]:
+        - link "Dashboard" [ref=e261] [cursor=pointer]:
+          - /url: /student
+        - link "Learn" [ref=e265] [cursor=pointer]:
+          - /url: /student/learn
+        - link "Past papers" [ref=e268] [cursor=pointer]:
+          - /url: /student/past-papers
+        - link "Badges" [ref=e273] [cursor=pointer]:
+          - /url: /student/badges
+        - link "Top Achievers" [ref=e277] [cursor=pointer]:
+          - /url: /student/achievers
+        - link "Settings" [ref=e284] [cursor=pointer]:
+          - /url: /student/settings
+      - button "Log out" [ref=e288]
+    - generic [ref=e292]:
+      - banner [ref=e293]:
+        - generic [ref=e294]:
+          - paragraph [ref=e295]: Signed in
+          - paragraph [ref=e296]: Lerato Molefe
+        - generic [ref=e297]:
+          - generic [ref=e298]: student@ember12.za
+          - button "Log out" [ref=e299]
+      - main [ref=e303]:
+        - generic [ref=e407]:
+          - generic [ref=e408]:
+            - heading "Term 1 — Patterns, Series & Functions" [level=1] [ref=e409]
+            - paragraph [ref=e410]: Pick a week, then work Mon–Fri. Saturday tests and the pre-exam support on-screen MCQ or Paper + scan.
+          - generic [ref=e412]:
+            - generic [ref=e413]:
+              - heading "This term — strengths and gaps" [level=2] [ref=e414]
+              - paragraph [ref=e415]: Strong and weak topics for this term, plus where to improve next.
+            - article [ref=e417]:
+              - generic [ref=e418]:
+                - generic [ref=e419]:
+                  - paragraph [ref=e420]: Term 1
+                  - heading "Term 1 — Patterns, Series & Functions" [level=3] [ref=e421]
+                - generic [ref=e422]:
+                  - paragraph [ref=e423]: Average
+                  - paragraph [ref=e424]: —
+                  - paragraph [ref=e425]: Pending
+              - paragraph [ref=e426]: Not enough assessments yet for this term.
+          - generic [ref=e427]:
+            - generic [ref=e428]:
+              - generic [ref=e429]:
+                - generic [ref=e430]:
+                  - 'heading "Week 1: Number Patterns & Sequences" [level=2] [ref=e431]'
+                  - paragraph [ref=e432]: 0/5 lessons · Saturday test not taken
+                - link "Open week →" [ref=e433] [cursor=pointer]:
+                  - /url: /student/learn/term-1/term1-week1
+              - generic [ref=e434]:
+                - link "Saturday test (MCQ)" [ref=e435] [cursor=pointer]:
+                  - /url: /student/learn/term-1/term1-week1#saturday-test
+                - link "Paper + scan" [ref=e436] [cursor=pointer]:
+                  - /url: /student/learn/term-1/term1-week1?mode=paper#saturday-test
+            - generic [ref=e437]:
+              - generic [ref=e438]:
+                - generic [ref=e439]:
+                  - 'heading "Week 2: Series & Sigma Notation" [level=2] [ref=e440]'
+                  - paragraph [ref=e441]: 0/5 lessons · Saturday test not taken
+                - link "Open week →" [ref=e442] [cursor=pointer]:
+                  - /url: /student/learn/term-1/term1-week2
+              - generic [ref=e443]:
+                - link "Saturday test (MCQ)" [ref=e444] [cursor=pointer]:
+                  - /url: /student/learn/term-1/term1-week2#saturday-test
+                - link "Paper + scan" [ref=e445] [cursor=pointer]:
+                  - /url: /student/learn/term-1/term1-week2?mode=paper#saturday-test
+            - generic [ref=e446]:
+              - generic [ref=e447]:
+                - generic [ref=e448]:
+                  - 'heading "Week 3: Geometric Series" [level=2] [ref=e449]'
+                  - paragraph [ref=e450]: 0/5 lessons · Saturday test not taken
+                - link "Open week →" [ref=e451] [cursor=pointer]:
+                  - /url: /student/learn/term-1/term1-week3
+              - generic [ref=e452]:
+                - link "Saturday test (MCQ)" [ref=e453] [cursor=pointer]:
+                  - /url: /student/learn/term-1/term1-week3#saturday-test
+                - link "Paper + scan" [ref=e454] [cursor=pointer]:
+                  - /url: /student/learn/term-1/term1-week3?mode=paper#saturday-test
+            - generic [ref=e455]:
+              - generic [ref=e456]:
+                - generic [ref=e457]:
+                  - 'heading "Week 4: Functions Revision" [level=2] [ref=e458]'
+                  - paragraph [ref=e459]: 0/5 lessons · Saturday test not taken
+                - link "Open week →" [ref=e460] [cursor=pointer]:
+                  - /url: /student/learn/term-1/term1-week4
+              - generic [ref=e461]:
+                - link "Saturday test (MCQ)" [ref=e462] [cursor=pointer]:
+                  - /url: /student/learn/term-1/term1-week4#saturday-test
+                - link "Paper + scan" [ref=e463] [cursor=pointer]:
+                  - /url: /student/learn/term-1/term1-week4?mode=paper#saturday-test
+            - generic [ref=e464]:
+              - link [ref=e465] [cursor=pointer]:
+                - /url: /student/learn/term-1/pre-exam
+                - heading "Term 1 Pre-Exam" [level=2] [ref=e466]
+                - paragraph [ref=e467]: Available after Week 4 · Not attempted
+              - generic [ref=e468]:
+                - link "Pre-exam (MCQ)" [ref=e469] [cursor=pointer]:
+                  - /url: /student/learn/term-1/pre-exam
+                - link "Paper + scan" [ref=e470] [cursor=pointer]:
+                  - /url: /student/learn/term-1/pre-exam?mode=paper
+            - generic [ref=e471]:
+              - heading "Term 1 past papers" [level=2] [ref=e472]
+              - paragraph [ref=e473]: Optional practice · Waiting for admin upload
+              - link "Practice past papers →" [ref=e474] [cursor=pointer]:
+                - /url: /student/past-papers/term-1

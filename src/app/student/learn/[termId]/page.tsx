@@ -60,21 +60,21 @@ export default function StudentTermPage() {
                 </div>
                 <Link
                   href={`/student/learn/${term.id}/${week.id}`}
-                  className="text-sm font-semibold text-ember-navy"
+                  className="inline-flex items-center rounded-md bg-ember-gold px-4 py-2 text-sm font-bold text-ember-navy"
                 >
                   Open week →
                 </Link>
               </div>
-              <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
+              <div className="mt-3 flex flex-wrap gap-3">
                 <Link
                   href={`/student/learn/${term.id}/${week.id}#saturday-test`}
-                  className="text-ember-navy underline decoration-ember-gold"
+                  className="inline-flex items-center rounded-md border border-ember-navy px-4 py-2 text-sm font-semibold text-ember-navy"
                 >
                   Saturday test (MCQ)
                 </Link>
                 <Link
                   href={`/student/learn/${term.id}/${week.id}?mode=paper#saturday-test`}
-                  className="text-ember-navy underline decoration-ember-gold"
+                  className="inline-flex items-center rounded-md border border-ember-navy px-4 py-2 text-sm font-semibold text-ember-navy"
                 >
                   Paper + scan
                 </Link>
@@ -86,7 +86,9 @@ export default function StudentTermPage() {
           <Link href={`/student/learn/${term.id}/pre-exam`} className="block">
             <h2 className="font-display text-xl">{term.preExam.title}</h2>
             <p className="mt-1 text-sm text-ember-gray">
-              Available after Week 4 ·{" "}
+              {term.weeks.length > 0
+                ? `Available after Week ${Math.max(...term.weeks.map((w) => w.number))} · `
+                : "Available after the term’s weeks · "}
               {progress?.testScores[term.preExam.id] !== undefined
                 ? `Score ${progress.testScores[term.preExam.id]}%`
                 : "Not attempted"}

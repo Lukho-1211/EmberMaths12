@@ -1,0 +1,119 @@
+- generic [active] [ref=f7e1]:
+  - button "Open Next.js Dev Tools" [ref=f7e37] [cursor=pointer]
+  - alert [ref=f7e41]
+  - generic [ref=f7e43]:
+    - complementary [ref=f7e44]:
+      - generic [ref=f7e45]:
+        - link "Ember Maths12" [ref=f7e46] [cursor=pointer]:
+          - /url: /admin
+        - paragraph [ref=f7e47]: admin
+      - navigation [ref=f7e48]:
+        - link "Dashboard" [ref=f7e49] [cursor=pointer]:
+          - /url: /admin
+        - link "Terms & Lessons" [ref=f7e55] [cursor=pointer]:
+          - /url: /admin/terms
+        - link "Users & Teachers" [ref=f7e58] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Study Groups" [ref=f7e64] [cursor=pointer]:
+          - /url: /admin/groups
+        - link "Pass / Fail" [ref=f7e70] [cursor=pointer]:
+          - /url: /admin/pass-fail
+        - link "Top Achievers" [ref=f7e75] [cursor=pointer]:
+          - /url: /admin/achievers
+      - button "Log out" [ref=f7e82]
+    - generic [ref=f7e86]:
+      - banner [ref=f7e87]:
+        - generic [ref=f7e88]:
+          - paragraph [ref=f7e89]: Signed in
+          - paragraph [ref=f7e90]: Created Admin QA
+        - generic [ref=f7e91]:
+          - generic [ref=f7e92]: ember.admin.create.20260905@gmail.com
+          - button "Log out" [ref=f7e93]
+      - main [ref=f7e97]:
+        - generic [ref=f7e98]:
+          - generic [ref=f7e99]:
+            - heading "Users & teachers" [level=1] [ref=f7e100]
+            - paragraph [ref=f7e101]: Create admin accounts and remove student or parent accounts.
+          - generic [ref=f7e102]:
+            - heading "Admins" [level=2] [ref=f7e103]
+            - generic [ref=f7e104]:
+              - list [ref=f7e105]:
+                - listitem [ref=f7e106]:
+                  - paragraph [ref=f7e107]: Lukho
+                  - paragraph [ref=f7e108]: alulutho@gmail.com
+                - listitem [ref=f7e109]:
+                  - paragraph [ref=f7e110]: Alulutho
+                  - paragraph [ref=f7e111]: aluluthospambo@gmail.com
+                - listitem [ref=f7e112]:
+                  - paragraph [ref=f7e113]: Playwright Admin
+                  - paragraph [ref=f7e114]: playwright.admin.20260825@ember12.test
+                - listitem [ref=f7e115]:
+                  - paragraph [ref=f7e116]: Created Admin QA
+                  - paragraph [ref=f7e117]: ember.admin.create.20260905@gmail.com
+                - listitem [ref=f7e177]:
+                  - paragraph [ref=f7e178]: Second Admin QA
+                  - paragraph [ref=f7e179]: ember.admin.create2.20260905@gmail.com
+              - generic [ref=f7e118]:
+                - paragraph [ref=f7e119]: Create admin
+                - generic [ref=f7e120]:
+                  - generic [ref=f7e121]: Full name
+                  - textbox "Full name" [ref=f7e122]
+                - generic [ref=f7e123]:
+                  - generic [ref=f7e124]: Email
+                  - textbox "Email" [ref=f7e125]
+                - generic [ref=f7e126]:
+                  - generic [ref=f7e127]: Password
+                  - generic [ref=f7e128]:
+                    - textbox "Password" [ref=f7e129]
+                    - button "Show password" [ref=f7e130] [cursor=pointer]
+                - paragraph [ref=f7e180]: Admin account created for ember.admin.create2.20260905@gmail.com.
+                - button "Create admin" [ref=f7e134] [cursor=pointer]
+          - generic [ref=f7e135]:
+            - generic [ref=f7e136]:
+              - heading "Teachers" [level=2] [ref=f7e137]
+              - list
+            - generic [ref=f7e138]:
+              - heading "Students & parents" [level=2] [ref=f7e139]
+              - list [ref=f7e140]:
+                - listitem [ref=f7e141]:
+                  - generic [ref=f7e142]:
+                    - paragraph [ref=f7e143]:
+                      - text: Test Student
+                      - generic [ref=f7e144]: (student)
+                    - paragraph [ref=f7e145]: ember.student.1786818869648@gmail.com
+                  - button "Delete" [ref=f7e146]
+                - listitem [ref=f7e147]:
+                  - generic [ref=f7e148]:
+                    - paragraph [ref=f7e149]:
+                      - text: mluthwana
+                      - generic [ref=f7e150]: (student)
+                    - paragraph [ref=f7e151]: mlu@gmail.com
+                  - button "Delete" [ref=f7e152]
+                - listitem [ref=f7e153]:
+                  - generic [ref=f7e154]:
+                    - paragraph [ref=f7e155]:
+                      - text: Simo
+                      - generic [ref=f7e156]: (student)
+                    - paragraph [ref=f7e157]: simo@gmail.com
+                  - button "Delete" [ref=f7e158]
+                - listitem [ref=f7e159]:
+                  - generic [ref=f7e160]:
+                    - paragraph [ref=f7e161]:
+                      - text: Week Verify Student
+                      - generic [ref=f7e162]: (student)
+                    - paragraph [ref=f7e163]: week.verify.20260901@ember12.test
+                  - button "Delete" [ref=f7e164]
+                - listitem [ref=f7e165]:
+                  - generic [ref=f7e166]:
+                    - paragraph [ref=f7e167]:
+                      - text: Week Cap Verifier
+                      - generic [ref=f7e168]: (student)
+                    - paragraph [ref=f7e169]: week.cap.verify.20260901@ember12.test
+                  - button "Delete" [ref=f7e170]
+                - listitem [ref=f7e171]:
+                  - generic [ref=f7e172]:
+                    - paragraph [ref=f7e173]:
+                      - text: merit
+                      - generic [ref=f7e174]: (student)
+                    - paragraph [ref=f7e175]: meritbrandinglto@gmail.com
+                  - button "Delete" [ref=f7e176]

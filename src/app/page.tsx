@@ -19,34 +19,38 @@ const roleCards = [
     role: "Student",
     href: "/signup/student",
     blurb: "Learn Mon–Fri lessons, Saturday week tests, and term pre-exams.",
+    cta: "Sign up →",
   },
   {
     role: "Teacher",
     href: "/signup/teacher",
     blurb: "Build classes, publish lessons, and message parents.",
+    cta: "Sign up →",
   },
   {
     role: "Parent",
     href: "/signup/parent",
     blurb: "Track your child’s progress, badges, and pass/fail status.",
+    cta: "Sign up →",
   },
   {
     role: "Admin",
-    href: "/signup/admin",
+    href: "/login/admin",
     blurb: "Shape terms, weeks, teachers, groups, and school-wide insight.",
+    cta: "Log in →",
   },
 ];
 
 const features = [
   {
     icon: BookOpen,
-    title: "Slide lessons from PDF or Markdown",
-    body: "Uploaded lesson files become a playable slide deck at view time — play, pause, prev/next, keyboard shortcuts, and fullscreen.",
+    title: "Slide lessons from PDF or hosted video",
+    body: "Uploaded lesson PDFs become a playable slide deck at view time — play, pause, prev/next, keyboard shortcuts, and fullscreen. Admins can also upload an MP4.",
   },
   {
     icon: FileText,
     title: "Text tab with downloads",
-    body: "Read inline Markdown previews and download PDFs or worksheets alongside every lesson.",
+    body: "Read PDF page previews and download worksheets alongside every lesson.",
   },
   {
     icon: ClipboardCheck,
@@ -89,7 +93,7 @@ function CapsRhythmDiagram() {
               style={{ animationDelay: `${0.08 + i * 0.06}s` }}
             >
               <p className="font-display text-lg text-ember-white">{term}</p>
-              <p className="mt-1 text-[11px] leading-snug text-ember-gray">Weeks 1–4</p>
+              <p className="mt-1 text-[11px] leading-snug text-ember-gray">Weekly lessons</p>
             </div>
           ))}
         </div>
@@ -202,7 +206,7 @@ export default function HomePage() {
             <ol className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 { step: "01", label: "Terms 1–4", detail: "Placeholder CAPS topics from the Annual Teaching Plan." },
-                { step: "02", label: "Weeks 1–4", detail: "Each week holds Mon–Fri lessons in sequence." },
+                { step: "02", label: "Weekly lessons", detail: "Each week holds Mon–Fri lessons in sequence." },
                 { step: "03", label: "Saturday test", detail: "Weekly accountability after every lesson block." },
                 { step: "04", label: "Pre-exam", detail: "Term checkpoint with paper walkthrough and memo support." },
               ].map((item, i) => (
@@ -276,7 +280,7 @@ export default function HomePage() {
                   </h3>
                   <p className="mt-3 text-sm text-muted">{card.blurb}</p>
                   <span className="mt-4 inline-block text-sm font-semibold text-ember-navy">
-                    Sign up →
+                    {card.cta}
                   </span>
                 </Link>
               ))}
@@ -312,11 +316,6 @@ export default function HomePage() {
             </p>
             <p>Phone: +27 11 555 1212</p>
             <p>Address: Digital campus · Serving CAPS schools across South Africa</p>
-            <p className="pt-4 text-sm text-muted">
-              Demo logins use password{" "}
-              <code className="rounded bg-ember-gray/80 px-1.5 py-0.5 text-ember-navy">ember12</code>{" "}
-              — see the README after deploy.
-            </p>
           </div>
           <div className="mt-10">
             <Link

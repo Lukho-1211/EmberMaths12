@@ -74,9 +74,25 @@ function splitOnH2(md: string): { title?: string; body: string }[] {
 export function markdownResourceToSlides(resource: Resource): Slide[] {
   const raw = decodeMarkdownResource(resource.url);
   if (!raw?.trim()) return [];
+  return markdownTextToSlides(raw, resource.title, resource.id);
+}
+
+export async function markdownResourceToSlidesAsync(resource: Resource): Promise<Slide[]> {
+  const { decodeMarkdownResourceAsync } = await import("@/lib/lesson-file");
+  const raw = await decodeMarkdownResourceAsync(resource.url);
+  if (!raw?.trim()) return [];
+  return markdownTextToSlides(raw, resource.title, resource.id);
+}
+
+export function markdownTextToSlides(
+  raw: string,
+  fallbackTitle: string,
+  sourceResourceId: string,
+): Slide[] {
+  if (!raw?.trim()) return [];
 
   const h1 = /^#\s+(.+)$/m.exec(raw);
-  const docTitle = h1?.[1]?.trim() || resource.title;
+  const docTitle = h1?.[1]?.trim() || fallbackTitle;
 
   let sections = splitOnH2(raw);
   const hasNamedSections = sections.some((s) => s.title);
@@ -105,24 +121,24 @@ export function markdownResourceToSlides(resource: Resource): Slide[] {
       chunkBodies.forEach((body, j) => {
         const bodyText = markdownToPlainText(body);
         slides.push({
-          id: `${resource.id}-md-${i}-${j}`,
+          id: `${sourceResourceId}-md-${i}-${j}`,
           kind: "markdown",
           title: j === 0 ? docTitle : `${docTitle} (${j + 1})`,
           bodyText: bodyText || docTitle,
           visual: { type: "text", markdown: body },
-          sourceResourceId: resource.id,
+          sourceResourceId,
         });
       });
       return;
     }
 
     slides.push({
-      id: `${resource.id}-md-${i}`,
+      id: `${sourceResourceId}-md-${i}`,
       kind: "markdown",
       title: section.title ?? docTitle,
       bodyText: plain || section.title || docTitle,
       visual: { type: "text", markdown: displayMd },
-      sourceResourceId: resource.id,
+      sourceResourceId,
     });
   });
 

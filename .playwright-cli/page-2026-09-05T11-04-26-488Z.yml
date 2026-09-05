@@ -1,0 +1,135 @@
+- generic [active] [ref=f3e1]:
+  - button "Open Next.js Dev Tools" [ref=f3e37] [cursor=pointer]
+  - alert [ref=f3e41]: "Week 1: Number Patterns & Sequences"
+  - generic [ref=f3e43]:
+    - complementary [ref=f3e44]:
+      - generic [ref=f3e45]:
+        - link "Ember Maths12" [ref=f3e46] [cursor=pointer]:
+          - /url: /student
+        - paragraph [ref=f3e47]: student
+      - navigation [ref=f3e48]:
+        - link "Dashboard" [ref=f3e49] [cursor=pointer]:
+          - /url: /student
+        - link "Learn" [ref=f3e53] [cursor=pointer]:
+          - /url: /student/learn
+        - link "Past papers" [ref=f3e56] [cursor=pointer]:
+          - /url: /student/past-papers
+        - link "Badges" [ref=f3e61] [cursor=pointer]:
+          - /url: /student/badges
+        - link "Top Achievers" [ref=f3e65] [cursor=pointer]:
+          - /url: /student/achievers
+        - link "Settings" [ref=f3e72] [cursor=pointer]:
+          - /url: /student/settings
+      - button "Log out" [ref=f3e76]
+    - generic [ref=f3e80]:
+      - banner [ref=f3e81]:
+        - generic [ref=f3e82]:
+          - paragraph [ref=f3e83]: Signed in
+          - paragraph [ref=f3e84]: Week Verify Student
+        - generic [ref=f3e85]:
+          - generic [ref=f3e86]: week.verify.20260901@ember12.test
+          - button "Log out" [ref=f3e87]
+      - main [ref=f3e91]:
+        - generic [ref=f3e169]:
+          - navigation "Weeks in this term" [ref=f3e170]:
+            - link "Week 1" [ref=f3e171] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week1
+            - link "Week 2" [ref=f3e172] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week2
+            - link "Week 3" [ref=f3e173] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week3
+            - link "Week 4" [ref=f3e174] [cursor=pointer]:
+              - /url: /student/learn/term-1/119535f2-080b-4b18-b4f2-d985469ccc22
+            - link "Week 5" [ref=f3e175] [cursor=pointer]:
+              - /url: /student/learn/term-1/5d99073d-65e9-4141-97dc-b577a96e9bbd
+            - link "Pre-exam" [ref=f3e176] [cursor=pointer]:
+              - /url: /student/learn/term-1/pre-exam
+          - generic [ref=f3e177]:
+            - 'heading "Week 1: Number Patterns & Sequences" [level=1] [ref=f3e178]'
+            - paragraph [ref=f3e179]: Term 1 — Patterns, Series & Functions · Mon–Fri lessons, then Saturday week test
+          - generic [ref=f3e180]:
+            - 'link "monday Monday: GRADE 11 REVISION OF QUADRATIC SEQUENCES Open" [ref=f3e181] [cursor=pointer]':
+              - /url: /student/learn/term-1/term1-week1/monday
+              - generic [ref=f3e182]:
+                - paragraph [ref=f3e183]: monday
+                - paragraph [ref=f3e184]: "Monday: GRADE 11 REVISION OF QUADRATIC SEQUENCES"
+              - generic [ref=f3e185]: Open
+            - 'link "tuesday Tuesday: SEQUENCES (PROGRESSIONS) Open" [ref=f3e186] [cursor=pointer]':
+              - /url: /student/learn/term-1/term1-week1/tuesday
+              - generic [ref=f3e187]:
+                - paragraph [ref=f3e188]: tuesday
+                - paragraph [ref=f3e189]: "Tuesday: SEQUENCES (PROGRESSIONS)"
+              - generic [ref=f3e190]: Open
+            - 'link "wednesday Wednesday: Arithmetic and Geometric Open" [ref=f3e191] [cursor=pointer]':
+              - /url: /student/learn/term-1/term1-week1/wednesday
+              - generic [ref=f3e192]:
+                - paragraph [ref=f3e193]: wednesday
+                - paragraph [ref=f3e194]: "Wednesday: Arithmetic and Geometric"
+              - generic [ref=f3e195]: Open
+            - 'link "thursday Thursday: Arithmetic and Geometric Open" [ref=f3e196] [cursor=pointer]':
+              - /url: /student/learn/term-1/term1-week1/thursday
+              - generic [ref=f3e197]:
+                - paragraph [ref=f3e198]: thursday
+                - paragraph [ref=f3e199]: "Thursday: Arithmetic and Geometric"
+              - generic [ref=f3e200]: Open
+            - 'link "friday Friday: Arithmetic and Geometric Open" [ref=f3e201] [cursor=pointer]':
+              - /url: /student/learn/term-1/term1-week1/friday
+              - generic [ref=f3e202]:
+                - paragraph [ref=f3e203]: friday
+                - paragraph [ref=f3e204]: "Friday: Arithmetic and Geometric"
+              - generic [ref=f3e205]: Open
+          - generic [ref=f3e206]:
+            - heading "Saturday · Week test" [level=2] [ref=f3e207]
+            - generic [ref=f3e208]:
+              - tablist "Assessment mode" [ref=f3e209]:
+                - tab "On screen (MCQ)" [selected] [ref=f3e210]
+                - tab "Paper + scan" [ref=f3e211]
+              - generic [ref=f3e212]:
+                - heading "Week 1 Saturday Test — Number Patterns & Sequences" [level=2] [ref=f3e213]
+                - paragraph [ref=f3e214]: Assess Term 1 Week 1 understanding of Number Patterns & Sequences. Choose on-screen MCQ or Paper + scan.
+                - generic [ref=f3e215]:
+                  - group "1. Which statement best relates to Number Patterns & Sequences?" [ref=f3e216]:
+                    - generic [ref=f3e218]:
+                      - generic [ref=f3e219] [cursor=pointer]:
+                        - radio "It is unrelated to Grade 12 Maths" [ref=f3e220]
+                        - generic [ref=f3e221]: It is unrelated to Grade 12 Maths
+                      - generic [ref=f3e222] [cursor=pointer]:
+                        - radio "It is a core CAPS focus for this week (Number Patterns & Sequences)" [ref=f3e223]
+                        - generic [ref=f3e224]: It is a core CAPS focus for this week (Number Patterns & Sequences)
+                      - generic [ref=f3e225] [cursor=pointer]:
+                        - radio "It only appears in Term 4 revision" [ref=f3e226]
+                        - generic [ref=f3e227]: It only appears in Term 4 revision
+                      - generic [ref=f3e228] [cursor=pointer]:
+                        - radio "It is optional enrichment only" [ref=f3e229]
+                        - generic [ref=f3e230]: It is optional enrichment only
+                  - group "2. A learner should prepare for Saturday week tests by…" [ref=f3e231]:
+                    - generic [ref=f3e233]:
+                      - generic [ref=f3e234] [cursor=pointer]:
+                        - radio "Skipping Mon–Fri lessons" [ref=f3e235]
+                        - generic [ref=f3e236]: Skipping Mon–Fri lessons
+                      - generic [ref=f3e237] [cursor=pointer]:
+                        - radio "Reviewing daily lesson resources and worked examples" [ref=f3e238]
+                        - generic [ref=f3e239]: Reviewing daily lesson resources and worked examples
+                      - generic [ref=f3e240] [cursor=pointer]:
+                        - radio "Waiting until the pre-exam" [ref=f3e241]
+                        - generic [ref=f3e242]: Waiting until the pre-exam
+                      - generic [ref=f3e243] [cursor=pointer]:
+                        - radio "Only memorising formulas without practice" [ref=f3e244]
+                        - generic [ref=f3e245]: Only memorising formulas without practice
+                  - group "3. In the context of Number Patterns & Sequences, the next step after practice is…" [ref=f3e246]:
+                    - generic [ref=f3e248]:
+                      - generic [ref=f3e249] [cursor=pointer]:
+                        - radio "Ignore feedback" [ref=f3e250]
+                        - generic [ref=f3e251]: Ignore feedback
+                      - generic [ref=f3e252] [cursor=pointer]:
+                        - radio "Check solutions and correct mistakes" [ref=f3e253]
+                        - generic [ref=f3e254]: Check solutions and correct mistakes
+                      - generic [ref=f3e255] [cursor=pointer]:
+                        - radio "Change subjects" [ref=f3e256]
+                        - generic [ref=f3e257]: Change subjects
+                      - generic [ref=f3e258] [cursor=pointer]:
+                        - radio "Skip the pre-exam" [ref=f3e259]
+                        - generic [ref=f3e260]: Skip the pre-exam
+                - button "Submit assessment" [disabled] [ref=f3e261]
+          - link "← Back to term" [ref=f3e262] [cursor=pointer]:
+            - /url: /student/learn/term-1
