@@ -19,34 +19,38 @@ const roleCards = [
     role: "Student",
     href: "/signup/student",
     blurb: "Learn Mon–Fri lessons, Saturday week tests, and term pre-exams.",
+    cta: "Sign up →",
   },
   {
     role: "Teacher",
     href: "/signup/teacher",
     blurb: "Build classes, publish lessons, and message parents.",
+    cta: "Sign up →",
   },
   {
     role: "Parent",
     href: "/signup/parent",
     blurb: "Track your child’s progress, badges, and pass/fail status.",
+    cta: "Sign up →",
   },
   {
     role: "Admin",
-    href: "/signup/admin",
+    href: "/login/admin",
     blurb: "Shape terms, weeks, teachers, groups, and school-wide insight.",
+    cta: "Log in →",
   },
 ];
 
 const features = [
   {
     icon: BookOpen,
-    title: "Slide lessons from PDF or Markdown",
-    body: "Uploaded lesson files become a playable slide deck at view time — play, pause, prev/next, keyboard shortcuts, and fullscreen.",
+    title: "Slide lessons from PDF or hosted video",
+    body: "Uploaded lesson PDFs become a playable slide deck at view time — play, pause, prev/next, keyboard shortcuts, and fullscreen. Admins can also upload an MP4.",
   },
   {
     icon: FileText,
     title: "Text tab with downloads",
-    body: "Read inline Markdown previews and download PDFs or worksheets alongside every lesson.",
+    body: "Read PDF page previews and download worksheets alongside every lesson.",
   },
   {
     icon: ClipboardCheck,
@@ -276,7 +280,7 @@ export default function HomePage() {
                   </h3>
                   <p className="mt-3 text-sm text-muted">{card.blurb}</p>
                   <span className="mt-4 inline-block text-sm font-semibold text-ember-navy">
-                    Sign up →
+                    {card.cta}
                   </span>
                 </Link>
               ))}

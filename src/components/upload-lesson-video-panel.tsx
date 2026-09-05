@@ -89,7 +89,7 @@ export function UploadLessonVideoPanel({
           <p className="text-sm font-medium">Lesson video</p>
           <p className="text-xs text-muted">
             Upload an MP4 made outside Ember. Students see this on the Video tab first; otherwise
-            the PDF/Markdown slideshow. Max{" "}
+            the PDF slideshow. Max{" "}
             {(MAX_LESSON_VIDEO_BYTES / (1024 * 1024)).toFixed(0)} MB.
           </p>
         </div>

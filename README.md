@@ -21,7 +21,7 @@ Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, and **Tail
 | Teacher | `/teacher` |
 | Parent | `/parent` |
 
-Public entry: `/` (landing), `/login` → `/login/[role]`, `/signup` → `/signup/[role]`.
+Public entry: `/` (landing), `/login` → `/login/[role]`, `/signup` → `/signup/[role]` (student, teacher, parent). Admin is login-only; new admins are created by an existing admin.
 
 ## Brand
 
@@ -43,22 +43,22 @@ Canonical stack (versions and file map): [`docs/tech_stack.md`](docs/tech_stack.
 
 | Layer | What it does today |
 | ----- | ------------------ |
-| **Supabase Auth** | Email/password signup and login for **admin**, **student**, **teacher**, and **parent**. Cookie session refresh via `src/proxy.ts` and `@supabase/ssr` clients in `src/lib/supabase/`. |
+| **Supabase Auth** | Email/password login for **admin**, **student**, **teacher**, and **parent**; public signup for student/teacher/parent. Cookie session refresh via `src/proxy.ts` and `@supabase/ssr` clients in `src/lib/supabase/`. |
 | **Postgres** | `public.profiles` (incl. theme), `public.student` roster, `curriculum`, `student_progress`, classes, groups, messages, corrections, teacher lessons. Migrations in `supabase/migrations/`. |
 | **Storage** | `lesson-files` for PDF/Markdown; `lesson-videos` for admin-uploaded lesson mp4s. |
-| **UI store** (`src/lib/store.tsx`) | In-memory `AppState` hydrated from Supabase on boot; mutations write back to Postgres. Session comes from Auth cookies only. |
+| **UI store** (`src/lib/store.tsx`) | In-memory `AppState` hydrated from Supabase on boot; mutations write back to Postgres. Curriculum loads via `GET /api/curriculum` (not a direct table SELECT). Session comes from Auth cookies only. |
 
-Assessment submit, lesson complete, and curriculum fetch go through App Router API routes: the server scores MCQs, applies mock paper-scan grades, and strips answer keys/memos for non-admins.
+Assessment submit, lesson complete, and curriculum fetch go through App Router API routes: the server scores MCQs, applies mock paper-scan grades, updates progress via security-definer RPCs, and strips answer keys/memos for non-admins. Clients do not upsert `student_progress` or `corrections` directly.
 
-Signup uses the browser Supabase client (`signUp`) so it works with only the publishable key. Role and name are stored in `user_metadata`; the `handle_new_user` trigger writes `public.profiles` (and `public.student` for students). Role for authorization is always read from `profiles`, not from editable metadata.
+Signup uses the browser Supabase client (`signUp`) so it works with only the publishable key. Role and name are stored in `user_metadata`; the `handle_new_user` trigger writes `public.profiles` (and `public.student` for students). **Admin assignment** requires Auth `app_metadata.role = admin` (via `POST /api/auth/create-admin` or seed); crafted `user_metadata.role = admin` on public signup becomes `student` (migration `20260905102918`). Role for authorization is always read from `profiles`, not from editable metadata.
 
-Optional: `POST /api/auth/signup` can still create pre-confirmed users when `SUPABASE_SERVICE_ROLE_KEY` is the real **service_role** secret (Dashboard → Project Settings → API). The anon/publishable JWT will return “User not allowed”. Admin user delete uses `POST /api/auth/delete-user`.
+Optional: `POST /api/auth/signup` can still create pre-confirmed users (non-admin) when `SUPABASE_SERVICE_ROLE_KEY` is the real **service_role** secret (Dashboard → Project Settings → API). The anon/publishable JWT will return “User not allowed”. Admin creation uses `POST /api/auth/create-admin`; user delete uses `POST /api/auth/delete-user`.
 
 Env vars are required for Auth and for seeding.
 
 The same emails are seeded into **Supabase Auth** + `profiles` (see `supabase/seed.ts` and `src/lib/demo-accounts.ts`). Extra demo students/teachers are created by the TypeScript seed so classes and rankings use Auth UUIDs.
 
-Login and signup use role hubs (`/login`, `/signup`) that route into `/login/[role]` and `/signup/[role]`.
+Login uses role hubs (`/login` → `/login/[role]`). Public signup is student/teacher/parent only (`/signup` → `/signup/[role]`); admin accounts are created from `/admin/users`.
 
 ## Curriculum model (v1)
 
@@ -70,8 +70,8 @@ Login and signup use role hubs (`/login`, `/signup`) that route into `/login/[ro
 
 ### Auth & profile
 
-- Role-specific login and signup flows backed by **Supabase Auth** + `profiles`
-- Demo accounts (after TypeScript seed — see [Database seed](#database-seed)) work on the live Auth project:
+- Role-specific login (all roles) and public signup (student/teacher/parent) backed by **Supabase Auth** + `profiles`
+- Seed demo accounts (after TypeScript seed — see [Database seed](#database-seed)):
 
 | Role | Email | Password |
 | ---- | ----- | -------- |
@@ -79,6 +79,8 @@ Login and signup use role hubs (`/login`, `/signup`) that route into `/login/[ro
 | Teacher | `teacher@ember12.za` | `ember12` |
 | Student | `student@ember12.za` | `ember12` |
 | Parent | `parent@ember12.za` | `ember12` |
+
+  Seeded `admin@ember12.za` is for local/seed demos. Live-project admin verification credentials live in `.cursor/rules/ember12.mdc` — do not assume the seed admin exists on the linked Supabase project.
 
 - **Settings** (student / teacher / parent): name, email, password; students also set **province** and **municipality** for rankings — updates go to Auth + `profiles`
 - Light / dark **theme** preference stored on `profiles.theme`
@@ -89,12 +91,12 @@ Login and signup use role hubs (`/login`, `/signup`) that route into `/login/[ro
 | ----- | ------------ |
 | `/admin` | Dashboard stats and learner progress |
 | `/admin/terms` | Upload/edit PDF/Markdown for daily lessons, Saturday week tests, pre-exams, and past papers; upload lesson MP4 |
-| `/admin/users` | List teachers; delete student or parent accounts |
+| `/admin/users` | List admins/teachers; create admin accounts; delete student or parent accounts |
 | `/admin/groups` | Create study groups, assign students, optional term link |
 | `/admin/pass-fail` | Filter students by passing / failing / pending status |
 | `/admin/achievers` | Leaderboard with province / municipality filters |
 
-Saving a daily lesson with uploaded PDF/Markdown **mock-generates MCQ questions** from the document text (deterministic demo generation, not a live AI API). Admins can **Regenerate questions** from current materials.
+Saving a daily lesson with uploaded **Markdown** **mock-generates MCQ questions** from the document text (deterministic demo generation, not a live AI API). Admins can **Regenerate questions** from the current Markdown. PDFs remain lesson materials only and are not used for question generation.
 
 Exam papers are shown to students (walkthrough + download). Memos are admin-only and used when correcting paper+scan uploads.
 
@@ -114,8 +116,8 @@ Files are stored in Supabase Storage (`lesson-files` for PDF/Markdown, max **20 
 
 **Lesson player**
 
-- **Video** — prefers an admin-uploaded mp4 from Storage; otherwise PDF/Markdown becomes a slide deck at view time (`pdfjs-dist` for PDFs): play/pause, prev/next, keyboard shortcuts, fullscreen; seed lessons may fall back to a YouTube embed
-- **Text** — Markdown preview plus download links for PDFs and worksheets
+- **Video** — prefers an admin-uploaded mp4 from Storage (`lesson-videos`); otherwise **PDF** becomes a slide deck at view time (`pdfjs-dist`) with browser TTS: play/pause, prev/next, keyboard shortcuts, fullscreen; seed lessons may fall back to a YouTube embed when no hosted mp4 or PDF exists
+- **Text** — uploaded **PDF page preview** plus download links for PDFs and worksheets. **Markdown** is admin-only (mock MCQ generation) and is stripped from student/teacher/parent curriculum payloads
 
 Students must **pass** the day test before **Mark lesson complete** is enabled. Dashboards show **per-term insights** (strengths, weak topics, suggested next actions).
 
@@ -167,7 +169,8 @@ Top Achievers boards (admin, teacher, student) rank by overall progress percent,
 
 | Route | Purpose |
 | ----- | ------- |
-| `POST /api/auth/signup` | Optional pre-confirmed signup when the real **service_role** secret is set |
+| `POST /api/auth/signup` | Optional pre-confirmed signup (non-admin) when the real **service_role** secret is set |
+| `POST /api/auth/create-admin` | Admin-only: create another admin account |
 | `POST /api/auth/delete-user` | Admin user delete (service role) |
 | `GET /api/curriculum` | Authed curriculum fetch — admins get answer keys/memos; others get stripped |
 | `POST /api/assessments/mcq` | Student MCQ submit — server scores against curriculum keys; updates progress |
@@ -178,7 +181,7 @@ Top Achievers boards (admin, teacher, student) rank by overall progress percent,
 
 Do not invent these unless a task asks for them (full detail in [`docs/PRD.md`](docs/PRD.md) §7):
 
-- No parent–child self-service linking UI (schema + seed only)
+- No parent–child linking UI (schema + seed/SQL only; parent empty state may mention admin, but `/admin` has no link UI)
 - No student class-join UI (teachers enroll students directly)
 - Teacher lessons are not integrated into student Learn
 - Study groups are admin-managed only (no student group experience)
@@ -197,7 +200,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 `NEXT_PUBLIC_SUPABASE_ANON_KEY` is accepted as a fallback for the publishable key.
 
-Signup in the UI uses the **publishable** key. `SUPABASE_SERVICE_ROLE_KEY` is only needed for `npx tsx supabase/seed.ts` and the optional admin signup API — it must be the **service_role** secret, not the anon key.
+Signup in the UI uses the **publishable** key (student/teacher/parent). `SUPABASE_SERVICE_ROLE_KEY` is needed for `npx tsx supabase/seed.ts`, `POST /api/auth/create-admin`, and the optional signup API — it must be the **service_role** secret, not the anon key.
 
 ```bash
 npm install
@@ -246,7 +249,7 @@ vercel
 
 ## CI
 
-GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) on push and pull request (Node 22): `npm run lint` → `npm run typecheck` → `npm test`.
+GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) on push and pull request (Node 22): `npm run lint` → `npm run typecheck` → `npm test` (Vitest unit tests under `tests/unit/`).
 
 ## Out of scope (frontend v1)
 

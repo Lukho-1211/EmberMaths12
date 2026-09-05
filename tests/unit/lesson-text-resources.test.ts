@@ -15,7 +15,7 @@ function lesson(resources: Lesson["resources"]): Lesson {
 }
 
 describe("lessonTextResources", () => {
-  it("returns uploaded markdown then PDFs and skips placeholders", () => {
+  it("returns uploaded PDFs only and skips markdown and placeholders", () => {
     const result = lessonTextResources(
       lesson([
         { id: "p0", title: "Stub", type: "pdf", url: "#" },
@@ -34,18 +34,14 @@ describe("lessonTextResources", () => {
         { id: "l1", title: "Link", type: "link", url: "https://example.com" },
       ]),
     );
-    expect(result.map((r) => r.id)).toEqual(["m1", "p1"]);
+    expect(result.map((r) => r.id)).toEqual(["p1"]);
   });
 
-  it("includes data-URL markdown from seed", () => {
+  it("returns empty for markdown-only lessons; primaryLessonMarkdownResource still finds it", () => {
     const url = `data:text/markdown;charset=utf-8,${encodeURIComponent("# Hello")}`;
-    const result = lessonTextResources(
-      lesson([{ id: "m0", title: "Seed", type: "markdown", url }]),
-    );
-    expect(result).toHaveLength(1);
-    expect(primaryLessonMarkdownResource(lesson([{ id: "m0", title: "Seed", type: "markdown", url }]))?.id).toBe(
-      "m0",
-    );
+    const mdLesson = lesson([{ id: "m0", title: "Seed", type: "markdown", url }]);
+    expect(lessonTextResources(mdLesson)).toEqual([]);
+    expect(primaryLessonMarkdownResource(mdLesson)?.id).toBe("m0");
   });
 
   it("returns empty when only placeholders exist", () => {

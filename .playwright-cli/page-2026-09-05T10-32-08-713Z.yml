@@ -1,0 +1,158 @@
+- generic [active] [ref=f3e1]:
+  - generic [ref=f3e2]:
+    - banner [ref=f3e3]:
+      - link "Skip to main content" [ref=f3e4] [cursor=pointer]:
+        - /url: "#main"
+      - generic [ref=f3e5]:
+        - link "Ember Maths12" [ref=f3e6] [cursor=pointer]:
+          - /url: /
+        - navigation "Primary" [ref=f3e8]:
+          - link "How it works" [ref=f3e9] [cursor=pointer]:
+            - /url: /#about
+          - link "Features" [ref=f3e10] [cursor=pointer]:
+            - /url: /#features
+          - link "Join" [ref=f3e11] [cursor=pointer]:
+            - /url: /#roles
+          - link "Contact" [ref=f3e12] [cursor=pointer]:
+            - /url: /#contact
+        - generic [ref=f3e13]:
+          - link "Log in" [ref=f3e14] [cursor=pointer]:
+            - /url: /login
+          - link "Sign up" [ref=f3e15] [cursor=pointer]:
+            - /url: /signup
+    - main [ref=f3e16]:
+      - generic [ref=f3e17]:
+        - img "Grade 12 learners studying mathematics together" [ref=f3e18]
+        - generic [ref=f3e23]:
+          - generic [ref=f3e24]:
+            - paragraph [ref=f3e25]: South African CAPS · Grade 12 Mathematics
+            - heading "Ember Maths12" [level=1] [ref=f3e26]
+            - paragraph [ref=f3e27]: An online school for Grade 12 Maths — structured terms, weekday lessons, and Saturday assessments that keep learners, teachers, and parents aligned.
+            - generic [ref=f3e28]:
+              - link "Start learning" [ref=f3e29] [cursor=pointer]:
+                - /url: /signup
+              - link "Log in" [ref=f3e30] [cursor=pointer]:
+                - /url: /login
+          - generic [ref=f3e34]:
+            - paragraph [ref=f3e35]: CAPS year map
+            - generic [ref=f3e36]:
+              - generic [ref=f3e37]:
+                - paragraph [ref=f3e38]: Term 1
+                - paragraph [ref=f3e39]: Weekly lessons
+              - generic [ref=f3e40]:
+                - paragraph [ref=f3e41]: Term 2
+                - paragraph [ref=f3e42]: Weekly lessons
+              - generic [ref=f3e43]:
+                - paragraph [ref=f3e44]: Term 3
+                - paragraph [ref=f3e45]: Weekly lessons
+              - generic [ref=f3e46]:
+                - paragraph [ref=f3e47]: Term 4
+                - paragraph [ref=f3e48]: Weekly lessons
+            - generic [ref=f3e49]:
+              - generic [ref=f3e50]: Mon–Fri lessons
+              - generic [ref=f3e51]: →
+              - generic [ref=f3e52]: Saturday week test
+              - generic [ref=f3e53]: →
+              - generic [ref=f3e54]: Pre-exam
+      - generic [ref=f3e56]:
+        - paragraph [ref=f3e57]: How it works
+        - generic [ref=f3e58]:
+          - generic [ref=f3e59]:
+            - heading "Built around the CAPS classroom rhythm" [level=2] [ref=f3e60]
+            - paragraph [ref=f3e61]: Ember Maths12 mirrors the way South African Grade 12 Mathematics is taught throughout the academic year, following a structured Term 1 to Term 4 programme. Learners progress through weekday lessons designed to build their understanding step by step, with Saturday week tests providing regular opportunities to assess their progress.
+            - paragraph [ref=f3e62]: Every four-week learning block concludes with a pre-exam, helping learners prepare for formal assessments and identify areas that need improvement. The platform also provides curated learning content and downloadable resources, while keeping teachers and parents informed about each learner's progress and development.
+          - img "Grade 12 learner studying mathematics with notes, calculator, and a digital lesson" [ref=f3e64]
+        - list [ref=f3e65]:
+          - listitem [ref=f3e66]:
+            - paragraph [ref=f3e67]: "01"
+            - paragraph [ref=f3e68]: Terms 1–4
+            - paragraph [ref=f3e69]: Placeholder CAPS topics from the Annual Teaching Plan.
+          - listitem [ref=f3e70]:
+            - paragraph [ref=f3e71]: "02"
+            - paragraph [ref=f3e72]: Weekly lessons
+            - paragraph [ref=f3e73]: Each week holds Mon–Fri lessons in sequence.
+          - listitem [ref=f3e74]:
+            - paragraph [ref=f3e75]: "03"
+            - paragraph [ref=f3e76]: Saturday test
+            - paragraph [ref=f3e77]: Weekly accountability after every lesson block.
+          - listitem [ref=f3e78]:
+            - paragraph [ref=f3e79]: "04"
+            - paragraph [ref=f3e80]: Pre-exam
+            - paragraph [ref=f3e81]: Term checkpoint with paper walkthrough and memo support.
+      - generic [ref=f3e83]:
+        - paragraph [ref=f3e84]: Features
+        - heading "What Ember Maths12 offers" [level=2] [ref=f3e85]
+        - paragraph [ref=f3e86]: Udemy-style learning for CAPS Maths — with Admin, Student, Teacher, and Parent portals mocked in the browser so you can demo the full product.
+        - list [ref=f3e87]:
+          - listitem [ref=f3e88]:
+            - generic [ref=f3e92]:
+              - heading "Slide lessons from PDF or Markdown" [level=3] [ref=f3e93]
+              - paragraph [ref=f3e94]: Uploaded lesson files become a playable slide deck at view time — play, pause, prev/next, keyboard shortcuts, and fullscreen.
+          - listitem [ref=f3e95]:
+            - generic [ref=f3e100]:
+              - heading "Text tab with downloads" [level=3] [ref=f3e101]
+              - paragraph [ref=f3e102]: Read inline Markdown previews and download PDFs or worksheets alongside every lesson.
+          - listitem [ref=f3e103]:
+            - generic [ref=f3e109]:
+              - heading "Saturday tests and pre-exams" [level=3] [ref=f3e110]
+              - paragraph [ref=f3e111]: On-screen MCQ against a pass mark, or paper-plus-scan with mock per-question feedback.
+          - listitem [ref=f3e112]:
+            - generic [ref=f3e119]:
+              - heading "Scan and feedback" [level=3] [ref=f3e120]
+              - paragraph [ref=f3e121]: Upload a script photo or PDF for demo grading — wired for a real OCR API later.
+          - listitem [ref=f3e122]:
+            - generic [ref=f3e129]:
+              - heading "Teacher classrooms" [level=3] [ref=f3e130]
+              - paragraph [ref=f3e131]: Create classes, accept students, publish lessons, and message parents from one place.
+          - listitem [ref=f3e132]:
+            - generic [ref=f3e139]:
+              - heading "Parent and admin visibility" [level=3] [ref=f3e140]
+              - paragraph [ref=f3e141]: Parents see progress and badges; admins manage terms, groups, and pass/fail risk early.
+      - generic [ref=f3e143]:
+        - paragraph [ref=f3e144]: Join as
+        - heading "Student, teacher, parent, or admin" [level=2] [ref=f3e145]
+        - paragraph [ref=f3e146]: Pick the portal that matches how you show up for Grade 12 Maths.
+        - generic [ref=f3e147]:
+          - link "Student Learn Mon–Fri lessons, Saturday week tests, and term pre-exams. Sign up →" [ref=f3e148] [cursor=pointer]:
+            - /url: /signup/student
+            - heading "Student" [level=3] [ref=f3e149]
+            - paragraph [ref=f3e150]: Learn Mon–Fri lessons, Saturday week tests, and term pre-exams.
+            - generic [ref=f3e151]: Sign up →
+          - link "Teacher Build classes, publish lessons, and message parents. Sign up →" [ref=f3e152] [cursor=pointer]:
+            - /url: /signup/teacher
+            - heading "Teacher" [level=3] [ref=f3e153]
+            - paragraph [ref=f3e154]: Build classes, publish lessons, and message parents.
+            - generic [ref=f3e155]: Sign up →
+          - link "Parent Track your child’s progress, badges, and pass/fail status. Sign up →" [ref=f3e156] [cursor=pointer]:
+            - /url: /signup/parent
+            - heading "Parent" [level=3] [ref=f3e157]
+            - paragraph [ref=f3e158]: Track your child’s progress, badges, and pass/fail status.
+            - generic [ref=f3e159]: Sign up →
+          - link "Admin Shape terms, weeks, teachers, groups, and school-wide insight. Sign up →" [ref=f3e160] [cursor=pointer]:
+            - /url: /login/admin
+            - heading "Admin" [level=3] [ref=f3e161]
+            - paragraph [ref=f3e162]: Shape terms, weeks, teachers, groups, and school-wide insight.
+            - generic [ref=f3e163]: Sign up →
+      - generic [ref=f3e165]:
+        - paragraph [ref=f3e166]: Mission
+        - heading "Make CAPS Maths continuous, visible, and actionable" [level=2] [ref=f3e167]
+        - paragraph [ref=f3e169]: "Ember Maths12 turns the Annual Teaching Plan into a living online school: daily lessons, weekly checks, term pre-exams, and dashboards that help admins, teachers, students, and parents act early when a learner is at risk of failing. A learner in Johannesburg and a tutor in Cape Town share the same weekly map — families see progress without waiting for the next report card."
+      - generic [ref=f3e171]:
+        - paragraph [ref=f3e172]: Contact
+        - heading "Talk to Ember Maths12" [level=2] [ref=f3e173]
+        - generic [ref=f3e174]:
+          - generic [ref=f3e175]:
+            - paragraph [ref=f3e176]:
+              - text: "Email:"
+              - link "hello@ember12.za" [ref=f3e177] [cursor=pointer]:
+                - /url: mailto:hello@ember12.za
+            - paragraph [ref=f3e178]: "Phone: +27 11 555 1212"
+            - paragraph [ref=f3e179]: "Address: Digital campus · Serving CAPS schools across South Africa"
+          - link "Start learning free" [ref=f3e181] [cursor=pointer]:
+            - /url: /signup
+    - contentinfo [ref=f3e182]:
+      - generic [ref=f3e183]:
+        - generic [ref=f3e184]: Ember Maths12
+        - paragraph [ref=f3e185]: CAPS Grade 12 Mathematics · South Africa
+        - paragraph [ref=f3e186]: © 2026 Ember Maths12
+  - button "Open Next.js Dev Tools" [ref=f3e192] [cursor=pointer]

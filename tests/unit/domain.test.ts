@@ -163,12 +163,19 @@ describe("canCompleteLesson", () => {
 });
 
 describe("stripCurriculumSecrets", () => {
-  it("removes answerIndex and memoResources for students", () => {
+  it("removes answerIndex, memoResources, and markdown for students", () => {
     const stripped = stripCurriculumSecrets(SEED_TERMS);
     const q = stripped[0]!.weeks[0]!.weekTest.questions[0]!;
     expect(q.answerIndex).toBeUndefined();
     expect(stripped[0]!.weeks[0]!.weekTest.memoResources).toEqual([]);
     expect(stripped[0]!.pastPaper.memoResources).toEqual([]);
+
+    const seedLesson = SEED_TERMS[0]!.weeks[0]!.lessons[0]!;
+    const strippedLesson = stripped[0]!.weeks[0]!.lessons[0]!;
+    expect(seedLesson.resources.some((r) => r.type === "markdown")).toBe(true);
+    expect(strippedLesson.resources.some((r) => r.type === "markdown")).toBe(false);
+    expect(strippedLesson.resources.every((r) => r.type !== "markdown")).toBe(true);
+
     // Original seed unchanged
     expect(SEED_TERMS[0]!.weeks[0]!.weekTest.questions[0]!.answerIndex).toBeDefined();
   });

@@ -1,0 +1,120 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e29] [cursor=pointer]
+  - alert [ref=e33]: Admin dashboard
+  - generic [ref=e36]:
+    - complementary [ref=e37]:
+      - generic [ref=e38]:
+        - link "Ember Maths12" [ref=e39] [cursor=pointer]:
+          - /url: /admin
+        - paragraph [ref=e40]: admin
+      - navigation [ref=e41]:
+        - link "Dashboard" [ref=e42] [cursor=pointer]:
+          - /url: /admin
+        - link "Terms & Lessons" [ref=e48] [cursor=pointer]:
+          - /url: /admin/terms
+        - link "Users & Teachers" [ref=e51] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Study Groups" [ref=e57] [cursor=pointer]:
+          - /url: /admin/groups
+        - link "Pass / Fail" [ref=e63] [cursor=pointer]:
+          - /url: /admin/pass-fail
+        - link "Top Achievers" [ref=e68] [cursor=pointer]:
+          - /url: /admin/achievers
+      - button "Log out" [ref=e75]
+    - generic [ref=e79]:
+      - banner [ref=e80]:
+        - generic [ref=e81]:
+          - paragraph [ref=e82]: Signed in
+          - paragraph [ref=e83]: Alulutho
+        - generic [ref=e84]:
+          - generic [ref=e85]: aluluthospambo@gmail.com
+          - button "Log out" [ref=e86]
+      - main [ref=e90]:
+        - generic [ref=e91]:
+          - generic [ref=e92]:
+            - heading "Admin dashboard" [level=1] [ref=e93]
+            - paragraph [ref=e94]: Overview of Ember Maths12 learners, instructors, and term health.
+          - generic [ref=e95]:
+            - generic [ref=e96]:
+              - paragraph [ref=e97]: Students
+              - paragraph [ref=e98]: "6"
+            - generic [ref=e99]:
+              - paragraph [ref=e100]: Teachers
+              - paragraph [ref=e101]: "0"
+            - generic [ref=e102]:
+              - paragraph [ref=e103]: Pass rate
+              - paragraph [ref=e104]: 0%
+              - paragraph [ref=e105]: 0 passing · 0 failing
+            - generic [ref=e106]:
+              - paragraph [ref=e107]: Active terms
+              - paragraph [ref=e108]: "4"
+              - paragraph [ref=e109]: Term 1–4 seeded
+          - generic [ref=e110]:
+            - button "Students" [ref=e111]
+            - button "Instructors" [ref=e112]
+          - generic [ref=e113]:
+            - generic [ref=e114]:
+              - heading "Learner progress" [level=2] [ref=e115]
+              - generic [ref=e118]:
+                - generic:
+                  - status:
+                    - paragraph: Week
+                    - list:
+                      - listitem: "progress : 0"
+                - application [ref=e119]:
+                  - generic [ref=e132]:
+                    - generic [ref=e133]:
+                      - generic [ref=e134]: Simo
+                      - generic [ref=e136]: Week
+                      - generic [ref=e138]: Week
+                      - generic [ref=e140]: merit
+                    - generic [ref=e142]:
+                      - generic [ref=e143]: "0"
+                      - generic [ref=e145]: "25"
+                      - generic [ref=e147]: "50"
+                      - generic [ref=e149]: "75"
+                      - generic [ref=e151]: "100"
+            - table [ref=e154]:
+              - rowgroup [ref=e155]:
+                - row [ref=e156]:
+                  - columnheader "Student" [ref=e157]
+                  - columnheader "Progress" [ref=e158]
+                  - columnheader "Status" [ref=e159]
+              - rowgroup [ref=e160]:
+                - row [ref=e161]:
+                  - cell "Test Student ember.student.1786818869648@gmail.com" [ref=e162]:
+                    - generic [ref=e163]: Test Student
+                    - generic [ref=e164]: ember.student.1786818869648@gmail.com
+                  - cell "0%" [ref=e165]
+                  - cell "pending" [ref=e166]
+                - row [ref=e167]:
+                  - cell "mluthwana mlu@gmail.com" [ref=e168]:
+                    - generic [ref=e169]: mluthwana
+                    - generic [ref=e170]: mlu@gmail.com
+                  - cell "0%" [ref=e171]
+                  - cell "pending" [ref=e172]
+                - row [ref=e173]:
+                  - cell "Simo simo@gmail.com" [ref=e174]:
+                    - generic [ref=e175]: Simo
+                    - generic [ref=e176]: simo@gmail.com
+                  - cell "0%" [ref=e177]
+                  - cell "pending" [ref=e178]
+                - row [ref=e179]:
+                  - cell "Week Verify Student week.verify.20260901@ember12.test" [ref=e180]:
+                    - generic [ref=e181]: Week Verify Student
+                    - generic [ref=e182]: week.verify.20260901@ember12.test
+                  - cell "0%" [ref=e183]
+                  - cell "pending" [ref=e184]
+                - row [ref=e185]:
+                  - cell "Week Cap Verifier week.cap.verify.20260901@ember12.test" [ref=e186]:
+                    - generic [ref=e187]: Week Cap Verifier
+                    - generic [ref=e188]: week.cap.verify.20260901@ember12.test
+                  - cell "0%" [ref=e189]
+                  - cell "pending" [ref=e190]
+                - row [ref=e191]:
+                  - cell "merit meritbrandinglto@gmail.com" [ref=e192]:
+                    - generic [ref=e193]: merit
+                    - generic [ref=e194]: meritbrandinglto@gmail.com
+                  - cell "0%" [ref=e195]
+                  - cell "pending" [ref=e196]
+  - generic [ref=e197]: "0"

@@ -23,7 +23,7 @@ export function LessonVideoPlayer({
 }: {
   title: string;
   resources: Resource[];
-  /** Direct mp4 URL (Storage). Preferred over the PDF/Markdown slideshow. */
+  /** Direct mp4 URL (Storage). Preferred over the PDF slideshow. */
   hostedVideoUrl?: string | null;
   className?: string;
 }) {

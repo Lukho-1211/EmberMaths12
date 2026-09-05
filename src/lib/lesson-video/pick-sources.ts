@@ -8,11 +8,9 @@ function isUploadedUrl(url: string) {
   );
 }
 
-/** Uploaded PDF / Markdown resources that can become a video walkthrough. */
+/** Uploaded PDF resources that can become a video walkthrough. */
 export function pickVideoSources(resources: Resource[]): Resource[] {
-  return resources.filter(
-    (r) => (r.type === "pdf" || r.type === "markdown") && isUploadedUrl(r.url),
-  );
+  return resources.filter((r) => r.type === "pdf" && isUploadedUrl(r.url));
 }
 
 export function hasVideoSources(resources: Resource[]): boolean {

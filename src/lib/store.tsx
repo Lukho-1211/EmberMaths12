@@ -201,6 +201,11 @@ interface StoreContextValue {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   deleteUser: (userId: string) => Promise<void>;
+  createAdmin: (input: {
+    name: string;
+    email: string;
+    password: string;
+  }) => Promise<{ ok: true } | { ok: false; error: string }>;
   updateTerms: (terms: Term[]) => void;
   /** Append an empty week in the next free 1–4 slot, or null if the term is full. */
   addWeek: (termId: string, topic: string) => Week | null;
@@ -404,6 +409,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       province?: string;
       municipality?: string;
     }) => {
+      if (input.role === "admin") {
+        return {
+          ok: false as const,
+          error: "Admin accounts cannot be created via public signup.",
+        };
+      }
       if (input.role === "student") {
         if (!input.province || !input.municipality) {
           return {
@@ -545,6 +556,44 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
     setSession((s) => (s?.userId === userId ? null : s));
   }, []);
+
+  const createAdmin = useCallback(
+    async (input: { name: string; email: string; password: string }) => {
+      const name = input.name.trim();
+      const email = input.email.trim().toLowerCase();
+      const password = input.password;
+      if (!name || !email || !password) {
+        return { ok: false as const, error: "Name, email, and password are required." };
+      }
+      if (password.length < 6) {
+        return { ok: false as const, error: "Password must be at least 6 characters." };
+      }
+
+      try {
+        const res = await fetch("/api/auth/create-admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password }),
+        });
+        const data = (await res.json()) as {
+          ok?: boolean;
+          error?: string;
+          user?: ProfileRow;
+        };
+        if (!res.ok || !data.ok || !data.user) {
+          return {
+            ok: false as const,
+            error: data.error ?? "Failed to create admin account.",
+          };
+        }
+        setState((prev) => mergeProfileUser(prev, data.user as ProfileRow));
+        return { ok: true as const };
+      } catch {
+        return { ok: false as const, error: "Failed to create admin account." };
+      }
+    },
+    [],
+  );
 
   const updateTerms = useCallback((terms: Term[]) => {
     setState((prev) => {
@@ -958,6 +1007,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     theme,
     setTheme,
     deleteUser,
+    createAdmin,
     updateTerms,
     addWeek,
     removeWeek,

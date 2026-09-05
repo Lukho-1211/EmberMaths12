@@ -50,6 +50,13 @@ export async function POST(request: Request) {
   }
   const role: Role = roleRaw;
 
+  if (role === "admin") {
+    return NextResponse.json(
+      { error: "Admin accounts cannot be created via public signup." },
+      { status: 403 },
+    );
+  }
+
   if (role === "student") {
     if (!province || !municipality) {
       return NextResponse.json(

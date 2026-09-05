@@ -1,10 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download, FileText } from "lucide-react";
-import { LessonVideoPlayer } from "@/components/lesson-video-player";
-import { MarkdownPreview } from "@/components/markdown-preview";
-import { hasVideoSources } from "@/lib/lesson-video";
+import { Download } from "lucide-react";
 import { meetsPassMark } from "@/lib/score-mcq";
 import { useStore } from "@/lib/store";
 import type {
@@ -35,80 +32,35 @@ type AssessmentMode = "mcq" | "paper";
 type PaperStep = "questions" | "upload" | "result";
 type CorrectionMode = "paper-scan" | "past-paper";
 
-export function AssessmentMaterials({
-  resources,
-  assessmentTitle,
-}: {
-  resources: Resource[];
-  assessmentTitle: string;
-}) {
-  const [openMarkdownId, setOpenMarkdownId] = useState<string | null>(null);
-  if (resources.length === 0) return null;
-
-  const showVideo = hasVideoSources(resources);
+export function AssessmentMaterials({ resources }: { resources: Resource[] }) {
+  const studentResources = resources.filter((r) => r.type !== "markdown");
+  if (studentResources.length === 0) return null;
 
   return (
     <div className="mb-6 rounded-lg border border-dashed border-border bg-surface/50 p-4">
       <h3 className="text-sm font-semibold">Exam paper / materials</h3>
       <p className="mt-1 text-xs text-muted">
-        {showVideo
-          ? "Watch the paper walkthrough before you answer, or download the PDF / Markdown."
-          : "Download the PDF or view the Markdown paper before answering."}
+        Download the PDF or other materials before answering.
       </p>
-      {showVideo ? (
-        <div className="mt-3">
-          <LessonVideoPlayer title={assessmentTitle} resources={resources} />
-        </div>
-      ) : null}
       <ul className="mt-3 space-y-2">
-        {resources.map((r) => {
+        {studentResources.map((r) => {
           const isUploaded =
             r.url.startsWith("data:") ||
             r.url.startsWith("http://") ||
             r.url.startsWith("https://");
-          const isMarkdown = r.type === "markdown";
-
-          if (isMarkdown && isUploaded) {
-            const open = openMarkdownId === r.id;
-            return (
-              <li key={r.id} className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => setOpenMarkdownId((id) => (id === r.id ? null : r.id))}
-                  className="flex w-full items-start gap-2 text-left text-sm hover:text-ember-gold"
-                >
-                  <FileText size={16} className="mt-0.5 shrink-0" />
-                  <span>
-                    <span className="block font-medium">{r.title}</span>
-                    <span className="text-xs uppercase text-muted">
-                      markdown · {open ? "hide" : "view"}
-                    </span>
-                  </span>
-                </button>
-                {open ? (
-                  <MarkdownPreview
-                    resource={r}
-                    className="rounded-lg border border-border bg-white p-3"
-                  />
-                ) : null}
-              </li>
-            );
-          }
 
           return (
             <li key={r.id}>
               <a
                 href={r.url === "#" ? undefined : r.url}
                 className="flex items-start gap-2 text-sm hover:text-ember-gold"
-                download={
-                  r.type === "pdf" || r.type === "markdown" ? r.fileName ?? true : undefined
-                }
+                download={r.type === "pdf" ? r.fileName ?? true : undefined}
                 target={r.type === "pdf" && isUploaded ? "_blank" : undefined}
                 rel="noreferrer"
                 onClick={(e) => {
                   if (!r.url || r.url === "#") {
                     e.preventDefault();
-                    alert("Placeholder resource — upload a PDF or Markdown in Admin → Terms.");
+                    alert("Placeholder resource — upload a PDF in Admin → Terms.");
                   }
                 }}
               >
@@ -190,7 +142,7 @@ export function AssessmentQuiz({
       <h2 className="font-display text-2xl">{assessment.title}</h2>
       <p className="mt-1 text-sm text-muted">{assessment.description}</p>
       <div className="mt-6">
-        <AssessmentMaterials resources={resources} assessmentTitle={assessment.title} />
+        <AssessmentMaterials resources={resources} />
       </div>
       <div className="space-y-6">
         {assessment.questions.map((q, idx) => (
@@ -371,7 +323,7 @@ export function AssessmentPaperScan({
       </p>
 
       <div className="mt-6">
-        <AssessmentMaterials resources={resources} assessmentTitle={assessment.title} />
+        <AssessmentMaterials resources={resources} />
       </div>
 
       <ol className="mb-4 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
@@ -394,8 +346,8 @@ export function AssessmentPaperScan({
           {paperOnly ? (
             <>
               <p className="mb-4 text-sm text-muted">
-                Download or walk through the past paper above. Write full working on paper (or
-                print the PDF). When you are done, scan your script for mock feedback.
+                Download the past paper above. Write full working on paper (or print the PDF).
+                When you are done, scan your script for mock feedback.
               </p>
               {resources.length === 0 ? (
                 <p className="mb-4 rounded-md border border-ember-gold/40 bg-ember-gold/10 px-3 py-2 text-sm">

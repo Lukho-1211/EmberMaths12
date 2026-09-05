@@ -33,12 +33,14 @@ Product data is **Supabase** Auth + Postgres + Storage. The React store is an in
 flowchart LR
   Browser["Browser client"] --> Store["store.tsx in-memory cache"]
   Store --> AppState["app-state.ts"]
+  AppState --> CurriculumAPI["GET /api/curriculum"]
   AppState --> Postgres["Supabase Postgres"]
   Browser --> Auth["Supabase Auth cookies"]
   Proxy["proxy.ts"] --> Auth
   Server["RSC server.ts"] --> Auth
   AdminAPI["admin.ts service role"] --> Postgres
-  AdminAPI --> Storage["Storage lesson-files"]
+  AdminAPI --> LessonFiles["Storage lesson-files"]
+  AdminAPI --> LessonVideos["Storage lesson-videos"]
 ```
 
 ### Auth clients
@@ -52,11 +54,13 @@ flowchart LR
 
 Libraries: `@supabase/ssr` and `@supabase/supabase-js`.
 
-**Authorization role always comes from `public.profiles`, never from editable `user_metadata`.** Signup may write role/name into metadata so the `handle_new_user` trigger can create the profile; runtime checks read `profiles.role`.
+**Authorization role always comes from `public.profiles`, never from editable `user_metadata`.** Signup may write role/name into `user_metadata` so the `handle_new_user` trigger can create the profile; runtime checks read `profiles.role`.
+
+**Admin lock** (migration `20260905102918`): `handle_new_user` assigns `admin` only when Auth `app_metadata.role = admin` (service-role `createUser` / [`POST /api/auth/create-admin`](../src/app/api/auth/create-admin/route.ts)). Crafted `user_metadata.role = admin` on public signup becomes `student`. The trigger syncs the resolved role into `app_metadata`.
 
 ### Postgres
 
-Migrations live in [`supabase/migrations/`](../supabase/migrations/). Core tables include `profiles` (role, theme, location, `parent_id`), `student`, curriculum, progress, classes, groups, messages, corrections, and teacher lessons. RLS is defined in those migrations.
+Migrations live in [`supabase/migrations/`](../supabase/migrations/). Core tables include `profiles` (role, theme, location, `parent_id`), `student`, curriculum, progress, classes, groups, messages, corrections, and teacher lessons. RLS is defined in those migrations. Non-admins cannot SELECT the `curriculum` table directly — they load via `GET /api/curriculum`.
 
 Local CLI project id: `Ember12` ([`supabase/config.toml`](../supabase/config.toml)).
 
@@ -65,13 +69,13 @@ Local CLI project id: `Ember12` ([`supabase/config.toml`](../supabase/config.tom
 | Bucket | Purpose |
 | ------ | ------- |
 | `lesson-files` | Admin/teacher PDF and Markdown uploads (max 20 MB per file) |
-| `lesson-videos` | Admin-uploaded lesson mp4s (max ~200 MB) |
+| `lesson-videos` | Admin-uploaded lesson mp4s only (max ~200 MB; public read) |
 
-Hosted lesson video URLs are stored on curriculum `Lesson.videoUrl` (no separate job table).
+Hosted lesson video URLs are stored on curriculum `Lesson.videoUrl` (no separate job table). Upload/delete helpers: [`src/lib/supabase/lesson-videos.ts`](../src/lib/supabase/lesson-videos.ts).
 
 ### UI store
 
-[`src/lib/store.tsx`](../src/lib/store.tsx) holds in-memory `AppState`. Load and write through [`src/lib/supabase/app-state.ts`](../src/lib/supabase/app-state.ts). Session identity comes from Auth cookies only.
+[`src/lib/store.tsx`](../src/lib/store.tsx) holds in-memory `AppState`. Load and write through [`src/lib/supabase/app-state.ts`](../src/lib/supabase/app-state.ts), which hydrates curriculum via `GET /api/curriculum`. Session identity comes from Auth cookies only. API routes gate with [`src/lib/supabase/require-user.ts`](../src/lib/supabase/require-user.ts); progress/correction server I/O lives in [`src/lib/supabase/progress-server.ts`](../src/lib/supabase/progress-server.ts).
 
 ### Not the data layer
 
@@ -112,6 +116,7 @@ Normal signup and login use the browser Supabase client. App Router APIs:
 | Route | Purpose |
 | ----- | ------- |
 | [`src/app/api/auth/signup/route.ts`](../src/app/api/auth/signup/route.ts) | Optional pre-confirmed signup when the real **service_role** secret is set |
+| [`src/app/api/auth/create-admin/route.ts`](../src/app/api/auth/create-admin/route.ts) | Admin-only: create admin via service role; sets `app_metadata.role = admin` |
 | [`src/app/api/auth/delete-user/route.ts`](../src/app/api/auth/delete-user/route.ts) | Admin user delete (service role) |
 | [`src/app/api/curriculum/route.ts`](../src/app/api/curriculum/route.ts) | Authed curriculum fetch — admins get answer keys/memos; others get stripped |
 | [`src/app/api/assessments/mcq/route.ts`](../src/app/api/assessments/mcq/route.ts) | Student MCQ submit — server scores against curriculum keys; updates progress |
@@ -128,7 +133,7 @@ Domain helpers (scoring, strip secrets, find assessment): [`src/lib/domain/`](..
 | ---- | ---- |
 | ESLint 9 + `eslint-config-next` 16.3.0 | `npm run lint` |
 | TypeScript `tsc --noEmit` | `npm run typecheck` |
-| Vitest 4 | `npm test` / `npm run test:watch` — [`vitest.config.mts`](../vitest.config.mts), tests in `tests/unit` and `tests/integration` |
+| Vitest 4 | `npm test` / `npm run test:watch` — [`vitest.config.mts`](../vitest.config.mts), unit tests in `tests/unit/` |
 | Vercel | Deploy target (Next.js preset) |
 
 ---

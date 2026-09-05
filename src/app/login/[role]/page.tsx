@@ -92,16 +92,18 @@ function LoginForm() {
           {loading ? "Signing in…" : "Log in"}
         </button>
       </form>
-      <p className="mt-6 text-sm text-muted">
-        No account?{" "}
-        <Link
-          href={`/signup/${role}`}
-          className="font-semibold text-ember-navy underline decoration-ember-gold"
-        >
-          Sign up as {roleLabel(role).toLowerCase()}
-        </Link>
-      </p>
-      <p className="mt-2 text-sm text-muted">
+      {role !== "admin" ? (
+        <p className="mt-6 text-sm text-muted">
+          No account?{" "}
+          <Link
+            href={`/signup/${role}`}
+            className="font-semibold text-ember-navy underline decoration-ember-gold"
+          >
+            Sign up as {roleLabel(role).toLowerCase()}
+          </Link>
+        </p>
+      ) : null}
+      <p className={`${role !== "admin" ? "mt-2" : "mt-6"} text-sm text-muted`}>
         <Link href="/login" className="font-semibold text-ember-navy underline decoration-ember-gold">
           Choose a different portal
         </Link>

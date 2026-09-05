@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ROLES, roleLabel } from "@/lib/roles";
+import { PUBLIC_SIGNUP_ROLES, roleLabel } from "@/lib/roles";
 
 export default function SignupHubPage() {
   return (
@@ -11,7 +11,7 @@ export default function SignupHubPage() {
         <h1 className="font-display text-3xl text-ember-navy">Sign up</h1>
         <p className="mt-2 text-sm text-muted">Choose your portal to create an account.</p>
         <ul className="mt-8 space-y-3">
-          {ROLES.map((role) => (
+          {PUBLIC_SIGNUP_ROLES.map((role) => (
             <li key={role}>
               <Link
                 href={`/signup/${role}`}

@@ -6,7 +6,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { MunicipalityAutocomplete } from "@/components/municipality-autocomplete";
 import { PasswordInput } from "@/components/password-input";
 import { isValidMunicipality, SA_PROVINCES } from "@/lib/sa-geography";
-import { isRole, roleLabel } from "@/lib/roles";
+import { isPublicSignupRole, isRole, roleLabel } from "@/lib/roles";
 import { useStore } from "@/lib/store";
 
 const fieldClass =
@@ -18,6 +18,7 @@ export default function RoleSignupPage() {
   const params = useParams<{ role: string }>();
   const roleParam = params.role;
   const role = isRole(roleParam) ? roleParam : null;
+  const canPublicSignup = role ? isPublicSignupRole(role) : false;
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -28,10 +29,16 @@ export default function RoleSignupPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!role) router.replace("/signup");
+    if (!role) {
+      router.replace("/signup");
+      return;
+    }
+    if (role === "admin") {
+      router.replace("/login/admin");
+    }
   }, [role, router]);
 
-  if (!role) {
+  if (!role || !canPublicSignup) {
     return (
       <div className="ember-wash flex min-h-screen flex-col items-center justify-center px-4 py-12">
         <p className="text-sm text-muted">Redirecting…</p>

@@ -20,17 +20,13 @@ export function primaryLessonMarkdownResource(lesson: Lesson): Resource | undefi
 }
 
 /**
- * Uploaded Markdown and PDF materials for the student Text tab.
- * Skips seed placeholders (`url: "#"`). Markdown first, then PDFs.
+ * Uploaded PDF materials for the student Text tab.
+ * Skips seed placeholders (`url: "#"`) and Markdown (admin MCQ source only).
  */
 export function lessonTextResources(lesson: Lesson): Resource[] {
-  const uploaded = lesson.resources.filter(
-    (r) =>
-      (r.type === "markdown" || r.type === "pdf") && isUploadedResourceUrl(r.url),
+  return lesson.resources.filter(
+    (r) => r.type === "pdf" && isUploadedResourceUrl(r.url),
   );
-  const markdown = uploaded.filter((r) => r.type === "markdown");
-  const pdfs = uploaded.filter((r) => r.type === "pdf");
-  return [...markdown, ...pdfs];
 }
 
 function isMarkdownFile(file: File) {

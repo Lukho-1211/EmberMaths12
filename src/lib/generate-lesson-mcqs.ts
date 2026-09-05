@@ -121,6 +121,11 @@ export function isExtractableLessonResource(resource: Resource): boolean {
   return resource.type === "markdown" || resource.type === "pdf";
 }
 
+/** True when a resource should drive daily lesson-test MCQ generation (Markdown only). */
+export function isLessonQuestionSource(resource: Resource): boolean {
+  return isExtractableLessonResource(resource) && resource.type === "markdown";
+}
+
 export async function extractTextFromResources(resources: Resource[]): Promise<string> {
   const { decodeMarkdownResourceAsync } = await import("@/lib/lesson-file");
   const parts: string[] = [];
@@ -186,7 +191,7 @@ export type GenerateLessonTestArgs = {
 };
 
 /**
- * Mock-generate a daily lesson test from uploaded PDF/Markdown text.
+ * Mock-generate a daily lesson test from uploaded Markdown text.
  * Returns null when there is no extractable content.
  */
 export async function generateLessonTestFromResources(

@@ -6,9 +6,13 @@ import { PageHeader } from "@/components/app-shell";
 import { UploadLessonVideoPanel } from "@/components/upload-lesson-video-panel";
 import {
   generateLessonTestFromResources,
-  isExtractableLessonResource,
+  isLessonQuestionSource,
 } from "@/lib/generate-lesson-mcqs";
-import { MAX_LESSON_FILE_BYTES, resourceFromLessonFile } from "@/lib/lesson-file";
+import {
+  lessonResourceTypeFromFile,
+  MAX_LESSON_FILE_BYTES,
+  resourceFromLessonFile,
+} from "@/lib/lesson-file";
 import { useStore } from "@/lib/store";
 import type { PastPaper, PreExam, Resource, WeekDay, WeekTest } from "@/lib/types";
 
@@ -54,7 +58,7 @@ function ExamFileUploader({
   resources,
   onChange,
   label = "Exam paper",
-  description = "Upload PDF or Markdown (.md) — converted into a narrated student video walkthrough on the assessment page.",
+  description = "Upload PDF — students download it on the assessment page.",
   emptyLabel = "No exam paper uploaded yet.",
 }: {
   resources: Resource[];
@@ -174,12 +178,17 @@ export default function AdminTermsPage() {
   const [lessonDraft, setLessonDraft] = useState<LessonDraft>(emptyLessonDraft);
   const [lessonSyncId, setLessonSyncId] = useState<string | undefined>(undefined);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [uploadingMd, setUploadingMd] = useState(false);
   const [saving, setSaving] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [savedFlash, setSavedFlash] = useState(false);
-  const [generateNote, setGenerateNote] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [generateNote, setGenerateNote] = useState<{
+    message: string;
+    ok: boolean;
+  } | null>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const mdInputRef = useRef<HTMLInputElement>(null);
 
   const [testDraft, setTestDraft] = useState<ExamDraft>(emptyExamDraft);
   const [testSync, setTestSync] = useState<{
@@ -233,6 +242,11 @@ export default function AdminTermsPage() {
   }
 
   const { title, description, resources } = lessonDraft;
+  const pdfResources = resources.filter((r) => r.type === "pdf");
+  const markdownResources = resources.filter((r) => r.type === "markdown");
+  const otherResources = resources.filter(
+    (r) => r.type !== "pdf" && r.type !== "markdown",
+  );
   const { title: testTitle, resources: testResources, memoResources: testMemoResources } =
     testDraft;
   const { title: preTitle, resources: preResources, memoResources: preMemoResources } = preDraft;
@@ -259,22 +273,25 @@ export default function AdminTermsPage() {
         resources,
       };
 
-      const hasExtractable = resources.some(isExtractableLessonResource);
-      if (hasExtractable) {
+      const questionSources = resources.filter(isLessonQuestionSource);
+      if (questionSources.length > 0) {
         const generated = await generateLessonTestFromResources({
           lesson: { id: lesson.id, title: nextTitle, day },
-          resources,
+          resources: questionSources,
           memoResources: lesson.lessonTest?.memoResources ?? [],
         });
         if (generated) {
           patch.lessonTest = generated;
-          setGenerateNote(
-            `Questions generated from lesson materials (${generated.questions.length} MCQs).`,
-          );
+          setGenerateNote({
+            message: `Questions generated from Markdown (${generated.questions.length} MCQs).`,
+            ok: true,
+          });
         } else {
-          setGenerateNote(
-            "Could not extract text from materials — kept existing lesson test questions.",
-          );
+          setGenerateNote({
+            message:
+              "Could not extract text from Markdown — kept existing lesson test questions.",
+            ok: false,
+          });
         }
       }
 
@@ -290,9 +307,12 @@ export default function AdminTermsPage() {
 
   async function regenerateLessonQuestions() {
     if (!term || !week || !lesson) return;
-    const hasExtractable = resources.some(isExtractableLessonResource);
-    if (!hasExtractable) {
-      setGenerateNote("Upload a PDF or Markdown file before regenerating questions.");
+    const questionSources = resources.filter(isLessonQuestionSource);
+    if (questionSources.length === 0) {
+      setGenerateNote({
+        message: "Upload a Markdown file before regenerating questions.",
+        ok: false,
+      });
       return;
     }
     setRegenerating(true);
@@ -302,12 +322,15 @@ export default function AdminTermsPage() {
       const nextTitle = title.trim() || lesson.title || "";
       const generated = await generateLessonTestFromResources({
         lesson: { id: lesson.id, title: nextTitle, day },
-        resources,
+        resources: questionSources,
         memoResources: lesson.lessonTest?.memoResources ?? [],
         regenerateToken: String(Date.now()),
       });
       if (!generated) {
-        setGenerateNote("Could not extract text from materials — questions unchanged.");
+        setGenerateNote({
+          message: "Could not extract text from Markdown — questions unchanged.",
+          ok: false,
+        });
         return;
       }
       upsertWeekLesson(term.id, week.id, day, {
@@ -316,9 +339,10 @@ export default function AdminTermsPage() {
         resources,
         lessonTest: generated,
       });
-      setGenerateNote(
-        `Questions regenerated from lesson materials (${generated.questions.length} MCQs).`,
-      );
+      setGenerateNote({
+        message: `Questions regenerated from Markdown (${generated.questions.length} MCQs).`,
+        ok: true,
+      });
       setSavedFlash(true);
       window.setTimeout(() => setSavedFlash(false), 1800);
     } catch (err) {
@@ -328,19 +352,39 @@ export default function AdminTermsPage() {
     }
   }
 
-  async function onFileSelected(fileList: FileList | null) {
+  async function onLessonFileSelected(
+    fileList: FileList | null,
+    expected: "pdf" | "markdown",
+  ) {
     const file = fileList?.[0];
     if (!file) return;
     setUploadError(null);
-    setUploading(true);
+    const detected = lessonResourceTypeFromFile(file);
+    if (detected !== expected) {
+      setUploadError(
+        expected === "pdf"
+          ? "Only PDF files are supported here."
+          : "Only Markdown (.md) files are supported here.",
+      );
+      if (expected === "pdf" && pdfInputRef.current) pdfInputRef.current.value = "";
+      if (expected === "markdown" && mdInputRef.current) mdInputRef.current.value = "";
+      return;
+    }
+    if (expected === "pdf") setUploadingPdf(true);
+    else setUploadingMd(true);
     try {
       const resource = await resourceFromLessonFile(file);
       setLessonDraft((prev) => ({ ...prev, resources: [...prev.resources, resource] }));
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : "Upload failed.");
     } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (expected === "pdf") {
+        setUploadingPdf(false);
+        if (pdfInputRef.current) pdfInputRef.current.value = "";
+      } else {
+        setUploadingMd(false);
+        if (mdInputRef.current) mdInputRef.current.value = "";
+      }
     }
   }
 
@@ -506,38 +550,32 @@ export default function AdminTermsPage() {
                   <div className="rounded-lg border border-dashed border-border bg-surface/60 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
-                        <p className="text-sm font-medium">Lesson materials</p>
+                        <p className="text-sm font-medium">PDF materials</p>
                         <p className="text-xs text-muted">
-                          Upload PDF or Markdown (.md) for the Text tab, MCQ generation, and
-                          slideshow fallback when no MP4 is uploaded. Max{" "}
+                          PDF only — stored as PDF for the Text tab and slideshow fallback when no
+                          MP4 is uploaded. Not converted to Markdown and not used for questions. Max{" "}
                           {(MAX_LESSON_FILE_BYTES / (1024 * 1024)).toFixed(1)} MB per file.
                         </p>
                       </div>
                       <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-white px-3 py-2 text-sm font-semibold hover:border-ember-gold">
                         <Upload size={16} />
-                        {uploading ? "Uploading…" : "Add PDF / Markdown"}
+                        {uploadingPdf ? "Uploading…" : "Add PDF"}
                         <input
-                          ref={fileInputRef}
+                          ref={pdfInputRef}
                           type="file"
-                          accept=".pdf,.md,.markdown,application/pdf,text/markdown,text/x-markdown"
+                          accept=".pdf,application/pdf"
                           className="sr-only"
-                          disabled={uploading}
-                          onChange={(e) => void onFileSelected(e.target.files)}
+                          disabled={uploadingPdf || uploadingMd}
+                          onChange={(e) => void onLessonFileSelected(e.target.files, "pdf")}
                         />
                       </label>
                     </div>
 
-                    {uploadError ? (
-                      <p className="mt-3 text-sm text-danger" role="alert">
-                        {uploadError}
-                      </p>
-                    ) : null}
-
                     <ul className="mt-3 space-y-2">
-                      {resources.length === 0 ? (
-                        <li className="text-xs text-muted">No materials attached yet.</li>
+                      {pdfResources.length === 0 ? (
+                        <li className="text-xs text-muted">No PDF attached yet.</li>
                       ) : (
-                        resources.map((r) => (
+                        pdfResources.map((r) => (
                           <li
                             key={r.id}
                             className="flex items-start justify-between gap-3 rounded-md border border-border bg-white px-3 py-2"
@@ -550,10 +588,10 @@ export default function AdminTermsPage() {
                                   {r.type}
                                   {r.fileName ? ` · ${r.fileName}` : ""}
                                   {r.url.startsWith("data:") ||
-                    r.url.startsWith("http://") ||
-                    r.url.startsWith("https://")
-                      ? " · uploaded"
-                      : ""}
+                                  r.url.startsWith("http://") ||
+                                  r.url.startsWith("https://")
+                                    ? " · uploaded"
+                                    : ""}
                                 </p>
                               </div>
                             </div>
@@ -570,11 +608,108 @@ export default function AdminTermsPage() {
                       )}
                     </ul>
 
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3">
+                      <div>
+                        <p className="text-sm font-medium">Markdown for questions</p>
+                        <p className="text-xs text-muted">
+                          Upload Markdown (.md) used by Save and Regenerate questions for the
+                          lesson test. Not shown to students.
+                        </p>
+                      </div>
+                      <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-white px-3 py-2 text-sm font-semibold hover:border-ember-gold">
+                        <Upload size={16} />
+                        {uploadingMd ? "Uploading…" : "Add Markdown"}
+                        <input
+                          ref={mdInputRef}
+                          type="file"
+                          accept=".md,.markdown,text/markdown,text/x-markdown"
+                          className="sr-only"
+                          disabled={uploadingPdf || uploadingMd}
+                          onChange={(e) =>
+                            void onLessonFileSelected(e.target.files, "markdown")
+                          }
+                        />
+                      </label>
+                    </div>
+
+                    <ul className="mt-3 space-y-2">
+                      {markdownResources.length === 0 ? (
+                        <li className="text-xs text-muted">No Markdown attached yet.</li>
+                      ) : (
+                        markdownResources.map((r) => (
+                          <li
+                            key={r.id}
+                            className="flex items-start justify-between gap-3 rounded-md border border-border bg-white px-3 py-2"
+                          >
+                            <div className="flex min-w-0 items-start gap-2">
+                              <FileText size={16} className="mt-0.5 shrink-0 text-ember-navy" />
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium">{r.title}</p>
+                                <p className="text-xs uppercase text-muted">
+                                  {r.type}
+                                  {r.fileName ? ` · ${r.fileName}` : ""}
+                                  {r.url.startsWith("data:") ||
+                                  r.url.startsWith("http://") ||
+                                  r.url.startsWith("https://")
+                                    ? " · uploaded"
+                                    : ""}
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeResource(r.id)}
+                              className="shrink-0 rounded p-1 text-muted hover:bg-ember-gray hover:text-ember-navy"
+                              aria-label={`Remove ${r.title}`}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </li>
+                        ))
+                      )}
+                    </ul>
+
+                    {otherResources.length > 0 ? (
+                      <ul className="mt-3 space-y-2 border-t border-border/60 pt-3">
+                        {otherResources.map((r) => (
+                          <li
+                            key={r.id}
+                            className="flex items-start justify-between gap-3 rounded-md border border-border bg-white px-3 py-2"
+                          >
+                            <div className="flex min-w-0 items-start gap-2">
+                              <FileText size={16} className="mt-0.5 shrink-0 text-ember-navy" />
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium">{r.title}</p>
+                                <p className="text-xs uppercase text-muted">
+                                  {r.type}
+                                  {r.fileName ? ` · ${r.fileName}` : ""}
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeResource(r.id)}
+                              className="shrink-0 rounded p-1 text-muted hover:bg-ember-gray hover:text-ember-navy"
+                              aria-label={`Remove ${r.title}`}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+
+                    {uploadError ? (
+                      <p className="mt-3 text-sm text-danger" role="alert">
+                        {uploadError}
+                      </p>
+                    ) : null}
+
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3">
                       <p className="text-xs text-muted">
                         {lesson?.lessonTest
                           ? `${lesson.lessonTest.questions.length} lesson-test questions · pass mark ${lesson.lessonTest.passMark}%`
-                          : "No lesson test yet — save with PDF/Markdown to generate questions."}
+                          : "No lesson test yet — save with Markdown to generate questions."}
                       </p>
                       <button
                         type="button"
@@ -587,12 +722,15 @@ export default function AdminTermsPage() {
                       </button>
                     </div>
                     {generateNote ? (
-                      <p className="mt-2 text-xs text-muted" role="status">
-                        {generateNote}
+                      <p
+                        className={`mt-2 text-xs ${generateNote.ok ? "text-success" : "text-danger"}`}
+                        role="status"
+                      >
+                        {generateNote.message}
                       </p>
                     ) : (
                       <p className="mt-2 text-xs text-muted">
-                        Questions are generated from uploaded PDF/Markdown text when you save.
+                        Questions are generated from uploaded Markdown when you save or regenerate.
                       </p>
                     )}
 

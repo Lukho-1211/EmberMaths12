@@ -5,6 +5,7 @@ import type {
   LessonTest,
   PastPaper,
   PreExam,
+  Resource,
   Term,
   Week,
   WeekTest,
@@ -16,10 +17,16 @@ export function stripQuestion(q: AssessmentQuestion): AssessmentQuestion {
   return rest;
 }
 
+/** Markdown is admin-only (MCQ source); omit from student/teacher/parent payloads. */
+function stripStudentResources(resources: Resource[]): Resource[] {
+  return resources.filter((r) => r.type !== "markdown");
+}
+
 function stripLessonTest(test: LessonTest): LessonTest {
   return {
     ...test,
     questions: test.questions.map(stripQuestion),
+    resources: stripStudentResources(test.resources),
     memoResources: [],
   };
 }
@@ -28,6 +35,7 @@ function stripWeekTest(test: WeekTest): WeekTest {
   return {
     ...test,
     questions: test.questions.map(stripQuestion),
+    resources: stripStudentResources(test.resources),
     memoResources: [],
   };
 }
@@ -36,6 +44,7 @@ function stripPreExam(exam: PreExam): PreExam {
   return {
     ...exam,
     questions: exam.questions.map(stripQuestion),
+    resources: stripStudentResources(exam.resources),
     memoResources: [],
   };
 }
@@ -43,6 +52,7 @@ function stripPreExam(exam: PreExam): PreExam {
 function stripPastPaper(paper: PastPaper): PastPaper {
   return {
     ...paper,
+    resources: stripStudentResources(paper.resources),
     memoResources: [],
   };
 }
@@ -50,6 +60,7 @@ function stripPastPaper(paper: PastPaper): PastPaper {
 function stripLesson(lesson: Lesson): Lesson {
   return {
     ...lesson,
+    resources: stripStudentResources(lesson.resources),
     lessonTest: lesson.lessonTest ? stripLessonTest(lesson.lessonTest) : undefined,
   };
 }
@@ -71,7 +82,7 @@ function stripTerm(term: Term): Term {
   };
 }
 
-/** Omit answerIndex and memoResources for non-admin curriculum payloads. */
+/** Omit answerIndex, memoResources, and markdown (MCQ source) for non-admin payloads. */
 export function stripCurriculumSecrets(terms: Term[]): Term[] {
   return terms.map(stripTerm);
 }

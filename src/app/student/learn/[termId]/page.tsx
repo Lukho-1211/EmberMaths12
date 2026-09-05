@@ -60,21 +60,21 @@ export default function StudentTermPage() {
                 </div>
                 <Link
                   href={`/student/learn/${term.id}/${week.id}`}
-                  className="text-sm font-semibold text-ember-navy"
+                  className="inline-flex items-center rounded-md bg-ember-gold px-4 py-2 text-sm font-bold text-ember-navy"
                 >
                   Open week →
                 </Link>
               </div>
-              <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
+              <div className="mt-3 flex flex-wrap gap-3">
                 <Link
                   href={`/student/learn/${term.id}/${week.id}#saturday-test`}
-                  className="text-ember-navy underline decoration-ember-gold"
+                  className="inline-flex items-center rounded-md border border-ember-navy px-4 py-2 text-sm font-semibold text-ember-navy"
                 >
                   Saturday test (MCQ)
                 </Link>
                 <Link
                   href={`/student/learn/${term.id}/${week.id}?mode=paper#saturday-test`}
-                  className="text-ember-navy underline decoration-ember-gold"
+                  className="inline-flex items-center rounded-md border border-ember-navy px-4 py-2 text-sm font-semibold text-ember-navy"
                 >
                   Paper + scan
                 </Link>
