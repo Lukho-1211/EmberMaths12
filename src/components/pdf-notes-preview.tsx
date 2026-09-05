@@ -50,13 +50,27 @@ export function PdfNotesPreview({
   /** Optional class on the outer article (e.g. main lesson text shell). */
   className?: string;
 }) {
+  return (
+    <PdfNotesPreviewInner
+      key={`${resource.id}:${resource.url}`}
+      resource={resource}
+      className={className}
+    />
+  );
+}
+
+function PdfNotesPreviewInner({
+  resource,
+  className,
+}: {
+  resource: Resource;
+  className?: string;
+}) {
   const [pages, setPages] = useState<PageImage[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    setPages(null);
-    setError(null);
     void renderPdfPages(resource)
       .then((next) => {
         if (!cancelled) setPages(next);
