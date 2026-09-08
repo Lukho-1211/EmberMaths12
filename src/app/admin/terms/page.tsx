@@ -802,8 +802,8 @@ export default function AdminTermsPage() {
                 />
                 <ExamFileUploader
                   label="Week test memo"
-                  description="Upload PDF or Markdown (.md) mark scheme used to correct learner paper scans. Not shown to students."
-                  emptyLabel="No memo uploaded yet."
+                  description="Upload PDF or Markdown (.md) mark scheme used to correct learner paper scans. Not shown to students. Students cannot be marked until a memo is uploaded."
+                  emptyLabel="No memo uploaded yet — paper scans cannot be marked without a memo."
                   resources={testMemoResources}
                   onChange={(next) =>
                     setTestDraft((prev) => ({ ...prev, memoResources: next }))

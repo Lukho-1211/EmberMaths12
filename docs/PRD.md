@@ -1,10 +1,10 @@
 # Ember Maths12 — Product Requirements Document
 
-**Status:** v1 as-built + proposed later  
+**Status:** v1 as-built + **L2 now** (`in-progress`) + proposed later  
 **Audience:** Cursor agents and humans implementing product work  
 **Stack conventions:** see [`.cursor/rules/ember12.mdc`](../.cursor/rules/ember12.mdc). **As-built stack (versions and files):** [`tech_stack.md`](tech_stack.md).
 
-Status tags used below: `shipped` | `mock` | `gap` | `later`
+Status tags used below: `shipped` | `mock` | `in-progress` | `gap` | `later`
 
 ---
 
@@ -13,7 +13,7 @@ Status tags used below: `shipped` | `mock` | `gap` | `later`
 Treat this document as **product law** for Ember Maths12.
 
 - **MUST** read this file before product, UX, routing, or feature work.
-- **MUST NOT** add portals, roles, payments, live video hosting, email confirmation, or real OCR/AI grading unless a task explicitly moves an item from **Later** → **Now**.
+- **MUST NOT** add portals, roles, payments, live video hosting, or email confirmation unless a task explicitly moves an item from **Later** → **Now**. **L2** (real OCR / AI grading) is **now** — implement it; do not keep paper-scan or MCQ generation as a permanent mock.
 - **MUST NOT** invent UI for known gaps (section 7) unless the task asks for that gap.
 - If a user request **conflicts** with this PRD, follow the PRD and say so briefly.
 - Coding stack, auth keys, and UI tokens live in `.cursor/rules/ember12.mdc` — do not contradict them here. Versions and file map: [`tech_stack.md`](tech_stack.md).
@@ -71,7 +71,7 @@ Public entry: `/` (landing), `/login` → `/login/[role]`, `/signup` → `/signu
 | Signup | Name, email, password (min 6) for student/teacher/parent. Students **must** set province + municipality (SA geography). Admin accounts are created by an existing admin on `/admin/users` via `POST /api/auth/create-admin` |
 | Admin lock | Migration `20260905102918`: `handle_new_user` assigns `admin` only when `app_metadata.role = admin`. Crafted `user_metadata.role = admin` on public signup becomes `student`. Trigger syncs resolved role into `app_metadata` |
 | Session | Cookie refresh via `src/proxy.ts` + `@supabase/ssr` |
-| Settings | Name, email, optional password; light/dark theme on `profiles.theme`. Students edit location |
+| Settings | Name, **read-only email**, optional password + confirm, profile image (`profiles.avatar_url`); light/dark theme on `profiles.theme`. Students edit location. Email cannot be changed after signup (UI + write path + DB trigger) |
 | Parent–child | Schema: `profiles.parent_id`. Seed links demo student ↔ parent. **No** linking UI anywhere (`gap`) |
 
 Seed demo accounts (password `ember12`): `admin@ember12.za`, `student@ember12.za`, `teacher@ember12.za`, `parent@ember12.za`. Seeded `admin@ember12.za` is for local/seed demos only — live-project admin verification credentials live in `.cursor/rules/ember12.mdc`.
@@ -90,16 +90,24 @@ Seed demo accounts (password `ember12`): `admin@ember12.za`, `student@ember12.za
   - Seed may include YouTube fallback URLs when no uploadable materials or hosted mp4 exist
   - **Not** live streaming / live video hosting
 
-### 5.3 Assessments — `shipped` + `mock`
+### 5.3 Assessments — `shipped` + L2 `in-progress`
 
 | Mode | Behavior | Status |
 |------|----------|--------|
 | On-screen MCQ | Score via `scoreMcq`; pass if `score >= passMark` | `shipped` |
-| Paper + scan | Upload photo/PDF; `mockPaperGrade` returns deterministic mark + per-question feedback | `mock` — **not** real OCR |
-| Admin MCQ gen | Saving daily lesson with extractable Markdown mock-generates ~5 MCQs; **Regenerate questions** (Markdown only — PDFs are materials, not question sources) | `mock` — **not** live AI |
-| Memos | `memoResources` admin-only; used for mock paper feedback; not student downloads | `shipped` |
+| Paper + scan (Saturday week test) | Student uploads photo/PDF to private `student-scans`; server marks against admin memo with Gemini (`GEMINI_API_KEY`). Review/approve before mark. | `shipped` (L2 first slice) |
+| Paper + scan (lesson / pre-exam / past paper) | Upload photo/PDF; still uses `mockPaperGrade` (filename hash, memo **title** only) until L2 expands | `mock` |
+| Admin MCQ gen | As-built: saving daily lesson Markdown mock-generates ~5 MCQs; **Regenerate questions** (Markdown only — PDFs are materials, not question sources). **L2 now:** replace with live AI generation | `in-progress` |
+| Memos | `memoResources` admin-only; not student downloads. Week-test L2 uses memo **file contents** as the mark scheme | `shipped` |
 
-Used by: daily lesson tests, Saturday week tests, pre-exams. Past papers: paper+scan practice only.
+Used by: daily lesson tests, Saturday week tests, pre-exams. Past papers: paper+scan practice only (still **do not** affect pass/fail).
+
+**L2 constraints (stay true while replacing mocks):**
+
+- Grading and MCQ generation run **on the server** (API routes). Clients do not upsert `student_progress` or `corrections`.
+- Default pass mark **50%**. Past papers remain practice-only.
+- Memos stay admin-only; students never download them.
+- Saturday week test paper path is real Gemini marking. Other paper-scan paths stay labelled mock until replaced.
 
 ### 5.4 Progress, badges, rankings — `shipped`
 
@@ -128,7 +136,7 @@ Used by: daily lesson tests, Saturday week tests, pre-exams. Past papers: paper+
 | `/student` | Progress ring, term insights, continue learning |
 | `/student/learn` … `/[termId]/[weekId]/[day]` | Term → week → lesson player + day test + mark complete |
 | `/student/learn/[termId]/pre-exam` | Term pre-exam |
-| `/student/past-papers` … | Practice loop (download / scan / mock feedback / share clipboard) |
+| `/student/past-papers` … | Practice loop (download / scan / feedback / share clipboard) — as-built mock grade; **L2** now |
 | `/student/badges` | Earned vs locked |
 | `/student/achievers` | National / provincial / municipal rankings |
 | `/student/settings` | Profile, location, theme |
@@ -161,7 +169,6 @@ Empty state when `childIds` is empty (no linking UI — parent copy may say “a
 | Item | Status |
 |------|--------|
 | Live / streaming video hosting | `later` — do not build; pre-rendered explainer mp4s are already `shipped` (see §5.2) |
-| Real OCR / AI marking of paper+scan scripts | `later` — keep deterministic mocks (Math OCR for video ingestion is separate) |
 | Email confirmation, password-reset email productization | `later` |
 | Payments / subscriptions / school billing | `later` |
 
@@ -190,7 +197,7 @@ Edit this section as product priorities firm up. Cursor **MUST NOT** implement L
 | ID | Capability | Notes |
 |----|------------|-------|
 | L1 | Pre-rendered hosted lesson video | **Shipped** (see §5.2) — admin uploads mp4 to `lesson-videos`; Video tab prefers hosted mp4; PDF slideshow fallback. Live streaming still later |
-| L2 | Real OCR / AI grading | Replace `mockPaperGrade` / mock MCQ generation |
+| L2 | Real OCR / AI grading | **In progress** — Saturday week-test scan marked against admin memo with Gemini (`shipped`). Replace remaining `mockPaperGrade` paths and mock MCQ generation next |
 | L3 | Email confirmation & transactional email | Signup confirm, resets |
 | L4 | Payments / billing | Subscriptions or school billing |
 | L5 | Parent–child self-service linking | Close gap in §7 |
@@ -211,7 +218,7 @@ Edit this section as product priorities firm up. Cursor **MUST NOT** implement L
 | Pass mark | Default **50%** for lesson / week / pre-exam assessments |
 | Rankings | By `overallPercent`; SA province/municipality filters |
 | Data path | Mutations write through Supabase; store hydrates on boot (curriculum via `GET /api/curriculum`) |
-| Mocks labeled | Paper+scan and MCQ generation remain clearly demo/mock in UI and code |
+| L2 grading | Saturday week-test paper+scan marks the uploaded script against the memo on the server (Gemini). Other paper-scan paths stay mock until replaced |
 
 ### Key implementation references
 
@@ -225,6 +232,6 @@ Edit this section as product priorities firm up. Cursor **MUST NOT** implement L
 | Progress / corrections (server) | `src/lib/supabase/progress-server.ts` |
 | Auth client | `src/lib/auth-client.ts` |
 | Rankings / geography | `src/lib/rankings.ts`, `src/lib/sa-geography.ts` |
-| Mock grading / MCQs | `src/lib/mock-paper-grade.ts`, `src/lib/generate-lesson-mcqs.ts` |
+| Paper-scan / MCQ gen (L2) | `src/lib/grade-week-test-scan.ts` (week tests), `src/lib/mock-paper-grade.ts` (other paths), `src/lib/generate-lesson-mcqs.ts`, `src/app/api/assessments/paper-scan/route.ts` |
 | Design | `design-system/embermaths12/MASTER.md` |
 | Overview | `README.md` |

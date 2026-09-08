@@ -21,9 +21,10 @@ South African CAPS Grade 12 Mathematics school: portals `/admin`, `/student`, `/
 ## MUST NOT build (v1)
 
 - Live video hosting
-- Real OCR / AI grading (keep deterministic mocks)
 - Email confirmation productization
 - Payments / billing
+
+**L2 is now** (`docs/PRD.md` §5.3 / §8): replace `mockPaperGrade` and mock MCQ generation. First slice is Saturday week-test scan marked against the admin memo. Grading stays on the server (API + RPC); past papers stay practice-only.
 
 ## Gaps — do not invent unless tasked
 

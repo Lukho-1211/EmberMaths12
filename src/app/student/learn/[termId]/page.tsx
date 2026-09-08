@@ -46,11 +46,11 @@ export default function StudentTermPage() {
           return (
             <div
               key={week.id}
-              className="rounded-xl border border-border bg-white p-5 hover:border-ember-gold"
+              className="rounded-xl border border-border bg-ember-white p-5 hover:border-ember-gold"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <h2 className="font-display text-xl">
+                  <h2 className="font-display text-xl text-foreground">
                     Week {week.number}: {week.topic}
                   </h2>
                   <p className="mt-1 text-sm text-muted">
@@ -68,13 +68,13 @@ export default function StudentTermPage() {
               <div className="mt-3 flex flex-wrap gap-3">
                 <Link
                   href={`/student/learn/${term.id}/${week.id}#saturday-test`}
-                  className="inline-flex items-center rounded-md border border-ember-navy px-4 py-2 text-sm font-semibold text-ember-navy"
+                  className="inline-flex items-center rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground"
                 >
                   Saturday test (MCQ)
                 </Link>
                 <Link
                   href={`/student/learn/${term.id}/${week.id}?mode=paper#saturday-test`}
-                  className="inline-flex items-center rounded-md border border-ember-navy px-4 py-2 text-sm font-semibold text-ember-navy"
+                  className="inline-flex items-center rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground"
                 >
                   Paper + scan
                 </Link>
@@ -109,8 +109,8 @@ export default function StudentTermPage() {
             </Link>
           </div>
         </div>
-        <div className="rounded-xl border border-dashed border-ember-navy/30 bg-white p-5">
-          <h2 className="font-display text-xl">{term.pastPaper.title}</h2>
+        <div className="rounded-xl border border-dashed border-ember-navy/30 bg-ember-white p-5">
+          <h2 className="font-display text-xl text-foreground">{term.pastPaper.title}</h2>
           <p className="mt-1 text-sm text-muted">
             Optional practice ·{" "}
             {(term.pastPaper.resources?.length ?? 0) > 0
@@ -119,7 +119,7 @@ export default function StudentTermPage() {
           </p>
           <Link
             href={`/student/past-papers/${term.id}`}
-            className="mt-3 inline-block text-sm font-semibold text-ember-navy underline decoration-ember-gold"
+            className="mt-3 inline-block text-sm font-semibold text-foreground underline decoration-ember-gold"
           >
             Practice past papers →
           </Link>

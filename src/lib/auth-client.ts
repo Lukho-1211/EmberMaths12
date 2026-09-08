@@ -9,6 +9,7 @@ export type ProfileRow = {
   province: string | null;
   municipality: string | null;
   parent_id: string | null;
+  avatar_url: string | null;
   created_at: string;
 };
 
@@ -40,7 +41,7 @@ export async function getProfile(userId: string): Promise<ProfileRow | null> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, name, email, role, province, municipality, parent_id, created_at")
+    .select("id, name, email, role, province, municipality, parent_id, avatar_url, created_at")
     .eq("id", userId)
     .maybeSingle();
   if (error || !data) return null;

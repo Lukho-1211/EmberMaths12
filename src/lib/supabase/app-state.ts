@@ -25,6 +25,7 @@ export type ProfileDbRow = {
   municipality: string | null;
   parent_id: string | null;
   theme: string | null;
+  avatar_url: string | null;
   created_at: string;
 };
 
@@ -39,6 +40,7 @@ function profileToUser(profile: ProfileDbRow, classIds: string[] = []): User {
     email: profile.email,
     password: "",
     role: profile.role,
+    avatarUrl: profile.avatar_url ?? undefined,
     parentId: profile.parent_id ?? undefined,
     childIds,
     classIds:
@@ -91,7 +93,7 @@ export async function loadAppState(): Promise<{
   ] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, name, email, role, province, municipality, parent_id, theme, created_at"),
+      .select("id, name, email, role, province, municipality, parent_id, theme, avatar_url, created_at"),
     // Curriculum (with answer keys for admins only) comes from the API — not direct table SELECT.
     fetch("/api/curriculum", { credentials: "same-origin" }).then(async (res) => {
       if (!res.ok) return null;
@@ -302,18 +304,17 @@ export async function updateProfileRow(
   userId: string,
   input: {
     name: string;
-    email: string;
     password?: string;
     province?: string;
     municipality?: string;
+    avatarUrl?: string | null;
   },
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const supabase = createClient();
 
-  const authUpdate: { email?: string; password?: string; data?: Record<string, string> } = {
+  const authUpdate: { password?: string; data?: Record<string, string> } = {
     data: { name: input.name },
   };
-  if (input.email) authUpdate.email = input.email.trim().toLowerCase();
   if (input.password && input.password.trim().length > 0) {
     authUpdate.password = input.password.trim();
   }
@@ -323,19 +324,76 @@ export async function updateProfileRow(
     return { ok: false, error: authError.message };
   }
 
-  const { error } = await supabase
-    .from("profiles")
-    .update({
-      name: input.name.trim(),
-      email: input.email.trim().toLowerCase(),
-      province: input.province ?? null,
-      municipality: input.municipality ?? null,
-    })
-    .eq("id", userId);
+  const profilePatch: {
+    name: string;
+    province: string | null;
+    municipality: string | null;
+    avatar_url?: string | null;
+  } = {
+    name: input.name.trim(),
+    province: input.province ?? null,
+    municipality: input.municipality ?? null,
+  };
+  if (input.avatarUrl !== undefined) {
+    profilePatch.avatar_url = input.avatarUrl;
+  }
+
+  const { error } = await supabase.from("profiles").update(profilePatch).eq("id", userId);
 
   if (error) {
     return { ok: false, error: error.message };
   }
+  return { ok: true };
+}
+
+const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+const AVATAR_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+export async function uploadProfileAvatar(
+  userId: string,
+  file: File,
+): Promise<{ url: string } | { error: string }> {
+  if (!AVATAR_MIME.has(file.type)) {
+    return { error: "Please choose a JPEG, PNG, or WebP image." };
+  }
+  if (file.size > AVATAR_MAX_BYTES) {
+    return { error: "Profile photo must be 2 MB or smaller." };
+  }
+
+  const supabase = createClient();
+  const ext =
+    file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+  const path = `${userId}/avatar.${ext}`;
+  const bucket = supabase.storage.from("profile-avatars");
+
+  const { error: uploadError } = await bucket.upload(path, file, {
+    upsert: true,
+    contentType: file.type,
+  });
+  if (uploadError) return { error: uploadError.message };
+
+  const { data } = bucket.getPublicUrl(path);
+  // Cache-bust so the shell refreshes after replace
+  const url = `${data.publicUrl}?v=${Date.now()}`;
+
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .update({ avatar_url: url })
+    .eq("id", userId);
+  if (profileError) return { error: profileError.message };
+
+  return { url };
+}
+
+export async function clearProfileAvatar(
+  userId: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ avatar_url: null })
+    .eq("id", userId);
+  if (error) return { ok: false, error: error.message };
   return { ok: true };
 }
 

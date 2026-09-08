@@ -55,12 +55,12 @@ const features = [
   {
     icon: ClipboardCheck,
     title: "Saturday tests and pre-exams",
-    body: "On-screen MCQ against a pass mark, or paper-plus-scan with mock per-question feedback.",
+    body: "On-screen MCQ against a pass mark, or paper-plus-scan — Saturday week tests mark against the admin memo.",
   },
   {
     icon: ScanLine,
     title: "Scan and feedback",
-    body: "Upload a script photo or PDF for demo grading — wired for a real OCR API later.",
+    body: "Upload a script photo or PDF. Saturday week tests are marked for real against the memo; other scans still use demo grading.",
   },
   {
     icon: School,

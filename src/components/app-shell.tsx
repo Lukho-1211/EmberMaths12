@@ -53,6 +53,40 @@ const NAV: Record<Role, { href: string; label: string; icon: typeof Home }[]> = 
   ],
 };
 
+function initialsFromName(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0] ?? ""}${parts[parts.length - 1][0] ?? ""}`.toUpperCase();
+}
+
+function UserAvatar({
+  name,
+  avatarUrl,
+  size = "md",
+}: {
+  name: string;
+  avatarUrl?: string;
+  size?: "sm" | "md";
+}) {
+  const dim = size === "sm" ? "h-8 w-8 text-xs" : "h-10 w-10 text-sm";
+  return (
+    <span
+      className={`relative inline-flex shrink-0 overflow-hidden rounded-full border border-white/20 bg-[#14213d] ${dim}`}
+      aria-hidden
+    >
+      {avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+      ) : (
+        <span className="flex h-full w-full items-center justify-center font-semibold text-ember-gold">
+          {initialsFromName(name)}
+        </span>
+      )}
+    </span>
+  );
+}
+
 function AppShellSkeleton() {
   return (
     <div className="min-h-screen bg-surface text-foreground" aria-busy="true" aria-label="Loading">
@@ -170,10 +204,30 @@ export function AppShell({
               );
             })}
           </nav>
+          {role === "admin" ? (
+            <div className="m-3 flex items-center gap-3 rounded-md px-3 py-2">
+              <UserAvatar name={user.name} avatarUrl={user.avatarUrl} />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-white">{user.name}</p>
+                <p className="truncate text-xs text-white/60">{user.email}</p>
+              </div>
+            </div>
+          ) : (
+            <Link
+              href={`/${role}/settings`}
+              className="m-3 flex items-center gap-3 rounded-md px-3 py-2 text-white/80 transition hover:bg-white/5 hover:text-white"
+            >
+              <UserAvatar name={user.name} avatarUrl={user.avatarUrl} />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-white">{user.name}</p>
+                <p className="truncate text-xs text-white/60">Settings</p>
+              </div>
+            </Link>
+          )}
           <button
             type="button"
             onClick={handleLogout}
-            className="m-3 flex items-center gap-2 rounded-md px-3 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white"
+            className="mx-3 mb-3 flex items-center gap-2 rounded-md px-3 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white"
           >
             <LogOut size={16} /> Log out
           </button>
@@ -181,9 +235,12 @@ export function AppShell({
 
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="flex items-center justify-between border-b border-border bg-background px-4 py-3 md:px-8">
-            <div>
-              <p className="text-xs uppercase tracking-wider text-muted">Signed in</p>
-              <p className="font-semibold text-foreground">{user.name}</p>
+            <div className="flex items-center gap-3">
+              <UserAvatar name={user.name} avatarUrl={user.avatarUrl} size="sm" />
+              <div>
+                <p className="text-xs uppercase tracking-wider text-muted">Signed in</p>
+                <p className="font-semibold text-foreground">{user.name}</p>
+              </div>
             </div>
             <div className="flex flex-wrap items-center justify-end gap-2">
               <div className="flex flex-wrap items-center gap-2 md:hidden">

@@ -1,0 +1,132 @@
+- generic [active] [ref=f2e1]:
+  - button "Open Next.js Dev Tools" [ref=f2e37] [cursor=pointer]
+  - alert [ref=f2e41]
+  - generic [ref=f2e43]:
+    - complementary [ref=f2e44]:
+      - generic [ref=f2e45]:
+        - link "Ember Maths12" [ref=f2e46] [cursor=pointer]:
+          - /url: /student
+        - paragraph [ref=f2e47]: student
+      - navigation [ref=f2e48]:
+        - link "Dashboard" [ref=f2e49] [cursor=pointer]:
+          - /url: /student
+        - link "Learn" [ref=f2e53] [cursor=pointer]:
+          - /url: /student/learn
+        - link "Past papers" [ref=f2e56] [cursor=pointer]:
+          - /url: /student/past-papers
+        - link "Badges" [ref=f2e61] [cursor=pointer]:
+          - /url: /student/badges
+        - link "Top Achievers" [ref=f2e65] [cursor=pointer]:
+          - /url: /student/achievers
+        - link "Settings" [ref=f2e72] [cursor=pointer]:
+          - /url: /student/settings
+      - link [ref=f2e76] [cursor=pointer]:
+        - /url: /student/settings
+        - generic [ref=f2e77]: WS
+        - generic [ref=f2e79]:
+          - paragraph [ref=f2e80]: Week Test Student
+          - paragraph [ref=f2e81]: Settings
+      - button "Log out" [ref=f2e82]
+    - generic [ref=f2e86]:
+      - banner [ref=f2e87]:
+        - generic [ref=f2e88]:
+          - generic [ref=f2e89]: WS
+          - generic [ref=f2e91]:
+            - paragraph [ref=f2e92]: Signed in
+            - paragraph [ref=f2e93]: Week Test Student
+        - generic [ref=f2e94]:
+          - generic [ref=f2e95]: weektest.student@ember12.test
+          - button "Log out" [ref=f2e96]
+      - main [ref=f2e100]:
+        - generic [ref=f2e101]:
+          - navigation "Weeks in this term" [ref=f2e102]:
+            - link "Week 1" [ref=f2e103] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week1
+            - link "Week 2" [ref=f2e104] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week2
+            - link "Week 3" [ref=f2e105] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week3
+            - link "Week 4" [ref=f2e106] [cursor=pointer]:
+              - /url: /student/learn/term-1/119535f2-080b-4b18-b4f2-d985469ccc22
+            - link "Week 5" [ref=f2e107] [cursor=pointer]:
+              - /url: /student/learn/term-1/5d99073d-65e9-4141-97dc-b577a96e9bbd
+            - link "Pre-exam" [ref=f2e108] [cursor=pointer]:
+              - /url: /student/learn/term-1/pre-exam
+          - navigation "Days and week test" [ref=f2e109]:
+            - link "Monday" [ref=f2e110] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week1/monday
+              - text: Mon
+            - link "Tuesday" [ref=f2e111] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week1/tuesday
+              - text: Tue
+            - link "Wednesday" [ref=f2e112] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week1/wednesday
+              - text: Wed
+            - link "Thursday" [ref=f2e113] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week1/thursday
+              - text: Thu
+            - link "Friday" [ref=f2e114] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week1/friday
+              - text: Fri
+            - link "Saturday week test" [ref=f2e115] [cursor=pointer]:
+              - /url: /student/learn/term-1/term1-week1#saturday-test
+              - text: Test week
+          - generic [ref=f2e116]:
+            - 'heading "Week 1: Number Patterns & Sequences" [level=1] [ref=f2e117]'
+            - paragraph [ref=f2e118]: Term 1 — Patterns, Series & Functions · Mon–Fri lessons, then Saturday week test
+          - generic [ref=f2e119]:
+            - 'link "monday Monday: GRADE 11 REVISION OF QUADRATIC SEQUENCES Open" [ref=f2e120] [cursor=pointer]':
+              - /url: /student/learn/term-1/term1-week1/monday
+              - generic [ref=f2e121]:
+                - paragraph [ref=f2e122]: monday
+                - paragraph [ref=f2e123]: "Monday: GRADE 11 REVISION OF QUADRATIC SEQUENCES"
+              - generic [ref=f2e124]: Open
+            - 'link "tuesday Tuesday: SEQUENCES (PROGRESSIONS) Open" [ref=f2e125] [cursor=pointer]':
+              - /url: /student/learn/term-1/term1-week1/tuesday
+              - generic [ref=f2e126]:
+                - paragraph [ref=f2e127]: tuesday
+                - paragraph [ref=f2e128]: "Tuesday: SEQUENCES (PROGRESSIONS)"
+              - generic [ref=f2e129]: Open
+            - 'link "wednesday Wednesday: Arithmetic and Geometric Open" [ref=f2e130] [cursor=pointer]':
+              - /url: /student/learn/term-1/term1-week1/wednesday
+              - generic [ref=f2e131]:
+                - paragraph [ref=f2e132]: wednesday
+                - paragraph [ref=f2e133]: "Wednesday: Arithmetic and Geometric"
+              - generic [ref=f2e134]: Open
+            - 'link "thursday Thursday: Arithmetic and Geometric Open" [ref=f2e135] [cursor=pointer]':
+              - /url: /student/learn/term-1/term1-week1/thursday
+              - generic [ref=f2e136]:
+                - paragraph [ref=f2e137]: thursday
+                - paragraph [ref=f2e138]: "Thursday: Arithmetic and Geometric"
+              - generic [ref=f2e139]: Open
+            - 'link "friday Friday: Arithmetic and Geometric Open" [ref=f2e140] [cursor=pointer]':
+              - /url: /student/learn/term-1/term1-week1/friday
+              - generic [ref=f2e141]:
+                - paragraph [ref=f2e142]: friday
+                - paragraph [ref=f2e143]: "Friday: Arithmetic and Geometric"
+              - generic [ref=f2e144]: Open
+          - generic [ref=f2e145]:
+            - heading "Saturday · Week test" [level=2] [ref=f2e146]
+            - generic [ref=f2e147]:
+              - tablist "Assessment mode" [ref=f2e148]:
+                - tab "On screen (MCQ)" [ref=f2e149]
+                - tab "Paper + scan" [selected] [ref=f2e150]
+              - generic [ref=f2e151]:
+                - heading "Week 1 Saturday Test — Number Patterns & Sequences" [level=2] [ref=f2e152]
+                - paragraph [ref=f2e153]: Assess Term 1 Week 1 understanding of Number Patterns & Sequences. Choose on-screen MCQ or Paper + scan.
+                - paragraph [ref=f2e154]: Download the week test paper, write your answers on paper, then photograph or upload a PDF scan. Your script is marked against the admin memo.
+                - list [ref=f2e155]:
+                  - listitem [ref=f2e156]: 1. Questions
+                  - listitem [ref=f2e157]: 2. Scan
+                  - listitem [ref=f2e158]: 3. Review
+                  - listitem [ref=f2e159]: 4. Feedback
+                - generic [ref=f2e186]:
+                  - paragraph [ref=f2e187]: Photograph your handwritten pages (rear camera on mobile) or upload a PDF scan of your script.
+                  - generic [ref=f2e188]:
+                    - text: Upload page image or PDF
+                    - button "Upload page image or PDF" [ref=f2e189]
+                  - generic [ref=f2e190]:
+                    - button "Back to questions" [ref=f2e191]
+                    - button "Review scan" [disabled] [ref=f2e192]
+          - link "← Back to term" [ref=f2e185] [cursor=pointer]:
+            - /url: /student/learn/term-1

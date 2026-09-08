@@ -9,6 +9,16 @@ import { WeekDayNav } from "@/components/week-day-nav";
 import { AssessmentPanel } from "@/components/assessment";
 import { useStore } from "@/lib/store";
 
+function hasUploadedPaper(resources: { type: string; url: string }[]) {
+  return resources.some(
+    (r) =>
+      r.type === "pdf" &&
+      (r.url.startsWith("http://") ||
+        r.url.startsWith("https://") ||
+        r.url.startsWith("data:")),
+  );
+}
+
 function StudentWeekContent() {
   const params = useParams<{ termId: string; weekId: string }>();
   const searchParams = useSearchParams();
@@ -16,9 +26,16 @@ function StudentWeekContent() {
   const term = state.terms.find((t) => t.id === params.termId);
   const week = term?.weeks.find((w) => w.id === params.weekId);
   const progress = state.progress.find((p) => p.studentId === user?.id);
-  const initialMode = searchParams.get("mode") === "paper" ? "paper" : "mcq";
 
   if (!term || !week || !user) return <p>Week not found.</p>;
+
+  const paperUploaded = hasUploadedPaper(week.weekTest.resources ?? []);
+  const hideMcq = (week.weekTest.questions?.length ?? 0) === 0;
+  const modeParam = searchParams.get("mode");
+  const initialMode =
+    hideMcq || modeParam === "paper" || (paperUploaded && modeParam !== "mcq")
+      ? "paper"
+      : "mcq";
 
   return (
     <div>
@@ -63,6 +80,8 @@ function StudentWeekContent() {
           assessment={week.weekTest}
           studentId={user.id}
           initialMode={initialMode}
+          realGrading
+          hideMcq={hideMcq}
         />
       </div>
 

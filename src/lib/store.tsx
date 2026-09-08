@@ -40,6 +40,8 @@ import {
   saveCurriculum,
   saveTheme,
   updateProfileRow,
+  uploadProfileAvatar,
+  clearProfileAvatar,
   upsertClassMember,
 } from "@/lib/supabase/app-state";
 import type {
@@ -131,6 +133,7 @@ function profileToUser(profile: ProfileRow): User {
     email: profile.email,
     password: "",
     role: profile.role,
+    avatarUrl: profile.avatar_url ?? undefined,
     createdAt: profile.created_at,
     parentId: profile.parent_id ?? undefined,
     childIds: profile.role === "parent" ? [] : undefined,
@@ -153,6 +156,7 @@ function mergeProfileUser(prev: AppState, profile: ProfileRow): AppState {
             name: user.name,
             email: user.email,
             role: user.role,
+            avatarUrl: user.avatarUrl,
             parentId: user.parentId,
             province: user.province,
             municipality: user.municipality,
@@ -192,11 +196,12 @@ interface StoreContextValue {
   }) => Promise<{ ok: true } | { ok: false; error: string }>;
   updateProfile: (input: {
     name: string;
-    email: string;
     password?: string;
     province?: string;
     municipality?: string;
   }) => Promise<{ ok: true } | { ok: false; error: string }>;
+  uploadAvatar: (file: File) => Promise<{ ok: true } | { ok: false; error: string }>;
+  clearAvatar: () => Promise<{ ok: true } | { ok: false; error: string }>;
   logout: () => Promise<void>;
   theme: Theme;
   setTheme: (theme: Theme) => void;
@@ -472,7 +477,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const updateProfile = useCallback(
     async (input: {
       name: string;
-      email: string;
       password?: string;
       province?: string;
       municipality?: string;
@@ -512,7 +516,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           return {
             ...u,
             name: input.name.trim(),
-            email: input.email.trim().toLowerCase(),
             province: u.role === "student" ? input.province : u.province,
             municipality: u.role === "student" ? input.municipality : u.municipality,
           };
@@ -522,6 +525,39 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     [session, state.users],
   );
+
+  const uploadAvatar = useCallback(
+    async (file: File) => {
+      if (!session?.userId) {
+        return { ok: false as const, error: "You must be signed in to update your photo." };
+      }
+      const result = await uploadProfileAvatar(session.userId, file);
+      if ("error" in result) return { ok: false as const, error: result.error };
+      setState((prev) => ({
+        ...prev,
+        users: prev.users.map((u) =>
+          u.id === session.userId ? { ...u, avatarUrl: result.url } : u,
+        ),
+      }));
+      return { ok: true as const };
+    },
+    [session],
+  );
+
+  const clearAvatar = useCallback(async () => {
+    if (!session?.userId) {
+      return { ok: false as const, error: "You must be signed in to update your photo." };
+    }
+    const result = await clearProfileAvatar(session.userId);
+    if (!result.ok) return result;
+    setState((prev) => ({
+      ...prev,
+      users: prev.users.map((u) =>
+        u.id === session.userId ? { ...u, avatarUrl: undefined } : u,
+      ),
+    }));
+    return { ok: true as const };
+  }, [session]);
 
   const deleteUser = useCallback(async (userId: string) => {
     try {
@@ -1003,6 +1039,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     login,
     signup,
     updateProfile,
+    uploadAvatar,
+    clearAvatar,
     logout,
     theme,
     setTheme,

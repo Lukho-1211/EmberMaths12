@@ -28,10 +28,12 @@ export function WeekDayNav({
 
   if (ordered.length === 0) return null;
 
+  const testWeekActive = activeDay === undefined;
+
   return (
     <nav
       className="mb-4 flex flex-wrap gap-2 border-b border-border pb-4"
-      aria-label="Days in this week"
+      aria-label="Days and week test"
     >
       {ordered.map((lesson) => {
         const active = lesson.day === activeDay;
@@ -52,6 +54,18 @@ export function WeekDayNav({
           </Link>
         );
       })}
+      <Link
+        href={`/student/learn/${termId}/${weekId}#saturday-test`}
+        className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
+          testWeekActive
+            ? "bg-ember-navy text-white"
+            : "border border-ember-gold/50 bg-ember-gold/10 text-ember-navy hover:border-ember-gold"
+        }`}
+        aria-label="Saturday week test"
+        aria-current={testWeekActive ? "page" : undefined}
+      >
+        Test week
+      </Link>
     </nav>
   );
 }

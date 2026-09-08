@@ -45,10 +45,10 @@ Canonical stack (versions and file map): [`docs/tech_stack.md`](docs/tech_stack.
 | ----- | ------------------ |
 | **Supabase Auth** | Email/password login for **admin**, **student**, **teacher**, and **parent**; public signup for student/teacher/parent. Cookie session refresh via `src/proxy.ts` and `@supabase/ssr` clients in `src/lib/supabase/`. |
 | **Postgres** | `public.profiles` (incl. theme), `public.student` roster, `curriculum`, `student_progress`, classes, groups, messages, corrections, teacher lessons. Migrations in `supabase/migrations/`. |
-| **Storage** | `lesson-files` for PDF/Markdown; `lesson-videos` for admin-uploaded lesson mp4s. |
+| **Storage** | `lesson-files` for PDF/Markdown; `lesson-videos` for admin-uploaded lesson mp4s; `student-scans` for private week-test scripts; `profile-avatars` for user profile photos. |
 | **UI store** (`src/lib/store.tsx`) | In-memory `AppState` hydrated from Supabase on boot; mutations write back to Postgres. Curriculum loads via `GET /api/curriculum` (not a direct table SELECT). Session comes from Auth cookies only. |
 
-Assessment submit, lesson complete, and curriculum fetch go through App Router API routes: the server scores MCQs, applies mock paper-scan grades, updates progress via security-definer RPCs, and strips answer keys/memos for non-admins. Clients do not upsert `student_progress` or `corrections` directly.
+Assessment submit, lesson complete, and curriculum fetch go through App Router API routes: the server scores MCQs, grades Saturday week-test paper-scans against the admin memo (Gemini; other paper-scans still mock), updates progress via security-definer RPCs, and strips answer keys/memos for non-admins. Clients do not upsert `student_progress` or `corrections` directly.
 
 Signup uses the browser Supabase client (`signUp`) so it works with only the publishable key. Role and name are stored in `user_metadata`; the `handle_new_user` trigger writes `public.profiles` (and `public.student` for students). **Admin assignment** requires Auth `app_metadata.role = admin` (via `POST /api/auth/create-admin` or seed); crafted `user_metadata.role = admin` on public signup becomes `student` (migration `20260905102918`). Role for authorization is always read from `profiles`, not from editable metadata.
 
@@ -96,7 +96,7 @@ Login uses role hubs (`/login` → `/login/[role]`). Public signup is student/te
 | `/admin/pass-fail` | Filter students by passing / failing / pending status |
 | `/admin/achievers` | Leaderboard with province / municipality filters |
 
-Saving a daily lesson with uploaded **Markdown** **mock-generates MCQ questions** from the document text (deterministic demo generation, not a live AI API). Admins can **Regenerate questions** from the current Markdown. PDFs remain lesson materials only and are not used for question generation.
+Saving a daily lesson with uploaded **Markdown** generates lesson-test MCQs (as-built: deterministic mock from document text; **L2** now: live AI). Admins can **Regenerate questions** from the current Markdown. PDFs remain lesson materials only and are not used for question generation.
 
 Exam papers are shown to students (walkthrough + download). Memos are admin-only and used when correcting paper+scan uploads.
 
@@ -149,7 +149,9 @@ Default pass mark is **50%** for daily lesson tests, Saturday week tests, and pr
 Two modes (submitted via server API routes):
 
 1. **On-screen MCQ** — answer in the browser; server scores against curriculum keys and the pass mark.
-2. **Paper + scan** — read the questions, work on paper, upload a photo/PDF of your script, then receive a **mock mark and per-question feedback** (deterministic demo grading, not real OCR).
+2. **Paper + scan** — download the exam paper, work on paper, photograph or upload a PDF of your script, review/approve, then mark.
+   - **Saturday week tests:** real server marking against the admin memo (Gemini). Requires `GEMINI_API_KEY`. Scans go to private Storage bucket `student-scans`.
+   - **Lesson tests, pre-exams, past papers:** still mock (`mockPaperGrade`) until L2 expands.
 
 ### Past papers (practice)
 
@@ -158,7 +160,7 @@ Extreme-corner practice loop (separate from pass/fail):
 1. Admin uploads a previous exam PDF (+ optional memo) per term under **Admin → Terms → Past papers**.
 2. Student opens **Past papers**, downloads / walks through the paper, writes answers on paper.
 3. Student scans or uploads a photo/PDF of their script.
-4. System returns a **mock mark and per-question feedback**.
+4. System returns a mark and per-question feedback (as-built: mock for past papers; Saturday week tests use real memo marking).
 5. Feedback appears in-app; parents see practice attempts; **Share results** copies a summary to the clipboard.
 
 ### Rankings & geography
@@ -174,7 +176,7 @@ Top Achievers boards (admin, teacher, student) rank by overall progress percent,
 | `POST /api/auth/delete-user` | Admin user delete (service role) |
 | `GET /api/curriculum` | Authed curriculum fetch — admins get answer keys/memos; others get stripped |
 | `POST /api/assessments/mcq` | Student MCQ submit — server scores against curriculum keys; updates progress |
-| `POST /api/assessments/paper-scan` | Student paper-scan mock grade; practice/past-paper skips pass/fail |
+| `POST /api/assessments/paper-scan` | Student paper-scan grade — Saturday week tests: Gemini memo marking; other kinds still mock; practice/past-paper skips pass/fail |
 | `POST /api/progress/complete-lesson` | Mark lesson complete; gated on passing `lessonTest` when present |
 
 ## Known v1 gaps
@@ -196,11 +198,15 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 # Server/seed only — never expose to the browser.
 # Must be the service_role secret (Dashboard → Project Settings → API), not the anon/publishable key.
 SUPABASE_SERVICE_ROLE_KEY=
+# Server-only — Saturday week-test paper marking (Google AI Studio key).
+GEMINI_API_KEY=
+# Optional; defaults to gemini-2.5-flash
+# GEMINI_MODEL=
 ```
 
 `NEXT_PUBLIC_SUPABASE_ANON_KEY` is accepted as a fallback for the publishable key.
 
-Signup in the UI uses the **publishable** key (student/teacher/parent). `SUPABASE_SERVICE_ROLE_KEY` is needed for `npx tsx supabase/seed.ts`, `POST /api/auth/create-admin`, and the optional signup API — it must be the **service_role** secret, not the anon key.
+Signup in the UI uses the **publishable** key (student/teacher/parent). `SUPABASE_SERVICE_ROLE_KEY` is needed for `npx tsx supabase/seed.ts`, `POST /api/auth/create-admin`, and the optional signup API — it must be the **service_role** secret, not the anon key. `GEMINI_API_KEY` is required for Saturday week-test paper+scan marking.
 
 ```bash
 npm install
@@ -227,7 +233,7 @@ npx tsx supabase/seed.ts
 1. Push this repo to GitHub.
 2. Import the project in [Vercel](https://vercel.com/new).
 3. Framework preset: **Next.js**.
-4. Set the same Supabase env vars as `.env.local`.
+4. Set the same Supabase env vars as `.env.local`, plus `GEMINI_API_KEY` for Saturday week-test marking.
 5. Deploy.
 
 Or with the Vercel CLI:
@@ -253,4 +259,4 @@ GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) on push 
 
 ## Out of scope (frontend v1)
 
-Live video hosting, real OCR/AI correction, email confirmation flows, and payments. Product data lives in Supabase Postgres + Storage; the UI store is an in-memory cache only.
+Live video hosting, email confirmation flows, and payments. **L2** (real OCR / AI grading) is **now** — see [`docs/PRD.md`](docs/PRD.md) §5.3. Product data lives in Supabase Postgres + Storage; the UI store is an in-memory cache only.
