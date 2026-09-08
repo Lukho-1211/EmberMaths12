@@ -200,7 +200,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 # Server-only — Saturday week-test paper marking (Google AI Studio key).
 GEMINI_API_KEY=
-# Optional; defaults to gemini-2.5-flash
+# Optional; defaults to gemini-3.6-flash
 # GEMINI_MODEL=
 ```
 

@@ -151,7 +151,7 @@ Set in `.env.local` (do not commit) and in the Vercel project:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Fallback if the publishable key is unset |
 | `SUPABASE_SERVICE_ROLE_KEY` | [`admin.ts`](../src/lib/supabase/admin.ts), seed scripts, optional signup/delete APIs — **never** expose to the browser |
 | `GEMINI_API_KEY` | Server-only — Saturday week-test paper marking in [`grade-week-test-scan.ts`](../src/lib/grade-week-test-scan.ts) |
-| `GEMINI_MODEL` | Optional; defaults to `gemini-2.5-flash` |
+| `GEMINI_MODEL` | Optional; defaults to `gemini-3.6-flash` |
 
 ---
 
