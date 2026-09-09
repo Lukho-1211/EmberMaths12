@@ -23,8 +23,8 @@ import {
   nextWeekNumber,
   sortWeeksByNumber,
 } from "@/lib/curriculum/create-empty-week";
+import { normalizeAppState } from "@/lib/curriculum/normalize-app-state";
 import { createInitialState } from "@/lib/mock/seed";
-import { SEED_TERMS } from "@/lib/mock/curriculum";
 import { isValidMunicipality } from "@/lib/sa-geography";
 import {
   addGroupMember,
@@ -65,61 +65,6 @@ export type Theme = "light" | "dark";
 function applyThemeClass(theme: Theme) {
   if (typeof document === "undefined") return;
   document.documentElement.classList.toggle("dark", theme === "dark");
-}
-
-/** Older demo saves may lack exam file / memo attachments, past papers, or daily lesson tests. */
-function normalizeAppState(raw: AppState): AppState {
-  return {
-    ...raw,
-    terms: (raw.terms ?? []).map((term) => {
-      const seedTerm = SEED_TERMS.find((t) => t.id === term.id);
-      const seedPast = seedTerm?.pastPaper;
-      const pastPaper = term.pastPaper
-        ? {
-            ...term.pastPaper,
-            resources: term.pastPaper.resources ?? [],
-            memoResources: term.pastPaper.memoResources ?? [],
-          }
-        : seedPast
-          ? { ...seedPast, resources: [], memoResources: [] }
-          : {
-              id: `pastpaper-${term.id}`,
-              title: `Term ${term.number} past papers`,
-              description:
-                "Previous exam papers for practice. Download, write on paper, then scan for mock AI feedback.",
-              passMark: 50,
-              resources: [],
-              memoResources: [],
-            };
-      return {
-        ...term,
-        preExam: {
-          ...term.preExam,
-          resources: term.preExam.resources ?? [],
-          memoResources: term.preExam.memoResources ?? [],
-        },
-        pastPaper,
-        weeks: (term.weeks ?? []).map((week) => {
-          const seedWeek = seedTerm?.weeks.find((w) => w.id === week.id);
-          return {
-            ...week,
-            weekTest: {
-              ...week.weekTest,
-              resources: week.weekTest.resources ?? [],
-              memoResources: week.weekTest.memoResources ?? [],
-            },
-            lessons: (week.lessons ?? []).map((lesson) => {
-              if (lesson.lessonTest) return lesson;
-              const seedLesson = seedWeek?.lessons.find((l) => l.id === lesson.id || l.day === lesson.day);
-              return seedLesson?.lessonTest
-                ? { ...lesson, lessonTest: seedLesson.lessonTest }
-                : lesson;
-            }),
-          };
-        }),
-      };
-    }),
-  };
 }
 
 interface Session {
@@ -294,17 +239,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    const bootGen = Date.now();
 
     async function boot() {
       try {
-        // #region agent log
-        fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'A',location:'store.tsx:boot-start',message:'boot started',data:{bootGen,cancelled},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         const authUser = await getSessionUser();
-        // #region agent log
-        fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'A',location:'store.tsx:boot-auth',message:'boot getSessionUser',data:{bootGen,cancelled,hasAuthUser:Boolean(authUser),authUserId:authUser?.id ?? null},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         if (!authUser) {
           if (!cancelled) {
             setState(createInitialState());
@@ -318,19 +256,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
         const loaded = await loadAppState();
         if (cancelled) return;
-        const userIds = loaded.state.users.map((u) => u.id);
-        // #region agent log
-        fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'B',location:'store.tsx:boot-loaded',message:'boot loadAppState',data:{bootGen,userCount:loaded.state.users.length,termCount:loaded.state.terms.length,weekCounts:loaded.state.terms.map((t)=>({id:t.id,weeks:t.weeks.length})),sessionUserInUsers:loaded.userId ? userIds.includes(loaded.userId) : false,loadedUserId:loaded.userId},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         setState(normalizeAppState(loaded.state));
         setSession(loaded.userId ? { userId: loaded.userId } : null);
         setThemeState(loaded.theme);
         applyThemeClass(loaded.theme);
         setReady(true);
-      } catch (err) {
-        // #region agent log
-        fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'A',location:'store.tsx:boot-catch',message:'boot threw',data:{bootGen,error:err instanceof Error ? err.message : 'unknown'},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
+      } catch {
         if (!cancelled) {
           setState(createInitialState());
           setSession(null);
@@ -369,14 +300,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (email: string, password: string, expectedRole: Role) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'C',location:'store.tsx:login-start',message:'login started',data:{expectedRole,emailDomain:email.includes('@')?email.split('@')[1]:'none'},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       const auth = await signInWithPassword(email, password);
       if (!auth.ok) {
-        // #region agent log
-        fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'C',location:'store.tsx:login-auth-fail',message:'signIn failed',data:{expectedRole},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         return { ok: false as const, error: "Invalid email or password." };
       }
       const profile = await getProfile(auth.user.id);
@@ -392,10 +317,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         };
       }
       const loaded = await loadAppState();
-      const userIds = loaded.state.users.map((u) => u.id);
-      // #region agent log
-      fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'B',location:'store.tsx:login-loaded',message:'login loadAppState',data:{profileId:profile.id,profileRole:profile.role,userCount:loaded.state.users.length,sessionUserInUsers:userIds.includes(profile.id),termCount:loaded.state.terms.length,weekCounts:loaded.state.terms.map((t)=>({id:t.id,weeks:t.weeks.length}))},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       setState(normalizeAppState(loaded.state));
       setSession({ userId: profile.id });
       setThemeState(loaded.theme);
@@ -572,9 +493,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     void deleteProgress(userId);
     setState((prev) => {
       const users = prev.users.filter((u) => u.role === "admin" || u.id !== userId);
-      // #region agent log
-      fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'post-fix',hypothesisId:'F',location:'store.tsx:deleteUser',message:'deleteUser local cache update',data:{remainingUserCount:users.length,remainingAdminCount:users.filter((u)=>u.role==='admin').length},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       return {
         ...prev,
         users,

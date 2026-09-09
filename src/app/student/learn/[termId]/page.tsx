@@ -38,6 +38,11 @@ export default function StudentTermPage() {
         />
       </div>
       <div className="grid gap-4">
+        {term.weeks.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-border bg-ember-white p-5 text-sm text-muted">
+            Waiting for admin to publish this term — no weeks yet.
+          </p>
+        ) : null}
         {term.weeks.map((week) => {
           const done = week.lessons.filter((l) =>
             progress?.completedLessonIds.includes(l.id),

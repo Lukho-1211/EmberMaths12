@@ -1,4 +1,4 @@
-import { SEED_TERMS } from "@/lib/mock/curriculum";
+import { createEmptyTerms } from "@/lib/curriculum/empty-terms";
 import type { AppState, Badge, SchoolClass, StudentProgress, StudyGroup, User } from "@/lib/types";
 
 export const DEMO_PASSWORD = "ember12";
@@ -359,25 +359,16 @@ export const SEED_CLASSES: SchoolClass[] = [
   },
 ];
 
+/** Empty boot/logout cache — curriculum comes from Supabase after hydrate. */
 export function createInitialState(): AppState {
   return {
-    users: structuredClone(SEED_USERS),
-    terms: structuredClone(SEED_TERMS),
-    progress: structuredClone(SEED_PROGRESS),
+    users: [],
+    terms: createEmptyTerms(),
+    progress: [],
     badges: structuredClone(SEED_BADGES),
-    groups: structuredClone(SEED_GROUPS),
-    classes: structuredClone(SEED_CLASSES),
-    messages: [
-      {
-        id: "msg-1",
-        fromUserId: "teacher-1",
-        toUserId: "parent-1",
-        studentId: "student-1",
-        body: "Lerato is strong on Number Patterns but needs revision on Series & Sigma Notation — please encourage Saturday test practice for Week 2.",
-        createdAt: "2026-02-10T14:00:00.000Z",
-        read: false,
-      },
-    ],
+    groups: [],
+    classes: [],
+    messages: [],
     corrections: [],
     teacherLessons: [],
   };

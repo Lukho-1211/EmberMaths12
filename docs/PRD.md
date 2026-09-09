@@ -78,7 +78,8 @@ Seed demo accounts (password `ember12`): `admin@ember12.za`, `student@ember12.za
 
 ### 5.2 Curriculum model — `shipped`
 
-- Terms **1–4** (placeholder CAPS topics from 2025 ATP in `resourceInfo/`)
+- Terms **1–4** shells always exist; **weeks and lesson content come only from admin uploads** on `/admin/terms` (stored in the Supabase `curriculum` row). Runtime does **not** inject placeholder CAPS weeks, mock MCQs, or YouTube fallbacks.
+- Empty / missing DB curriculum → empty Term 1–4 shells (`weeks: []`); admin adds weeks and uploads materials
 - Each week: Mon–Fri lessons (each may have a **lesson test**) + **Saturday week test**
 - After the term’s weeks: **pre-exam** and **past paper**
 - Resources: PDF, Markdown, link, worksheet; files in Storage bucket `lesson-files` (max **20 MB**)
@@ -87,7 +88,6 @@ Seed demo accounts (password `ember12`): `admin@ember12.za`, `student@ember12.za
   - Else PDF → slide deck at view time (`pdfjs-dist`) with browser TTS
   - **Text** tab = uploaded PDF page preview + downloads
   - **Markdown** is admin-only: used to mock-generate daily lesson-test MCQs; stripped from student/teacher/parent curriculum payloads (not shown in Text, Resources, or Video)
-  - Seed may include YouTube fallback URLs when no uploadable materials or hosted mp4 exist
   - **Not** live streaming / live video hosting
 
 ### 5.3 Assessments — `shipped` + L2 `in-progress`
@@ -213,8 +213,8 @@ Edit this section as product priorities firm up. Cursor **MUST NOT** implement L
 
 | Criterion | Expectation |
 |-----------|-------------|
-| Demo login | Four roles with password `ember12` after SQL + TS seed |
-| Curriculum seed | `write-curriculum-seed.ts` → `seed-app-state.sql` → curriculum row |
+| Demo login | Four roles with password `ember12` after optional local TS seed (demo users only) |
+| Curriculum | Live content is the Supabase `curriculum` row (admin uploads). Seed scripts must **not** overwrite existing `terms`. Empty DBs get Term 1–4 shells only |
 | Pass mark | Default **50%** for lesson / week / pre-exam assessments |
 | Rankings | By `overallPercent`; SA province/municipality filters |
 | Data path | Mutations write through Supabase; store hydrates on boot (curriculum via `GET /api/curriculum`) |

@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
+import { createEmptyTerms } from "../src/lib/curriculum/empty-terms";
 import { DEMO_DB_USERS, DEMO_PASSWORD, DEMO_SCHOOL_NAME } from "../src/lib/demo-accounts";
 import { SEED_BADGES, SEED_PROGRESS, SEED_USERS } from "../src/lib/mock/seed";
-import { SEED_TERMS } from "../src/lib/mock/curriculum";
 import type { Role } from "../src/lib/types";
 
 /** Extra demo accounts (beyond core DEMO_DB_USERS) so rankings / classes have Auth UUIDs. */
@@ -182,15 +182,35 @@ async function main() {
     console.log(`Upserted student ${demo.email}`);
   }
 
-  // Curriculum singleton
-  const { error: curriculumError } = await admin.from("curriculum").upsert({
-    id: "default",
-    terms: SEED_TERMS,
-    badges: SEED_BADGES,
-    updated_at: new Date().toISOString(),
-  });
-  if (curriculumError) throw curriculumError;
-  console.log("Upserted curriculum (terms + badges)");
+  // Curriculum singleton — never overwrite existing terms (admin uploads).
+  // Insert empty Term 1–4 shells + badges only when the row is missing.
+  const { data: existingCurriculum, error: curriculumReadError } = await admin
+    .from("curriculum")
+    .select("id, terms")
+    .eq("id", "default")
+    .maybeSingle();
+  if (curriculumReadError) throw curriculumReadError;
+
+  if (!existingCurriculum) {
+    const { error: curriculumError } = await admin.from("curriculum").insert({
+      id: "default",
+      terms: createEmptyTerms(),
+      badges: SEED_BADGES,
+      updated_at: new Date().toISOString(),
+    });
+    if (curriculumError) throw curriculumError;
+    console.log("Inserted curriculum (empty Term 1–4 shells + badges)");
+  } else {
+    const { error: badgesError } = await admin
+      .from("curriculum")
+      .update({
+        badges: SEED_BADGES,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", "default");
+    if (badgesError) throw badgesError;
+    console.log("Left curriculum terms unchanged; refreshed badges");
+  }
 
   // Progress keyed by Auth UUID
   for (const row of SEED_PROGRESS) {

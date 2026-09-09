@@ -1,6 +1,6 @@
+import { createEmptyTerms } from "@/lib/curriculum/empty-terms";
 import { createClient } from "@/lib/supabase/client";
 import { SEED_BADGES } from "@/lib/mock/seed";
-import { SEED_TERMS } from "@/lib/mock/curriculum";
 import type {
   AppState,
   Badge,
@@ -54,7 +54,7 @@ function profileToUser(profile: ProfileDbRow, classIds: string[] = []): User {
 function emptyAppState(): AppState {
   return {
     users: [],
-    terms: structuredClone(SEED_TERMS),
+    terms: createEmptyTerms(),
     progress: [],
     badges: structuredClone(SEED_BADGES),
     groups: [],
@@ -126,9 +126,6 @@ export async function loadAppState(): Promise<{
   ]);
 
   const profiles = (profilesRes.data ?? []) as ProfileDbRow[];
-  // #region agent log
-  fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'B',location:'app-state.ts:loadAppState',message:'loadAppState query results',data:{profileCount:profiles.length,profilesError:profilesRes.error?.message ?? null,progressError:progressRes.error?.message ?? null,curriculumOk:Boolean(curriculumApi?.ok),termCount:curriculumApi?.terms?.length ?? 0,authUserId:user.id},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
   const classRows = classesRes.data ?? [];
   const memberRows = membersRes.data ?? [];
 
@@ -167,7 +164,7 @@ export async function loadAppState(): Promise<{
     Array.isArray(curriculumApi.terms) &&
     curriculumApi.terms.length > 0
       ? curriculumApi.terms
-      : structuredClone(SEED_TERMS);
+      : createEmptyTerms();
   const badges =
     curriculumApi?.badges &&
     Array.isArray(curriculumApi.badges) &&
@@ -269,9 +266,6 @@ export async function saveCurriculum(terms: Term[], badges: Badge[]) {
     badges,
     updated_at: new Date().toISOString(),
   });
-  // #region agent log
-  fetch('http://127.0.0.1:7314/ingest/544156a0-1eaf-4d8c-a641-963e0cde3691',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'3e7039'},body:JSON.stringify({sessionId:'3e7039',runId:'pre-fix',hypothesisId:'D',location:'app-state.ts:saveCurriculum',message:'saveCurriculum result',data:{ok:!error,error:error?.message ?? null,termCount:terms.length,weekCounts:terms.map((t)=>({id:t.id,weeks:t.weeks.length}))},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
   if (error) console.error("saveCurriculum", error);
 }
 

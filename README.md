@@ -116,7 +116,7 @@ Files are stored in Supabase Storage (`lesson-files` for PDF/Markdown, max **20 
 
 **Lesson player**
 
-- **Video** — prefers an admin-uploaded mp4 from Storage (`lesson-videos`); otherwise **PDF** becomes a slide deck at view time (`pdfjs-dist`) with browser TTS: play/pause, prev/next, keyboard shortcuts, fullscreen; seed lessons may fall back to a YouTube embed when no hosted mp4 or PDF exists
+- **Video** — prefers an admin-uploaded mp4 from Storage (`lesson-videos`); otherwise **PDF** becomes a slide deck at view time (`pdfjs-dist`) with browser TTS: play/pause, prev/next, keyboard shortcuts, fullscreen
 - **Text** — uploaded **PDF page preview** plus download links for PDFs and worksheets. **Markdown** is admin-only (mock MCQ generation) and is stripped from student/teacher/parent curriculum payloads
 
 Students must **pass** the day test before **Mark lesson complete** is enabled. Dashboards show **per-term insights** (strengths, weak topics, suggested next actions).
@@ -225,8 +225,10 @@ npx supabase db query -f supabase/seed-app-state.sql
 npx tsx supabase/seed.ts
 ```
 
-- `write-curriculum-seed.ts` — generates `supabase/seed-app-state.sql` (gitignored) from the CAPS terms/badges JSON; then query that file to upsert `public.curriculum`.
-- `supabase/seed.ts` — core and extra demo accounts (`ember12` password), progress, classes, groups, and messages via the service role key.
+- `write-curriculum-seed.ts` — generates `supabase/seed-app-state.sql` (gitignored) with **empty Term 1–4 shells + badges**. On conflict it refreshes **badges only** and never replaces existing `terms` (admin uploads win).
+- `supabase/seed.ts` — optional local/dev demo accounts (`ember12` password), progress, classes, groups, and messages. Does **not** overwrite curriculum `terms`; inserts empty shells only if the curriculum row is missing.
+
+**Live projects:** do not run a terms overwrite. Curriculum content comes from admin uploads on `/admin/terms`.
 
 ## Deploy to Vercel
 

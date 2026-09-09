@@ -269,7 +269,7 @@ function makeWeek(
   };
 }
 
-/** Placeholder CAPS-inspired curriculum: 4 terms × 4 weeks + pre-exam */
+/** Test fixture only — not used at runtime. Runtime curriculum comes from Supabase. */
 export const SEED_TERMS: Term[] = [
   {
     id: "term-1",

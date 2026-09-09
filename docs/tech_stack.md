@@ -125,7 +125,7 @@ Normal signup and login use the browser Supabase client. App Router APIs:
 | [`src/app/api/assessments/paper-scan/route.ts`](../src/app/api/assessments/paper-scan/route.ts) | Student paper-scan grade — **Saturday week tests:** Gemini memo marking via [`grade-week-test-scan.ts`](../src/lib/grade-week-test-scan.ts); other kinds still mock; practice/past-paper skips pass/fail |
 | [`src/app/api/progress/complete-lesson/route.ts`](../src/app/api/progress/complete-lesson/route.ts) | Mark lesson complete; gated on passing `lessonTest` when present |
 
-Domain helpers (scoring, strip secrets, find assessment): [`src/lib/domain/`](../src/lib/domain/). Progress/correction writes go through security-definer RPCs (`upsert_student_progress`, `insert_correction_row`) invoked by the API with the cookie session after `profiles.role` checks — students cannot upsert those tables directly. Full curriculum (answer keys) is loaded server-side via service role / `get_curriculum_row` (service_role only) or seed fallback; clients use `GET /api/curriculum` which strips secrets for non-admins.
+Domain helpers (scoring, strip secrets, find assessment): [`src/lib/domain/`](../src/lib/domain/). Progress/correction writes go through security-definer RPCs (`upsert_student_progress`, `insert_correction_row`) invoked by the API with the cookie session after `profiles.role` checks — students cannot upsert those tables directly. Full curriculum (answer keys) is loaded server-side via service role / `get_curriculum_row` (service_role only); missing rows fall back to empty Term 1–4 shells (not placeholder lessons). Clients use `GET /api/curriculum` which strips secrets for non-admins.
 
 ---
 

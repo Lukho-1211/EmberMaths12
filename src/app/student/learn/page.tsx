@@ -15,11 +15,18 @@ export default function StudentLearnIndexPage() {
         subtitle="Choose a term. Each term has weekly lessons (Mon–Fri + Saturday test) and a pre-exam — take assessments on screen (MCQ) or via Paper + scan."
       />
       <div className="grid gap-4 md:grid-cols-2">
+        {state.terms.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-border bg-ember-white p-5 text-sm text-muted md:col-span-2">
+            No terms published yet. Check back after an admin adds curriculum on Terms &amp; weekly
+            lessons.
+          </p>
+        ) : null}
         {state.terms.map((term) => {
           const weeksDone = term.weeks.filter((w) =>
             w.lessons.every((l) => progress?.completedLessonIds.includes(l.id)),
           ).length;
           const preScore = progress?.testScores[term.preExam.id];
+          const hasWeeks = term.weeks.length > 0;
           return (
             <Link
               key={term.id}
@@ -31,8 +38,11 @@ export default function StudentLearnIndexPage() {
               </p>
               <h2 className="mt-1 font-display text-2xl text-foreground">{term.title}</h2>
               <p className="mt-3 text-sm text-muted">
-                {weeksDone}/{term.weeks.length} weeks complete
-                {preScore !== undefined ? ` · Pre-exam ${preScore}%` : " · Pre-exam pending"}
+                {!hasWeeks
+                  ? "Waiting for admin to publish this term"
+                  : `${weeksDone}/${term.weeks.length} weeks complete${
+                      preScore !== undefined ? ` · Pre-exam ${preScore}%` : " · Pre-exam pending"
+                    }`}
               </p>
             </Link>
           );

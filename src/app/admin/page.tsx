@@ -47,7 +47,7 @@ export default function AdminDashboardPage() {
         <StatCard label="Students" value={students.length} />
         <StatCard label="Teachers" value={teachers.length} />
         <StatCard label="Pass rate" value={`${passRate}%`} hint={`${passing} passing · ${failing} failing`} />
-        <StatCard label="Active terms" value={state.terms.length} hint="Term 1–4 seeded" />
+        <StatCard label="Active terms" value={state.terms.length} hint="Term 1–4 · admin publishes weeks" />
       </div>
 
       <div className="mt-8 flex gap-2">

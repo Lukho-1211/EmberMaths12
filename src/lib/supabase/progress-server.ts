@@ -1,8 +1,8 @@
+import { createEmptyTerms } from "@/lib/curriculum/empty-terms";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { emptyStudentProgress, recomputeProgress } from "@/lib/domain";
 import { SEED_BADGES } from "@/lib/mock/seed";
-import { SEED_TERMS } from "@/lib/mock/curriculum";
 import type { Badge, CorrectionResult, Role, StudentProgress, Term } from "@/lib/types";
 
 type ProgressDbRow = {
@@ -26,7 +26,7 @@ function parseCurriculum(row: CurriculumRow | null | undefined): {
   const terms =
     row?.terms && Array.isArray(row.terms) && row.terms.length > 0
       ? (row.terms as Term[])
-      : structuredClone(SEED_TERMS);
+      : createEmptyTerms();
   const badges =
     row?.badges && Array.isArray(row.badges) && row.badges.length > 0
       ? (row.badges as Badge[])
@@ -40,7 +40,7 @@ function parseCurriculum(row: CurriculumRow | null | undefined): {
  * Order:
  * 1. Service-role table/RPC read (preferred when SUPABASE_SERVICE_ROLE_KEY is real)
  * 2. Admin cookie session SELECT (RLS allows is_admin())
- * 3. Seed fallback (keeps scoring working without service role)
+ * 3. Empty Term 1–4 shells (no placeholder lessons)
  */
 export async function loadCurriculumServer(opts?: {
   role?: Role;
@@ -86,7 +86,7 @@ export async function loadCurriculumServer(opts?: {
   }
 
   return {
-    terms: structuredClone(SEED_TERMS),
+    terms: createEmptyTerms(),
     badges: structuredClone(SEED_BADGES),
   };
 }
