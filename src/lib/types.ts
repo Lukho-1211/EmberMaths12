@@ -8,6 +8,8 @@ export interface User {
   email: string;
   password: string;
   role: Role;
+  /** Public URL for profile photo (Supabase Storage). */
+  avatarUrl?: string;
   /** Parent → child student ids */
   childIds?: string[];
   /** Student → parent id */

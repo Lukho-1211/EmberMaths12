@@ -56,4 +56,6 @@ const role = profile.role;
 
 ## Out of scope (v1)
 
-Live video hosting, real OCR/AI grading (MCQ and paper-scan feedback are deterministic mocks), email confirmation flows, payments.
+Live video hosting, email confirmation flows, payments.
+
+**L2 is now:** real OCR / AI grading of paper+scan (and live MCQ generation) — see `docs/PRD.md` §5.3. As-built mocks stay only until replaced.

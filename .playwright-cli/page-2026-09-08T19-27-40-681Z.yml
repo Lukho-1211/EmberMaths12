@@ -1,0 +1,122 @@
+- generic [active] [ref=f5e1]:
+  - button "Open Next.js Dev Tools" [ref=f5e29] [cursor=pointer]
+  - alert [ref=f5e33]
+  - generic [ref=f5e35]:
+    - complementary [ref=f5e36]:
+      - generic [ref=f5e37]:
+        - link "Ember Maths12" [ref=f5e38] [cursor=pointer]:
+          - /url: /student
+        - paragraph [ref=f5e39]: student
+      - navigation [ref=f5e40]:
+        - link "Dashboard" [ref=f5e41] [cursor=pointer]:
+          - /url: /student
+        - link "Learn" [ref=f5e45] [cursor=pointer]:
+          - /url: /student/learn
+        - link "Past papers" [ref=f5e48] [cursor=pointer]:
+          - /url: /student/past-papers
+        - link "Badges" [ref=f5e53] [cursor=pointer]:
+          - /url: /student/badges
+        - link "Top Achievers" [ref=f5e57] [cursor=pointer]:
+          - /url: /student/achievers
+        - link "Settings" [ref=f5e64] [cursor=pointer]:
+          - /url: /student/settings
+      - link [ref=f5e68] [cursor=pointer]:
+        - /url: /student/settings
+        - generic [ref=f5e69]: WS
+        - generic [ref=f5e71]:
+          - paragraph [ref=f5e72]: Week Test Student
+          - paragraph [ref=f5e73]: Settings
+      - button "Log out" [ref=f5e74]
+    - generic [ref=f5e78]:
+      - banner [ref=f5e79]:
+        - generic [ref=f5e80]:
+          - generic [ref=f5e81]: WS
+          - generic [ref=f5e83]:
+            - paragraph [ref=f5e84]: Signed in
+            - paragraph [ref=f5e85]: Week Test Student
+        - generic [ref=f5e86]:
+          - generic [ref=f5e87]: weektest.student@ember12.test
+          - button "Log out" [ref=f5e88]
+      - main [ref=f5e92]:
+        - generic [ref=f5e93]:
+          - generic [ref=f5e94]:
+            - heading "Welcome, Week" [level=1] [ref=f5e95]
+            - paragraph [ref=f5e96]: Your CAPS Grade 12 Maths path — lessons, Saturday tests, and badges.
+          - generic [ref=f5e97]:
+            - generic [ref=f5e98]:
+              - generic [ref=f5e99]: 0%
+              - generic [ref=f5e104]:
+                - paragraph [ref=f5e105]: Overall
+                - paragraph [ref=f5e106]: pending
+            - generic [ref=f5e107]:
+              - paragraph [ref=f5e108]: Lessons completed
+              - paragraph [ref=f5e109]: "0"
+            - generic [ref=f5e110]:
+              - paragraph [ref=f5e111]: Badges earned
+              - paragraph [ref=f5e112]: "0"
+          - generic [ref=f5e114]:
+            - generic [ref=f5e115]:
+              - heading "Strengths and gaps" [level=2] [ref=f5e116]
+              - paragraph [ref=f5e117]: Per-term topic bands from lesson and Saturday tests — and what to practise next.
+            - generic [ref=f5e118]:
+              - article [ref=f5e119]:
+                - generic [ref=f5e120]:
+                  - generic [ref=f5e121]:
+                    - paragraph [ref=f5e122]: Term 1
+                    - heading "Term 1 — Patterns, Series & Functions" [level=3] [ref=f5e123]
+                  - generic [ref=f5e124]:
+                    - paragraph [ref=f5e125]: Average
+                    - paragraph [ref=f5e126]: —
+                    - paragraph [ref=f5e127]: Pending
+                - paragraph [ref=f5e128]: Not enough assessments yet for this term.
+              - article [ref=f5e129]:
+                - generic [ref=f5e130]:
+                  - generic [ref=f5e131]:
+                    - paragraph [ref=f5e132]: Term 2
+                    - heading "Term 2 — Geometry & Calculus" [level=3] [ref=f5e133]
+                  - generic [ref=f5e134]:
+                    - paragraph [ref=f5e135]: Average
+                    - paragraph [ref=f5e136]: —
+                    - paragraph [ref=f5e137]: Pending
+                - paragraph [ref=f5e138]: Not enough assessments yet for this term.
+              - article [ref=f5e139]:
+                - generic [ref=f5e140]:
+                  - generic [ref=f5e141]:
+                    - paragraph [ref=f5e142]: Term 3
+                    - heading "Term 3 — Finance, Stats & Probability" [level=3] [ref=f5e143]
+                  - generic [ref=f5e144]:
+                    - paragraph [ref=f5e145]: Average
+                    - paragraph [ref=f5e146]: —
+                    - paragraph [ref=f5e147]: Pending
+                - paragraph [ref=f5e148]: Not enough assessments yet for this term.
+              - article [ref=f5e149]:
+                - generic [ref=f5e150]:
+                  - generic [ref=f5e151]:
+                    - paragraph [ref=f5e152]: Term 4
+                    - heading "Term 4 — Revision & Exam Prep" [level=3] [ref=f5e153]
+                  - generic [ref=f5e154]:
+                    - paragraph [ref=f5e155]: Average
+                    - paragraph [ref=f5e156]: —
+                    - paragraph [ref=f5e157]: Pending
+                - paragraph [ref=f5e158]: Not enough assessments yet for this term.
+          - generic [ref=f5e159]:
+            - generic [ref=f5e160]:
+              - heading "Continue learning" [level=2] [ref=f5e161]
+              - paragraph [ref=f5e162]: Follow Term → Week → Mon–Fri lessons. Saturday tests and pre-exams can be done on screen (MCQ) or with Paper + scan.
+              - link "Open learn path" [ref=f5e163] [cursor=pointer]:
+                - /url: /student/learn
+              - paragraph [ref=f5e164]:
+                - text: "Next Saturday test:"
+                - link "Week 1 Saturday Test — Number Patterns & Sequences" [ref=f5e165] [cursor=pointer]:
+                  - /url: /student/learn/term-1/term1-week1?mode=paper#saturday-test
+            - generic [ref=f5e166]:
+              - heading "Practice past papers" [level=2] [ref=f5e167]
+              - paragraph [ref=f5e168]: "Extreme corner practice: download a previous exam PDF, write on paper, scan your answers, and get mock AI feedback. Does not change pass/fail."
+              - link "Open past papers" [ref=f5e169] [cursor=pointer]:
+                - /url: /student/past-papers
+            - generic [ref=f5e170]:
+              - heading "Recent badges" [level=2] [ref=f5e171]
+              - list [ref=f5e172]:
+                - listitem [ref=f5e173]: Complete a lesson to earn your first badge.
+              - link "View all badges" [ref=f5e174] [cursor=pointer]:
+                - /url: /student/badges

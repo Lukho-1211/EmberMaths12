@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Download } from "lucide-react";
 import { meetsPassMark } from "@/lib/score-mcq";
 import { useStore } from "@/lib/store";
+import { uploadStudentScan } from "@/lib/supabase/student-scans";
 import type {
   AssessmentQuestion,
   CorrectionResult,
@@ -29,7 +30,7 @@ export type PaperScanAssessment = {
 };
 
 type AssessmentMode = "mcq" | "paper";
-type PaperStep = "questions" | "upload" | "result";
+type PaperStep = "questions" | "upload" | "review" | "result";
 type CorrectionMode = "paper-scan" | "past-paper";
 
 export function AssessmentMaterials({ resources }: { resources: Resource[] }) {
@@ -209,6 +210,8 @@ export function AssessmentPaperScan({
   practiceOnly = false,
   correctionMode = "paper-scan",
   acceptPdf = false,
+  /** Saturday week tests: real memo marking (upload → review → Gemini). */
+  realGrading = false,
 }: {
   assessment: AssessmentLike | PaperScanAssessment;
   studentId: string;
@@ -218,11 +221,14 @@ export function AssessmentPaperScan({
   correctionMode?: CorrectionMode;
   /** Allow PDF script uploads in addition to images. */
   acceptPdf?: boolean;
+  realGrading?: boolean;
 }) {
   const { applyCorrection, applyProgress } = useStore();
   const questions = assessment.questions ?? [];
   const paperOnly = questions.length === 0;
+  const allowPdf = acceptPdf || realGrading;
   const [step, setStep] = useState<PaperStep>("questions");
+  const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isPdfPreview, setIsPdfPreview] = useState(false);
@@ -234,11 +240,27 @@ export function AssessmentPaperScan({
 
   async function runCorrection() {
     if (!fileName) return;
+    if (realGrading && !file) return;
     setBusy(true);
     setError(null);
-    // Keep a short delay so the mock OCR UX still feels intentional.
-    await new Promise((r) => setTimeout(r, 900));
     try {
+      let scanPath: string | undefined;
+      if (realGrading && file) {
+        const uploaded = await uploadStudentScan({
+          studentId,
+          assessmentId: assessment.id,
+          file,
+        });
+        if ("error" in uploaded) {
+          setError(uploaded.error);
+          return;
+        }
+        scanPath = uploaded.path;
+      } else {
+        // Mock path: short delay so OCR UX still feels intentional.
+        await new Promise((r) => setTimeout(r, 900));
+      }
+
       const res = await fetch("/api/assessments/paper-scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -246,6 +268,7 @@ export function AssessmentPaperScan({
         body: JSON.stringify({
           assessmentId: assessment.id,
           fileName,
+          scanPath,
           practiceOnly,
           correctionMode,
           studentId,
@@ -278,48 +301,64 @@ export function AssessmentPaperScan({
       correctionMode === "past-paper" ? "past paper practice" : "paper scan";
     const text = `Ember Maths12 ${label} — ${c.assessmentTitle ?? c.fileName}: ${c.score}%\n${c.summary}`;
     void navigator.clipboard?.writeText(text);
-    alert("Result copied to clipboard (mock share).");
+    alert(realGrading ? "Result copied to clipboard." : "Result copied to clipboard (mock share).");
   }
 
-  function onFileChange(file: File | undefined) {
+  function onFileChange(next: File | undefined) {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
-    if (!file) {
+    if (!next) {
+      setFile(null);
       setFileName("");
       setPreviewUrl(null);
       setIsPdfPreview(false);
       return;
     }
-    setFileName(file.name);
+    setFile(next);
+    setFileName(next.name);
     const isPdf =
-      file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+      next.type === "application/pdf" || next.name.toLowerCase().endsWith(".pdf");
     setIsPdfPreview(isPdf);
-    setPreviewUrl(URL.createObjectURL(file));
+    setPreviewUrl(URL.createObjectURL(next));
   }
 
-  const stepLabels = paperOnly
-    ? ([
-        ["questions", "1. Write"],
-        ["upload", "2. Scan"],
-        ["result", "3. Feedback"],
-      ] as const)
-    : ([
-        ["questions", "1. Questions"],
-        ["upload", "2. Scan"],
-        ["result", "3. Feedback"],
-      ] as const);
+  const stepLabels = realGrading
+    ? (paperOnly
+        ? ([
+            ["questions", "1. Write"],
+            ["upload", "2. Scan"],
+            ["review", "3. Review"],
+            ["result", "4. Feedback"],
+          ] as const)
+        : ([
+            ["questions", "1. Questions"],
+            ["upload", "2. Scan"],
+            ["review", "3. Review"],
+            ["result", "4. Feedback"],
+          ] as const))
+    : paperOnly
+      ? ([
+          ["questions", "1. Write"],
+          ["upload", "2. Scan"],
+          ["result", "3. Feedback"],
+        ] as const)
+      : ([
+          ["questions", "1. Questions"],
+          ["upload", "2. Scan"],
+          ["result", "3. Feedback"],
+        ] as const);
 
-  const fileAccept = acceptPdf
-    ? "image/*,.pdf,application/pdf"
-    : "image/*";
+  const fileAccept = allowPdf ? "image/*,.pdf,application/pdf" : "image/*";
 
   return (
     <div className="rounded-xl border border-border bg-white p-5">
       <h2 className="font-display text-2xl">{assessment.title}</h2>
       <p className="mt-1 text-sm text-muted">{assessment.description}</p>
       <p className="mt-2 text-xs text-muted">
-        {practiceOnly
-          ? "Practice path (demo): download the paper, write answers on paper, then upload a scan for mock AI correction. Does not affect pass/fail."
-          : "Paper path (demo): write answers on paper, then upload a scan for mock AI correction."}
+        {realGrading
+          ? "Download the week test paper, write your answers on paper, then photograph or upload a PDF scan. Your script is marked against the admin memo."
+          : practiceOnly
+            ? "Practice path (demo): download the paper, write answers on paper, then upload a scan for mock AI correction. Does not affect pass/fail."
+            : "Paper path (demo): write answers on paper, then upload a scan for mock AI correction."}
       </p>
 
       <div className="mt-6">
@@ -346,21 +385,24 @@ export function AssessmentPaperScan({
           {paperOnly ? (
             <>
               <p className="mb-4 text-sm text-muted">
-                Download the past paper above. Write full working on paper (or print the PDF).
-                When you are done, scan your script for mock feedback.
+                {realGrading
+                  ? "Download the week test paper above. Write full working on paper (or print the PDF). When you are done, scan your script for marking against the memo."
+                  : "Download the past paper above. Write full working on paper (or print the PDF). When you are done, scan your script for mock feedback."}
               </p>
               {resources.length === 0 ? (
                 <p className="mb-4 rounded-md border border-ember-gold/40 bg-ember-gold/10 px-3 py-2 text-sm">
-                  No past paper uploaded yet. Ask your admin to add a previous exam PDF under
-                  Admin → Terms → Past papers.
+                  {realGrading
+                    ? "No week test paper uploaded yet. Ask your admin to add a PDF under Admin → Terms → Saturday week test."
+                    : "No past paper uploaded yet. Ask your admin to add a previous exam PDF under Admin → Terms → Past papers."}
                 </p>
               ) : null}
             </>
           ) : (
             <>
               <p className="mb-4 text-sm text-muted">
-                Copy these questions onto paper (or print this screen). Show full working. Options
-                are shown as a reference only — write your own answers.
+                {realGrading
+                  ? "Prefer the uploaded PDF when available. Otherwise copy these questions onto paper and show full working. Options are a reference only."
+                  : "Copy these questions onto paper (or print this screen). Show full working. Options are shown as a reference only — write your own answers."}
               </p>
               <div className="space-y-5 print:space-y-4">
                 {questions.map((q, idx) => (
@@ -392,16 +434,18 @@ export function AssessmentPaperScan({
       {step === "upload" ? (
         <div>
           <p className="mb-4 text-sm text-muted">
-            {acceptPdf
-              ? "Photograph your handwritten pages or upload a PDF scan. This demo does not run real OCR — feedback is a mock mark."
-              : "Photograph or upload your handwritten page. This demo does not run real OCR — feedback is a mock mark against this assessment’s question bank."}
+            {realGrading
+              ? "Photograph your handwritten pages (rear camera on mobile) or upload a PDF scan of your script."
+              : allowPdf
+                ? "Photograph your handwritten pages or upload a PDF scan. This demo does not run real OCR — feedback is a mock mark."
+                : "Photograph or upload your handwritten page. This demo does not run real OCR — feedback is a mock mark against this assessment’s question bank."}
           </p>
           <label className="block text-sm font-medium">
-            {acceptPdf ? "Upload page image or PDF" : "Upload page image"}
+            {allowPdf ? "Upload page image or PDF" : "Upload page image"}
             <input
               type="file"
               accept={fileAccept}
-              capture={acceptPdf ? undefined : "environment"}
+              capture={allowPdf ? undefined : "environment"}
               className="mt-2 block w-full text-sm"
               onChange={(e) => onFileChange(e.target.files?.[0])}
             />
@@ -415,10 +459,15 @@ export function AssessmentPaperScan({
               className="mt-4 max-h-64 rounded-md border border-border object-contain"
             />
           ) : null}
-          {previewUrl && isPdfPreview ? (
+          {previewUrl && isPdfPreview && !realGrading ? (
             <p className="mt-4 rounded-md border border-border bg-surface px-3 py-2 text-sm text-muted">
               PDF selected — preview opens after download in a real browser; demo uses the filename
               for mock grading.
+            </p>
+          ) : null}
+          {previewUrl && isPdfPreview && realGrading ? (
+            <p className="mt-4 rounded-md border border-border bg-surface px-3 py-2 text-sm text-muted">
+              PDF selected — you can review it on the next step before marking.
             </p>
           ) : null}
           {fileName ? <p className="mt-2 text-xs text-muted">Selected: {fileName}</p> : null}
@@ -431,13 +480,75 @@ export function AssessmentPaperScan({
             >
               {paperOnly ? "Back to write" : "Back to questions"}
             </button>
+            {realGrading ? (
+              <button
+                type="button"
+                disabled={!file}
+                onClick={() => {
+                  setError(null);
+                  setStep("review");
+                }}
+                className="rounded-md bg-ember-navy px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                Review scan
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={!fileName || busy}
+                onClick={() => void runCorrection()}
+                className="rounded-md bg-ember-navy px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {busy ? "Analysing…" : "Run AI correction"}
+              </button>
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      {step === "review" && realGrading ? (
+        <div>
+          <p className="mb-4 text-sm text-muted">
+            Check that your script is clear and upright. Approve to mark against the admin memo, or
+            retake to choose another file.
+          </p>
+          {previewUrl && !isPdfPreview ? (
+            // eslint-disable-next-line @next/next/no-img-element -- local object URL preview
+            <img
+              src={previewUrl}
+              alt="Scan review"
+              className="mt-2 max-h-[28rem] w-full rounded-md border border-border object-contain"
+            />
+          ) : null}
+          {previewUrl && isPdfPreview ? (
+            <iframe
+              title="PDF scan preview"
+              src={previewUrl}
+              className="mt-2 h-[28rem] w-full rounded-md border border-border bg-surface"
+            />
+          ) : null}
+          {fileName ? <p className="mt-2 text-xs text-muted">Selected: {fileName}</p> : null}
+          {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
+          <div className="mt-6 flex flex-wrap gap-3">
             <button
               type="button"
-              disabled={!fileName || busy}
-              onClick={() => void runCorrection()}
-              className="rounded-md bg-ember-navy px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              onClick={() => {
+                setError(null);
+                onFileChange(undefined);
+                setStep("upload");
+              }}
+              className="rounded-md border border-border px-4 py-2 text-sm font-semibold"
+              disabled={busy}
             >
-              {busy ? "Analysing…" : "Run AI correction"}
+              Retake
+            </button>
+            <button
+              type="button"
+              disabled={!file || busy}
+              onClick={() => void runCorrection()}
+              className="rounded-md bg-ember-gold px-4 py-2 text-sm font-bold text-ember-navy disabled:opacity-60"
+            >
+              {busy ? "Marking…" : "Approve and mark"}
             </button>
           </div>
         </div>
@@ -511,13 +622,33 @@ export function AssessmentPanel({
   studentId,
   initialMode = "mcq",
   onDone,
+  /** When true (Saturday week tests), use real memo grading and optional MCQ hide. */
+  realGrading = false,
+  hideMcq = false,
 }: {
   assessment: AssessmentLike;
   studentId: string;
   initialMode?: AssessmentMode;
   onDone?: (score: number) => void;
+  realGrading?: boolean;
+  /** Hide on-screen MCQ when the week test has no questions. */
+  hideMcq?: boolean;
 }) {
-  const [mode, setMode] = useState<AssessmentMode>(initialMode);
+  const [mode, setMode] = useState<AssessmentMode>(
+    hideMcq ? "paper" : initialMode,
+  );
+
+  if (hideMcq) {
+    return (
+      <AssessmentPaperScan
+        assessment={assessment}
+        studentId={studentId}
+        onDone={onDone}
+        realGrading={realGrading}
+        acceptPdf={realGrading}
+      />
+    );
+  }
 
   return (
     <div>
@@ -552,7 +683,13 @@ export function AssessmentPanel({
       {mode === "mcq" ? (
         <AssessmentQuiz assessment={assessment} studentId={studentId} onDone={onDone} />
       ) : (
-        <AssessmentPaperScan assessment={assessment} studentId={studentId} onDone={onDone} />
+        <AssessmentPaperScan
+          assessment={assessment}
+          studentId={studentId}
+          onDone={onDone}
+          realGrading={realGrading}
+          acceptPdf={realGrading}
+        />
       )}
     </div>
   );

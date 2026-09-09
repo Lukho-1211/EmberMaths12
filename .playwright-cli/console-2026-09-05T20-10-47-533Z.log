@@ -1,0 +1,9 @@
+[     884ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "username"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/signup/student:0
+[    1349ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[    1600ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   13841ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   14584ms] [LOG] [Fast Refresh] done in 849ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   28821ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   29336ms] [LOG] [Fast Refresh] done in 623ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   31398ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   31921ms] [LOG] [Fast Refresh] done in 638ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776

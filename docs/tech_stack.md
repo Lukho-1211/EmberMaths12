@@ -70,8 +70,10 @@ Local CLI project id: `Ember12` ([`supabase/config.toml`](../supabase/config.tom
 | ------ | ------- |
 | `lesson-files` | Admin/teacher PDF and Markdown uploads (max 20 MB per file) |
 | `lesson-videos` | Admin-uploaded lesson mp4s only (max ~200 MB; public read) |
+| `student-scans` | Private student week-test paper scans (images/PDF, max 20 MB; path `{studentId}/{assessmentId}/…`) |
+| `profile-avatars` | User profile photos |
 
-Hosted lesson video URLs are stored on curriculum `Lesson.videoUrl` (no separate job table). Upload/delete helpers: [`src/lib/supabase/lesson-videos.ts`](../src/lib/supabase/lesson-videos.ts).
+Hosted lesson video URLs are stored on curriculum `Lesson.videoUrl` (no separate job table). Upload/delete helpers: [`src/lib/supabase/lesson-videos.ts`](../src/lib/supabase/lesson-videos.ts). Scan upload helper: [`src/lib/supabase/student-scans.ts`](../src/lib/supabase/student-scans.ts).
 
 ### UI store
 
@@ -120,7 +122,7 @@ Normal signup and login use the browser Supabase client. App Router APIs:
 | [`src/app/api/auth/delete-user/route.ts`](../src/app/api/auth/delete-user/route.ts) | Admin user delete (service role) |
 | [`src/app/api/curriculum/route.ts`](../src/app/api/curriculum/route.ts) | Authed curriculum fetch — admins get answer keys/memos; others get stripped |
 | [`src/app/api/assessments/mcq/route.ts`](../src/app/api/assessments/mcq/route.ts) | Student MCQ submit — server scores against curriculum keys; updates progress |
-| [`src/app/api/assessments/paper-scan/route.ts`](../src/app/api/assessments/paper-scan/route.ts) | Student paper-scan mock grade; practice/past-paper skips pass/fail |
+| [`src/app/api/assessments/paper-scan/route.ts`](../src/app/api/assessments/paper-scan/route.ts) | Student paper-scan grade — **Saturday week tests:** Gemini memo marking via [`grade-week-test-scan.ts`](../src/lib/grade-week-test-scan.ts); other kinds still mock; practice/past-paper skips pass/fail |
 | [`src/app/api/progress/complete-lesson/route.ts`](../src/app/api/progress/complete-lesson/route.ts) | Mark lesson complete; gated on passing `lessonTest` when present |
 
 Domain helpers (scoring, strip secrets, find assessment): [`src/lib/domain/`](../src/lib/domain/). Progress/correction writes go through security-definer RPCs (`upsert_student_progress`, `insert_correction_row`) invoked by the API with the cookie session after `profiles.role` checks — students cannot upsert those tables directly. Full curriculum (answer keys) is loaded server-side via service role / `get_curriculum_row` (service_role only) or seed fallback; clients use `GET /api/curriculum` which strips secrets for non-admins.
@@ -148,9 +150,11 @@ Set in `.env.local` (do not commit) and in the Vercel project:
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser, RSC, and proxy (preferred) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Fallback if the publishable key is unset |
 | `SUPABASE_SERVICE_ROLE_KEY` | [`admin.ts`](../src/lib/supabase/admin.ts), seed scripts, optional signup/delete APIs — **never** expose to the browser |
+| `GEMINI_API_KEY` | Server-only — Saturday week-test paper marking in [`grade-week-test-scan.ts`](../src/lib/grade-week-test-scan.ts) |
+| `GEMINI_MODEL` | Optional; defaults to `gemini-3.6-flash` |
 
 ---
 
 ## Out of stack (v1)
 
-Live / streaming video hosting, real OCR/AI grading of paper+scan scripts (MCQ and paper-scan feedback stay deterministic mocks), email confirmation productization, and payments. Pre-rendered lesson mp4s are uploaded by admins (Storage `lesson-videos`).
+Live / streaming video hosting, email confirmation productization, and payments. **L2** Saturday week-test real memo marking is **shipped** (Gemini + `student-scans`). Other paper-scan paths and live MCQ generation still use mocks until replaced. Pre-rendered lesson mp4s are uploaded by admins (Storage `lesson-videos`).

@@ -24,12 +24,12 @@ export default function StudentLearnIndexPage() {
             <Link
               key={term.id}
               href={`/student/learn/${term.id}`}
-              className="rounded-xl border border-border bg-white p-5 transition hover:border-ember-gold"
+              className="rounded-xl border border-border bg-ember-white p-5 text-foreground transition hover:border-ember-gold"
             >
               <p className="text-xs font-semibold uppercase tracking-wider text-muted">
                 Term {term.number}
               </p>
-              <h2 className="mt-1 font-display text-2xl">{term.title}</h2>
+              <h2 className="mt-1 font-display text-2xl text-foreground">{term.title}</h2>
               <p className="mt-3 text-sm text-muted">
                 {weeksDone}/{term.weeks.length} weeks complete
                 {preScore !== undefined ? ` · Pre-exam ${preScore}%` : " · Pre-exam pending"}
