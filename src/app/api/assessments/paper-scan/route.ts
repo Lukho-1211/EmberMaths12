@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { findAssessment } from "@/lib/domain";
-import { gradeWeekTestScan } from "@/lib/grade-week-test-scan";
+import { gradeWeekTestScan, questionHintsForPaperScan } from "@/lib/grade-week-test-scan";
 import { mockPaperGrade } from "@/lib/mock-paper-grade";
 import {
   insertCorrectionServer,
@@ -11,8 +11,8 @@ import {
 import { isAuthedUser, requireUser } from "@/lib/supabase/require-user";
 import type { CorrectionResult } from "@/lib/types";
 
-/** Gemini week-test marking can exceed the default serverless window. */
-export const maxDuration = 60;
+/** Gemini memo marking often takes ~60s; Hobby/Fluid max is 300s. Do not cap at 60. */
+export const maxDuration = 300;
 
 type Body = {
   assessmentId?: string;
@@ -105,7 +105,9 @@ export async function POST(request: Request) {
           memoResources: found.memoResources,
           scanPath,
           fileName,
-          questions: found.questions.map((q) => ({ id: q.id, prompt: q.prompt })),
+          questions: questionHintsForPaperScan(
+            found.questions.map((q) => ({ id: q.id, prompt: q.prompt })),
+          ),
         });
         score = graded.score;
         feedback = graded.feedback;

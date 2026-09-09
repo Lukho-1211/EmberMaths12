@@ -16,7 +16,10 @@ export type GradeWeekTestScanArgs = {
   memoResources: Resource[];
   scanPath: string;
   fileName: string;
-  /** Optional seed questions for feedback labels (may be empty). */
+  /**
+   * Optional on-screen MCQ prompts. Placeholder seed questions are stripped
+   * so paper+scan feedback is inferred from the memo, not the dummy bank.
+   */
   questions?: Array<{ id: string; prompt: string }>;
 };
 
@@ -63,6 +66,41 @@ export function clampScore(value: unknown): number {
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
+/** Seed Saturday MCQs from `makeWeekTest` — not real paper items. */
+export function isPlaceholderWeekTestPrompt(prompt: string): boolean {
+  const p = prompt.trim().toLowerCase();
+  return (
+    p.startsWith("which statement best relates to ") ||
+    p.includes("a learner should prepare for saturday week tests") ||
+    /^in the context of .+,\s*the next step after practice is/.test(p)
+  );
+}
+
+/** Drop leftover seed MCQs so Gemini labels feedback from the memo. */
+export function questionHintsForPaperScan(
+  questions: Array<{ id: string; prompt: string }> | undefined,
+): Array<{ id: string; prompt: string }> {
+  if (!questions?.length) return [];
+  return questions.filter((q) => !isPlaceholderWeekTestPrompt(q.prompt));
+}
+
+export function parseCorrectFlag(value: unknown): boolean {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  if (typeof value === "string") {
+    const s = value.trim().toLowerCase();
+    if (s === "true" || s === "yes" || s === "1") return true;
+    if (s === "false" || s === "no" || s === "0" || s === "") return false;
+  }
+  return false;
+}
+
+function rawQuestionFeedback(obj: Record<string, unknown>): unknown[] {
+  if (Array.isArray(obj.questionFeedback)) return obj.questionFeedback;
+  if (Array.isArray(obj.question_feedback)) return obj.question_feedback;
+  return [];
+}
+
 export function parseGradeResponse(
   raw: unknown,
   passMark: number,
@@ -85,30 +123,30 @@ export function parseGradeResponse(
         .map((f) => f.trim())
     : [];
 
-  const questionFeedback: QuestionFeedback[] = Array.isArray(obj.questionFeedback)
-    ? obj.questionFeedback
-        .map((item, idx) => {
-          if (!item || typeof item !== "object") return null;
-          const q = item as Record<string, unknown>;
-          const questionId =
-            typeof q.questionId === "string" && q.questionId.trim()
-              ? q.questionId.trim()
-              : `q${idx + 1}`;
-          const prompt =
-            typeof q.prompt === "string" && q.prompt.trim()
-              ? q.prompt.trim()
-              : `Question ${idx + 1}`;
-          const correct = Boolean(q.correct);
-          const note =
-            typeof q.note === "string" && q.note.trim()
-              ? q.note.trim()
-              : correct
-                ? "Marked correct against the memo."
-                : "Needs work against the memo.";
-          return { questionId, prompt, correct, note };
-        })
-        .filter((q): q is QuestionFeedback => q !== null)
-    : [];
+  const questionFeedback: QuestionFeedback[] = rawQuestionFeedback(obj)
+    .map((item, idx) => {
+      if (!item || typeof item !== "object") return null;
+      const q = item as Record<string, unknown>;
+      const questionId =
+        typeof q.questionId === "string" && q.questionId.trim()
+          ? q.questionId.trim()
+          : typeof q.question_id === "string" && q.question_id.trim()
+            ? q.question_id.trim()
+            : `q${idx + 1}`;
+      const prompt =
+        typeof q.prompt === "string" && q.prompt.trim()
+          ? q.prompt.trim()
+          : `Question ${idx + 1}`;
+      const correct = parseCorrectFlag(q.correct);
+      const note =
+        typeof q.note === "string" && q.note.trim()
+          ? q.note.trim()
+          : correct
+            ? "Marked correct against the memo."
+            : "Needs work against the memo.";
+      return { questionId, prompt, correct, note };
+    })
+    .filter((q): q is QuestionFeedback => q !== null);
 
   const ensuredFeedback =
     feedback.length > 0
@@ -201,12 +239,11 @@ async function loadMemoPart(memo: Resource): Promise<ReturnType<typeof createPar
 }
 
 function buildPrompt(args: GradeWeekTestScanArgs): string {
+  const hints = questionHintsForPaperScan(args.questions);
   const questionHints =
-    args.questions && args.questions.length > 0
-      ? args.questions
-          .map((q, i) => `${i + 1}. id=${q.id} — ${q.prompt}`)
-          .join("\n")
-      : "(No on-screen question bank — infer questions from the memo and the learner script.)";
+    hints.length > 0
+      ? hints.map((q, i) => `${i + 1}. id=${q.id} — ${q.prompt}`).join("\n")
+      : "(No on-screen question bank — infer question numbers and wording from the memo and the learner script.)";
 
   return [
     "You are marking a South African CAPS Grade 12 Mathematics Saturday week test.",
@@ -225,7 +262,10 @@ function buildPrompt(args: GradeWeekTestScanArgs): string {
     "- Unreadable or missing work scores 0 for that item; say so briefly in the note.",
     "- Do NOT paste full memo solutions, full mark allocations, or long worked answers into feedback.",
     "- Keep notes short and coaching-oriented for the learner.",
-    "- Prefer questionIds from the list below when they match; otherwise use q1, q2, …",
+    "- Per-question feedback must describe the memo items (e.g. 1.1, 1.2), not generic MCQ prompts.",
+    hints.length > 0
+      ? "- Prefer questionIds from the list below when they match the memo; otherwise use q1, q2, …"
+      : "- Number items as they appear on the memo (q1, q1_1, 1.1, …). Do not invent MCQ-style prompts.",
     "",
     "Known question prompts (optional):",
     questionHints,

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { clampScore, parseGradeResponse } from "@/lib/grade-week-test-scan";
+import {
+  clampScore,
+  parseCorrectFlag,
+  parseGradeResponse,
+  questionHintsForPaperScan,
+} from "@/lib/grade-week-test-scan";
 
 describe("clampScore", () => {
   it("rounds and clamps to 0–100", () => {
@@ -57,5 +62,72 @@ describe("parseGradeResponse", () => {
   it("throws on empty response", () => {
     expect(() => parseGradeResponse(null, 50)).toThrow(/empty/i);
     expect(() => parseGradeResponse("oops", 50)).toThrow(/empty/i);
+  });
+
+  it("reads snake_case question_feedback and string correct flags", () => {
+    const result = parseGradeResponse(
+      {
+        score: 40,
+        summary: "Needs work on 1.1.",
+        feedback: ["Show the mean."],
+        question_feedback: [
+          {
+            question_id: "q1.1",
+            prompt: "1.1 Find a and b",
+            correct: "false",
+            note: "b is wrong.",
+          },
+        ],
+      },
+      50,
+    );
+    expect(result.questionFeedback).toEqual([
+      {
+        questionId: "q1.1",
+        prompt: "1.1 Find a and b",
+        correct: false,
+        note: "b is wrong.",
+      },
+    ]);
+  });
+});
+
+describe("parseCorrectFlag", () => {
+  it("does not treat the string false as true", () => {
+    expect(parseCorrectFlag(true)).toBe(true);
+    expect(parseCorrectFlag(false)).toBe(false);
+    expect(parseCorrectFlag("false")).toBe(false);
+    expect(parseCorrectFlag("true")).toBe(true);
+    expect(parseCorrectFlag(0)).toBe(false);
+  });
+});
+
+describe("questionHintsForPaperScan", () => {
+  it("drops leftover seed Saturday MCQs", () => {
+    expect(
+      questionHintsForPaperScan([
+        {
+          id: "q-t1-w1-1",
+          prompt: "Which statement best relates to Number Patterns & Sequences?",
+        },
+        {
+          id: "q-t1-w1-2",
+          prompt: "A learner should prepare for Saturday week tests by…",
+        },
+        { id: "real", prompt: "1.1 Determine the values of a and b." },
+      ]),
+    ).toEqual([{ id: "real", prompt: "1.1 Determine the values of a and b." }]);
+  });
+
+  it("returns empty when every prompt is a placeholder", () => {
+    expect(
+      questionHintsForPaperScan([
+        {
+          id: "q-t1-w1-3",
+          prompt:
+            "In the context of Number Patterns & Sequences, the next step after practice is…",
+        },
+      ]),
+    ).toEqual([]);
   });
 });
