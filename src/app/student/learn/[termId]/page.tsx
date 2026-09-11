@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PageHeader } from "@/components/app-shell";
 import { TermInsightsPanel } from "@/components/term-insights";
+import { hasRealMcqQuestions } from "@/lib/domain/placeholder-mcq";
 import { buildAllTermInsights } from "@/lib/term-insights";
 import { useStore } from "@/lib/store";
 
@@ -26,7 +27,12 @@ export default function StudentTermPage() {
     <div>
       <PageHeader
         title={term.title}
-        subtitle="Pick a week, then work Mon–Fri. Saturday tests and the pre-exam support on-screen MCQ or Paper + scan."
+        subtitle={
+          term.weeks.some((w) => hasRealMcqQuestions(w.weekTest.questions)) ||
+          hasRealMcqQuestions(term.preExam.questions)
+            ? "Pick a week, then work Mon–Fri. Saturday tests and the pre-exam support on-screen MCQ or Paper + scan when admin has uploaded questions."
+            : "Pick a week, then work Mon–Fri. Saturday tests and the pre-exam use Paper + scan until admin uploads on-screen MCQ questions."
+        }
       />
       <div className="mb-8">
         <TermInsightsPanel
@@ -48,6 +54,7 @@ export default function StudentTermPage() {
             progress?.completedLessonIds.includes(l.id),
           ).length;
           const testScore = progress?.testScores[week.weekTest.id];
+          const hasMcq = hasRealMcqQuestions(week.weekTest.questions);
           return (
             <div
               key={week.id}
@@ -71,12 +78,14 @@ export default function StudentTermPage() {
                 </Link>
               </div>
               <div className="mt-3 flex flex-wrap gap-3">
-                <Link
-                  href={`/student/learn/${term.id}/${week.id}#saturday-test`}
-                  className="inline-flex items-center rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground"
-                >
-                  Saturday test (MCQ)
-                </Link>
+                {hasMcq ? (
+                  <Link
+                    href={`/student/learn/${term.id}/${week.id}#saturday-test`}
+                    className="inline-flex items-center rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground"
+                  >
+                    Saturday test (MCQ)
+                  </Link>
+                ) : null}
                 <Link
                   href={`/student/learn/${term.id}/${week.id}?mode=paper#saturday-test`}
                   className="inline-flex items-center rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground"
@@ -100,12 +109,14 @@ export default function StudentTermPage() {
             </p>
           </Link>
           <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
-            <Link
-              href={`/student/learn/${term.id}/pre-exam`}
-              className="text-ember-gold underline"
-            >
-              Pre-exam (MCQ)
-            </Link>
+            {hasRealMcqQuestions(term.preExam.questions) ? (
+              <Link
+                href={`/student/learn/${term.id}/pre-exam`}
+                className="text-ember-gold underline"
+              >
+                Pre-exam (MCQ)
+              </Link>
+            ) : null}
             <Link
               href={`/student/learn/${term.id}/pre-exam?mode=paper`}
               className="text-ember-gold underline"

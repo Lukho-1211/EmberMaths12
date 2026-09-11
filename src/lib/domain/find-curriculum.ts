@@ -1,3 +1,7 @@
+import {
+  effectiveLessonTest,
+  realMcqQuestions,
+} from "@/lib/domain/placeholder-mcq";
 import type {
   AssessmentQuestion,
   Lesson,
@@ -44,8 +48,20 @@ export function findAssessment(
       }
       for (const lesson of week.lessons) {
         if (lesson.lessonTest?.id === assessmentId) {
+          const effective = effectiveLessonTest(lesson);
+          if (!effective) {
+            // Leftover seed / no Markdown source — treat as missing for MCQ.
+            return {
+              ...fromScored(
+                { ...lesson.lessonTest, questions: [] },
+                "lessonTest",
+                false,
+              ),
+              lesson,
+            };
+          }
           return {
-            ...fromScored(lesson.lessonTest, "lessonTest", false),
+            ...fromScored(effective, "lessonTest", false),
             lesson,
           };
         }
@@ -69,13 +85,14 @@ export function findLesson(terms: Term[], lessonId: string): Lesson | null {
 
 /**
  * Whether a student may mark a lesson complete given their stored progress.
- * If the day has a lessonTest, they must have a score >= passMark.
+ * If the day has a real (admin-sourced) lessonTest, they must have a score >= passMark.
+ * Leftover seed banks / no Markdown do not gate completion.
  */
 export function canCompleteLesson(
   lesson: Lesson,
   testScores: Record<string, number>,
 ): { ok: true } | { ok: false; error: string } {
-  const lessonTest = lesson.lessonTest;
+  const lessonTest = effectiveLessonTest(lesson);
   if (!lessonTest) return { ok: true };
   const score = testScores[lessonTest.id];
   if (score === undefined) {
@@ -104,7 +121,7 @@ function fromScored(
     id: assessment.id,
     title: assessment.title,
     description: assessment.description,
-    questions: assessment.questions ?? [],
+    questions: realMcqQuestions(assessment.questions ?? []),
     passMark: assessment.passMark ?? 50,
     resources: assessment.resources ?? [],
     memoResources: assessment.memoResources ?? [],

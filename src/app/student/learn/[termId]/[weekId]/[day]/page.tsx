@@ -10,22 +10,15 @@ import { LessonVideoPlayer } from "@/components/lesson-video-player";
 import { PdfNotesPreview } from "@/components/pdf-notes-preview";
 import { TermWeekNav } from "@/components/term-week-nav";
 import { WeekDayNav } from "@/components/week-day-nav";
+import { effectiveLessonTest } from "@/lib/domain/placeholder-mcq";
 import { lessonTextResources } from "@/lib/lesson-file";
 import { hasVideoSources, isDirectVideoUrl } from "@/lib/lesson-video";
 import { meetsPassMark } from "@/lib/score-mcq";
 import { useStore } from "@/lib/store";
-import type { LessonTest, Resource, WeekDay } from "@/lib/types";
+import type { Resource, WeekDay } from "@/lib/types";
 
 function resourceHref(r: Resource) {
   return r.url === "#" ? undefined : r.url;
-}
-
-function assessmentForLesson(
-  lessonTest: LessonTest,
-  lessonResources: Resource[],
-): LessonTest {
-  if (lessonTest.resources.length > 0) return lessonTest;
-  return { ...lessonTest, resources: lessonResources };
 }
 
 function StudentLessonContent() {
@@ -46,7 +39,7 @@ function StudentLessonContent() {
   const textResources = lessonTextResources(lesson);
   const hostedVideoUrl = isDirectVideoUrl(lesson.videoUrl) ? lesson.videoUrl : null;
   const useLessonPlayer = Boolean(hostedVideoUrl) || hasVideoSources(lesson.resources);
-  const lessonTest = lesson.lessonTest;
+  const lessonTest = effectiveLessonTest(lesson);
   const score =
     lessonTest && progress?.testScores[lessonTest.id] !== undefined
       ? progress.testScores[lessonTest.id]
@@ -176,7 +169,7 @@ function StudentLessonContent() {
               )}
               <div className="mt-4">
                 <AssessmentPanel
-                  assessment={assessmentForLesson(lessonTest, studentResources)}
+                  assessment={lessonTest}
                   studentId={user.id}
                   initialMode={initialMode}
                 />

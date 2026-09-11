@@ -1,0 +1,73 @@
+- generic [active] [ref=f2e1]:
+  - button "Open Next.js Dev Tools" [ref=f2e37] [cursor=pointer]
+  - alert [ref=f2e41]
+  - generic [ref=f2e43]:
+    - complementary [ref=f2e44]:
+      - generic [ref=f2e45]:
+        - link "Ember Maths12" [ref=f2e46] [cursor=pointer]:
+          - /url: /admin
+        - paragraph [ref=f2e47]: admin
+      - navigation [ref=f2e48]:
+        - link "Dashboard" [ref=f2e49] [cursor=pointer]:
+          - /url: /admin
+        - link "Terms & Lessons" [ref=f2e55] [cursor=pointer]:
+          - /url: /admin/terms
+        - link "Users & Teachers" [ref=f2e58] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Create Admin" [ref=f2e64] [cursor=pointer]:
+          - /url: /admin/create-admin
+        - link "Study Groups" [ref=f2e68] [cursor=pointer]:
+          - /url: /admin/groups
+        - link "Pass / Fail" [ref=f2e74] [cursor=pointer]:
+          - /url: /admin/pass-fail
+        - link "Top Achievers" [ref=f2e79] [cursor=pointer]:
+          - /url: /admin/achievers
+      - generic [ref=f2e86]:
+        - generic [ref=f2e87]: AL
+        - generic [ref=f2e89]:
+          - paragraph [ref=f2e90]: Alulutho
+          - paragraph [ref=f2e91]: aluluthospambo@gmail.com
+      - button "Log out" [ref=f2e92]
+    - generic [ref=f2e96]:
+      - banner [ref=f2e97]:
+        - generic [ref=f2e98]:
+          - generic [ref=f2e99]: AL
+          - generic [ref=f2e101]:
+            - paragraph [ref=f2e102]: Signed in
+            - paragraph [ref=f2e103]: Alulutho
+        - generic [ref=f2e104]:
+          - generic [ref=f2e105]: aluluthospambo@gmail.com
+          - button "Log out" [ref=f2e106]
+      - main [ref=f2e110]:
+        - generic [ref=f2e111]:
+          - generic [ref=f2e112]:
+            - heading "Create Admin" [level=1] [ref=f2e113]
+            - paragraph [ref=f2e114]: Add another admin account with email and password. New admins can sign in at Admin login.
+          - generic [ref=f2e115]:
+            - heading "New admin account" [level=2] [ref=f2e117]
+            - generic [ref=f2e118]:
+              - generic [ref=f2e119]:
+                - paragraph [ref=f2e120]: Create admin
+                - generic [ref=f2e121]:
+                  - generic [ref=f2e122]: Full name
+                  - textbox "Full name" [ref=f2e123]
+                - generic [ref=f2e124]:
+                  - generic [ref=f2e125]: Email
+                  - textbox "Email" [ref=f2e126]
+                - generic [ref=f2e127]:
+                  - generic [ref=f2e128]: Password
+                  - generic [ref=f2e129]:
+                    - textbox "Password" [ref=f2e130]
+                    - button "Show password" [ref=f2e131] [cursor=pointer]
+                - generic [ref=f2e135]:
+                  - generic [ref=f2e136]: Confirm password
+                  - generic [ref=f2e137]:
+                    - textbox "Confirm password" [ref=f2e138]
+                    - button "Show password" [ref=f2e139] [cursor=pointer]
+                - paragraph [ref=f2e146]: Admin account created for createadmin.verify.1789155322@ember12.test.
+                - button "Create admin" [ref=f2e143] [cursor=pointer]
+              - paragraph [ref=f2e144]:
+                - text: After creating an account, view all admins on
+                - link "Users & Teachers" [ref=f2e145] [cursor=pointer]:
+                  - /url: /admin/users
+                - text: .

@@ -91,7 +91,7 @@ Login uses role hubs (`/login` → `/login/[role]`). Public signup is student/te
 | ----- | ------------ |
 | `/admin` | Dashboard stats and learner progress |
 | `/admin/terms` | Upload/edit PDF/Markdown for daily lessons, Saturday week tests, pre-exams, and past papers; upload lesson MP4 |
-| `/admin/users` | List admins/teachers; create admin accounts; delete student or parent accounts |
+| `/admin/users` | List admins/teachers; create admin accounts; delete other admins (not self / not last admin); delete student or parent accounts |
 | `/admin/groups` | Create study groups, assign students, optional term link |
 | `/admin/pass-fail` | Filter students by passing / failing / pending status |
 | `/admin/achievers` | Leaderboard with province / municipality filters |
@@ -173,7 +173,7 @@ Top Achievers boards (admin, teacher, student) rank by overall progress percent,
 | ----- | ------- |
 | `POST /api/auth/signup` | Optional pre-confirmed signup (non-admin) when the real **service_role** secret is set |
 | `POST /api/auth/create-admin` | Admin-only: create another admin account |
-| `POST /api/auth/delete-user` | Admin user delete (service role) |
+| `POST /api/auth/delete-user` | Admin-only user delete (service role); blocks self-delete and last-admin delete |
 | `GET /api/curriculum` | Authed curriculum fetch — admins get answer keys/memos; others get stripped |
 | `POST /api/assessments/mcq` | Student MCQ submit — server scores against curriculum keys; updates progress |
 | `POST /api/assessments/paper-scan` | Student paper-scan grade — Saturday week tests: Gemini memo marking; other kinds still mock; practice/past-paper skips pass/fail |

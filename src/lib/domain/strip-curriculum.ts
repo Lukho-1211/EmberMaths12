@@ -1,3 +1,7 @@
+import {
+  lessonHasStudentMcq,
+  realMcqQuestions,
+} from "@/lib/domain/placeholder-mcq";
 import type {
   AssessmentQuestion,
   Badge,
@@ -25,7 +29,7 @@ function stripStudentResources(resources: Resource[]): Resource[] {
 function stripLessonTest(test: LessonTest): LessonTest {
   return {
     ...test,
-    questions: test.questions.map(stripQuestion),
+    questions: realMcqQuestions(test.questions).map(stripQuestion),
     resources: stripStudentResources(test.resources),
     memoResources: [],
   };
@@ -34,7 +38,7 @@ function stripLessonTest(test: LessonTest): LessonTest {
 function stripWeekTest(test: WeekTest): WeekTest {
   return {
     ...test,
-    questions: test.questions.map(stripQuestion),
+    questions: realMcqQuestions(test.questions).map(stripQuestion),
     resources: stripStudentResources(test.resources),
     memoResources: [],
   };
@@ -43,7 +47,7 @@ function stripWeekTest(test: WeekTest): WeekTest {
 function stripPreExam(exam: PreExam): PreExam {
   return {
     ...exam,
-    questions: exam.questions.map(stripQuestion),
+    questions: realMcqQuestions(exam.questions).map(stripQuestion),
     resources: stripStudentResources(exam.resources),
     memoResources: [],
   };
@@ -58,10 +62,12 @@ function stripPastPaper(paper: PastPaper): PastPaper {
 }
 
 function stripLesson(lesson: Lesson): Lesson {
+  // Decide MCQ visibility before stripping Markdown (students never receive .md).
+  const keepTest = lessonHasStudentMcq(lesson);
   return {
     ...lesson,
     resources: stripStudentResources(lesson.resources),
-    lessonTest: lesson.lessonTest ? stripLessonTest(lesson.lessonTest) : undefined,
+    lessonTest: keepTest && lesson.lessonTest ? stripLessonTest(lesson.lessonTest) : undefined,
   };
 }
 

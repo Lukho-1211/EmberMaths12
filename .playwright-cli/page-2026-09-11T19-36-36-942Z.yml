@@ -1,0 +1,205 @@
+- generic [active] [ref=f4e1]:
+  - button "Open Next.js Dev Tools" [ref=f4e27] [cursor=pointer]
+  - alert [ref=f4e31]: Admin dashboard
+  - generic [ref=f4e33]:
+    - complementary [ref=f4e34]:
+      - generic [ref=f4e35]:
+        - link "Ember Maths12" [ref=f4e36] [cursor=pointer]:
+          - /url: /admin
+        - paragraph [ref=f4e37]: admin
+      - navigation [ref=f4e38]:
+        - link "Dashboard" [ref=f4e39] [cursor=pointer]:
+          - /url: /admin
+        - link "Terms & Lessons" [ref=f4e45] [cursor=pointer]:
+          - /url: /admin/terms
+        - link "Users & Teachers" [ref=f4e48] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Create Admin" [ref=f4e54] [cursor=pointer]:
+          - /url: /admin/create-admin
+        - link "Study Groups" [ref=f4e58] [cursor=pointer]:
+          - /url: /admin/groups
+        - link "Pass / Fail" [ref=f4e64] [cursor=pointer]:
+          - /url: /admin/pass-fail
+        - link "Top Achievers" [ref=f4e69] [cursor=pointer]:
+          - /url: /admin/achievers
+      - generic [ref=f4e76]:
+        - generic [ref=f4e77]: CV
+        - generic [ref=f4e79]:
+          - paragraph [ref=f4e80]: Create Admin Verify
+          - paragraph [ref=f4e81]: createadmin.verify.1789155322@ember12.test
+      - button "Log out" [ref=f4e82]
+    - generic [ref=f4e86]:
+      - banner [ref=f4e87]:
+        - generic [ref=f4e88]:
+          - generic [ref=f4e89]: CV
+          - generic [ref=f4e91]:
+            - paragraph [ref=f4e92]: Signed in
+            - paragraph [ref=f4e93]: Create Admin Verify
+        - generic [ref=f4e94]:
+          - generic [ref=f4e95]: createadmin.verify.1789155322@ember12.test
+          - button "Log out" [ref=f4e96]
+      - main [ref=f4e100]:
+        - generic [ref=f4e101]:
+          - generic [ref=f4e102]:
+            - heading "Admin dashboard" [level=1] [ref=f4e103]
+            - paragraph [ref=f4e104]: Overview of Ember Maths12 learners, instructors, and term health.
+          - generic [ref=f4e105]:
+            - generic [ref=f4e106]:
+              - paragraph [ref=f4e107]: Students
+              - paragraph [ref=f4e108]: "18"
+            - generic [ref=f4e109]:
+              - paragraph [ref=f4e110]: Teachers
+              - paragraph [ref=f4e111]: "0"
+            - generic [ref=f4e112]:
+              - paragraph [ref=f4e113]: Pass rate
+              - paragraph [ref=f4e114]: 11%
+              - paragraph [ref=f4e115]: 2 passing · 0 failing
+            - generic [ref=f4e116]:
+              - paragraph [ref=f4e117]: Active terms
+              - paragraph [ref=f4e118]: "4"
+              - paragraph [ref=f4e119]: Term 1–4 · admin publishes weeks
+          - generic [ref=f4e120]:
+            - button "Students" [ref=f4e121]
+            - button "Instructors" [ref=f4e122]
+          - generic [ref=f4e123]:
+            - generic [ref=f4e124]:
+              - heading "Learner progress" [level=2] [ref=f4e125]
+              - generic [ref=f4e128]:
+                - generic:
+                  - status:
+                    - paragraph: Nav
+                    - list:
+                      - listitem: "progress : 0"
+                - application [ref=f4e129]:
+                  - generic [ref=f4e152]:
+                    - generic [ref=f4e153]:
+                      - generic [ref=f4e154]: Verify
+                      - generic [ref=f4e156]: Verify
+                      - generic [ref=f4e158]: Week
+                      - generic [ref=f4e160]: merit
+                      - generic [ref=f4e162]: QA
+                      - generic [ref=f4e164]: Nav
+                      - generic [ref=f4e166]: Week
+                      - generic [ref=f4e168]: Simo
+                    - generic [ref=f4e170]:
+                      - generic [ref=f4e171]: "0"
+                      - generic [ref=f4e173]: "25"
+                      - generic [ref=f4e175]: "50"
+                      - generic [ref=f4e177]: "75"
+                      - generic [ref=f4e179]: "100"
+            - table [ref=f4e182]:
+              - rowgroup [ref=f4e183]:
+                - row [ref=f4e184]:
+                  - columnheader "Student" [ref=f4e185]
+                  - columnheader "Progress" [ref=f4e186]
+                  - columnheader "Status" [ref=f4e187]
+              - rowgroup [ref=f4e188]:
+                - row [ref=f4e189]:
+                  - cell "Simo simo@gmail.com" [ref=f4e190]:
+                    - generic [ref=f4e191]: Simo
+                    - generic [ref=f4e192]: simo@gmail.com
+                  - cell "55%" [ref=f4e193]
+                  - cell "passing" [ref=f4e194]
+                - row [ref=f4e195]:
+                  - cell "Week Test Student weektest.student@ember12.test" [ref=f4e196]:
+                    - generic [ref=f4e197]: Week Test Student
+                    - generic [ref=f4e198]: weektest.student@ember12.test
+                  - cell "0%" [ref=f4e199]
+                  - cell "pending" [ref=f4e200]
+                - row [ref=f4e201]:
+                  - cell "QA Seed Check ember12qa.seedcheck@gmail.com" [ref=f4e202]:
+                    - generic [ref=f4e203]: QA Seed Check
+                    - generic [ref=f4e204]: ember12qa.seedcheck@gmail.com
+                  - cell "0%" [ref=f4e205]
+                  - cell "pending" [ref=f4e206]
+                - row [ref=f4e207]:
+                  - cell "Hesman hes@gmail.com" [ref=f4e208]:
+                    - generic [ref=f4e209]: Hesman
+                    - generic [ref=f4e210]: hes@gmail.com
+                  - cell "52%" [ref=f4e211]
+                  - cell "passing" [ref=f4e212]
+                - row [ref=f4e213]:
+                  - cell "MCQ Verify Student mcqverify1771449558@test.ember12.za" [ref=f4e214]:
+                    - generic [ref=f4e215]: MCQ Verify Student
+                    - generic [ref=f4e216]: mcqverify1771449558@test.ember12.za
+                  - cell "0%" [ref=f4e217]
+                  - cell "pending" [ref=f4e218]
+                - row [ref=f4e219]:
+                  - cell "Verify Lesson verify.lesson.1789150510@gmail.com" [ref=f4e220]:
+                    - generic [ref=f4e221]: Verify Lesson
+                    - generic [ref=f4e222]: verify.lesson.1789150510@gmail.com
+                  - cell "0%" [ref=f4e223]
+                  - cell "pending" [ref=f4e224]
+                - row [ref=f4e225]:
+                  - cell "Verify Lesson verify.lesson.1789150557@gmail.com" [ref=f4e226]:
+                    - generic [ref=f4e227]: Verify Lesson
+                    - generic [ref=f4e228]: verify.lesson.1789150557@gmail.com
+                  - cell "0%" [ref=f4e229]
+                  - cell "pending" [ref=f4e230]
+                - row [ref=f4e231]:
+                  - cell "Test Student ember.student.1786818869648@gmail.com" [ref=f4e232]:
+                    - generic [ref=f4e233]: Test Student
+                    - generic [ref=f4e234]: ember.student.1786818869648@gmail.com
+                  - cell "0%" [ref=f4e235]
+                  - cell "pending" [ref=f4e236]
+                - row [ref=f4e237]:
+                  - cell "mluthwana mlu@gmail.com" [ref=f4e238]:
+                    - generic [ref=f4e239]: mluthwana
+                    - generic [ref=f4e240]: mlu@gmail.com
+                  - cell "0%" [ref=f4e241]
+                  - cell "pending" [ref=f4e242]
+                - row [ref=f4e243]:
+                  - cell "Verify Lesson verify.lesson.1789150628@gmail.com" [ref=f4e244]:
+                    - generic [ref=f4e245]: Verify Lesson
+                    - generic [ref=f4e246]: verify.lesson.1789150628@gmail.com
+                  - cell "0%" [ref=f4e247]
+                  - cell "pending" [ref=f4e248]
+                - row [ref=f4e249]:
+                  - cell "MCQ Hide Verify mcqhide11186@test.ember12.za" [ref=f4e250]:
+                    - generic [ref=f4e251]: MCQ Hide Verify
+                    - generic [ref=f4e252]: mcqhide11186@test.ember12.za
+                  - cell "0%" [ref=f4e253]
+                  - cell "pending" [ref=f4e254]
+                - row [ref=f4e255]:
+                  - cell "Week Verify Student week.verify.20260901@ember12.test" [ref=f4e256]:
+                    - generic [ref=f4e257]: Week Verify Student
+                    - generic [ref=f4e258]: week.verify.20260901@ember12.test
+                  - cell "0%" [ref=f4e259]
+                  - cell "pending" [ref=f4e260]
+                - row [ref=f4e261]:
+                  - cell "Week Cap Verifier week.cap.verify.20260901@ember12.test" [ref=f4e262]:
+                    - generic [ref=f4e263]: Week Cap Verifier
+                    - generic [ref=f4e264]: week.cap.verify.20260901@ember12.test
+                  - cell "0%" [ref=f4e265]
+                  - cell "pending" [ref=f4e266]
+                - row [ref=f4e267]:
+                  - cell "merit meritbrandinglto@gmail.com" [ref=f4e268]:
+                    - generic [ref=f4e269]: merit
+                    - generic [ref=f4e270]: meritbrandinglto@gmail.com
+                  - cell "0%" [ref=f4e271]
+                  - cell "pending" [ref=f4e272]
+                - row [ref=f4e273]:
+                  - cell "QA No Video ember.student.novideo3.20260905@gmail.com" [ref=f4e274]:
+                    - generic [ref=f4e275]: QA No Video
+                    - generic [ref=f4e276]: ember.student.novideo3.20260905@gmail.com
+                  - cell "0%" [ref=f4e277]
+                  - cell "pending" [ref=f4e278]
+                - row [ref=f4e279]:
+                  - cell "QA Day Nav ember.daynav.20260905145553@gmail.com" [ref=f4e280]:
+                    - generic [ref=f4e281]: QA Day Nav
+                    - generic [ref=f4e282]: ember.daynav.20260905145553@gmail.com
+                  - cell "0%" [ref=f4e283]
+                  - cell "pending" [ref=f4e284]
+                - row [ref=f4e285]:
+                  - cell "Nav Test Student navtest-930e5cf8@ember12.test" [ref=f4e286]:
+                    - generic [ref=f4e287]: Nav Test Student
+                    - generic [ref=f4e288]: navtest-930e5cf8@ember12.test
+                  - cell "0%" [ref=f4e289]
+                  - cell "pending" [ref=f4e290]
+                - row [ref=f4e291]:
+                  - cell "Verify Student verify.settings.20260905a@ember12.test" [ref=f4e292]:
+                    - generic [ref=f4e293]: Verify Student
+                    - generic [ref=f4e294]: verify.settings.20260905a@ember12.test
+                  - cell "0%" [ref=f4e295]
+                  - cell "pending" [ref=f4e296]
+  - generic [ref=f4e297]: "0"

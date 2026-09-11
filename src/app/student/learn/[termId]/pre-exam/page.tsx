@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { PageHeader } from "@/components/app-shell";
 import { TermWeekNav } from "@/components/term-week-nav";
 import { AssessmentPanel } from "@/components/assessment";
+import { hasRealMcqQuestions } from "@/lib/domain/placeholder-mcq";
 import { useStore } from "@/lib/store";
 
 function StudentPreExamContent() {
@@ -14,9 +15,13 @@ function StudentPreExamContent() {
   const { state, user } = useStore();
   const term = state.terms.find((t) => t.id === params.termId);
   const progress = state.progress.find((p) => p.studentId === user?.id);
-  const initialMode = searchParams.get("mode") === "paper" ? "paper" : "mcq";
 
   if (!term || !user) return <p>Term not found.</p>;
+
+  const hideMcq = !hasRealMcqQuestions(term.preExam.questions);
+  const modeParam = searchParams.get("mode");
+  const initialMode =
+    hideMcq || modeParam === "paper" ? "paper" : "mcq";
 
   const weeksComplete = term.weeks.every((w) =>
     w.lessons.every((l) => progress?.completedLessonIds.includes(l.id)),

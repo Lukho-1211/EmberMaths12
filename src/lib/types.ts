@@ -45,7 +45,7 @@ export interface LessonTest {
   description: string;
   questions: AssessmentQuestion[];
   passMark: number;
-  /** Optional override materials; students fall back to lesson.resources when empty. */
+  /** Optional materials (usually empty for daily lesson tests — study PDFs live on the lesson). */
   resources: Resource[];
   /** Marking memo / answer key — admin only; used for paper-scan correction. */
   memoResources: Resource[];

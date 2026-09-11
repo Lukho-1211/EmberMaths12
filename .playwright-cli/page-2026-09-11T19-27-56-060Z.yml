@@ -1,0 +1,22 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - link "Ember Maths12" [ref=f1e3] [cursor=pointer]:
+      - /url: /
+    - generic [ref=f1e4]:
+      - heading "Admin log in" [level=1] [ref=f1e5]
+      - paragraph [ref=f1e6]: Access your Ember Maths12 admin portal.
+      - generic [ref=f1e7]:
+        - generic [ref=f1e8]:
+          - generic [ref=f1e9]: Email
+          - textbox "Email" [disabled] [ref=f1e10]: aluluthospambo@gmail.com
+        - generic [ref=f1e11]:
+          - generic [ref=f1e12]: Password
+          - generic [ref=f1e13]:
+            - textbox "Password" [disabled] [ref=f1e14]: Lukho@1211
+            - button "Show password" [disabled] [ref=f1e15]
+        - button "Signing in…" [disabled] [ref=f1e32]
+      - paragraph [ref=f1e20]:
+        - link "Choose a different portal" [ref=f1e21] [cursor=pointer]:
+          - /url: /login
+  - button "Open Next.js Dev Tools" [ref=f1e27] [cursor=pointer]
+  - alert [ref=f1e31]

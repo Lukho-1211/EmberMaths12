@@ -124,7 +124,7 @@ Used by: daily lesson tests, Saturday week tests, pre-exams. Past papers: paper+
 |-------|------------|
 | `/admin` | Dashboard stats, learner progress |
 | `/admin/terms` | Upload/edit lessons, week tests, pre-exams, past papers; **add/remove weeks** (uncapped per term — empty Mon–Fri + Saturday test); regenerate MCQs; **upload lesson mp4** |
-| `/admin/users` | List admins/teachers; **create admin** accounts; delete student/parent accounts |
+| `/admin/users` | List admins/teachers; **create admin** accounts; delete **other** admins (not self / not last admin); delete student/parent accounts |
 | `/admin/groups` | Study groups, assign students, optional term link |
 | `/admin/pass-fail` | Filter by passing / failing / pending |
 | `/admin/achievers` | Leaderboard + geo filters |

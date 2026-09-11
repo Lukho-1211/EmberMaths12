@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Download } from "lucide-react";
+import { hasRealMcqQuestions, realMcqQuestions } from "@/lib/domain/placeholder-mcq";
 import { meetsPassMark } from "@/lib/score-mcq";
 import { useStore } from "@/lib/store";
 import { uploadStudentScan } from "@/lib/supabase/student-scans";
@@ -224,7 +225,7 @@ export function AssessmentPaperScan({
   realGrading?: boolean;
 }) {
   const { applyCorrection, applyProgress } = useStore();
-  const questions = assessment.questions ?? [];
+  const questions = realMcqQuestions(assessment.questions ?? []);
   const paperOnly = questions.length === 0;
   const allowPdf = acceptPdf || realGrading;
   const [step, setStep] = useState<PaperStep>("questions");
@@ -631,17 +632,26 @@ export function AssessmentPanel({
   initialMode?: AssessmentMode;
   onDone?: (score: number) => void;
   realGrading?: boolean;
-  /** Hide on-screen MCQ when the week test has no questions. */
+  /** Hide on-screen MCQ when the assessment has no questions (or caller forces hide). */
   hideMcq?: boolean;
 }) {
+  const noMcq = hideMcq || !hasRealMcqQuestions(assessment.questions);
   const [mode, setMode] = useState<AssessmentMode>(
-    hideMcq ? "paper" : initialMode,
+    noMcq ? "paper" : initialMode,
   );
 
-  if (hideMcq) {
+  const mcqAssessment = useMemo(() => {
+    if (noMcq) return assessment;
+    return {
+      ...assessment,
+      questions: realMcqQuestions(assessment.questions),
+    };
+  }, [assessment, noMcq]);
+
+  if (noMcq) {
     return (
       <AssessmentPaperScan
-        assessment={assessment}
+        assessment={{ ...assessment, questions: [] }}
         studentId={studentId}
         onDone={onDone}
         realGrading={realGrading}
@@ -681,10 +691,10 @@ export function AssessmentPanel({
         </button>
       </div>
       {mode === "mcq" ? (
-        <AssessmentQuiz assessment={assessment} studentId={studentId} onDone={onDone} />
+        <AssessmentQuiz assessment={mcqAssessment} studentId={studentId} onDone={onDone} />
       ) : (
         <AssessmentPaperScan
-          assessment={assessment}
+          assessment={mcqAssessment}
           studentId={studentId}
           onDone={onDone}
           realGrading={realGrading}

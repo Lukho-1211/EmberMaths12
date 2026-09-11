@@ -103,7 +103,8 @@ export async function POST(request: Request) {
     }
 
     // createUser may apply app_metadata after the INSERT trigger runs, so the
-    // trigger can miss admin. Force the profile (+ app_metadata) to admin.
+    // trigger can miss admin and leave profiles.role as student.
+    // profiles_lock_email_and_role blocks role UPDATEs, so replace the row.
     const { error: metaError } = await admin.auth.admin.updateUserById(userId, {
       app_metadata: { role: "admin" },
       user_metadata: { name, role: "admin" },
@@ -112,7 +113,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: metaError.message }, { status: 400 });
     }
 
-    const { error: profileError } = await admin.from("profiles").upsert({
+    await admin.from("student_progress").delete().eq("student_id", userId);
+    await admin.from("student").delete().eq("profile_id", userId);
+    await admin.from("profiles").delete().eq("id", userId);
+
+    const { error: profileError } = await admin.from("profiles").insert({
       id: userId,
       name,
       email,
@@ -122,7 +127,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: profileError.message }, { status: 400 });
     }
 
-    // Prefer the profile row after the forced admin upsert.
+    // Prefer the profile row after the forced admin insert.
     let createdProfile: {
       id: string;
       name: string;

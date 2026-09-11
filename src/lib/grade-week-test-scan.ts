@@ -1,6 +1,12 @@
 import { createPartFromBase64, createPartFromText, GoogleGenAI, Type } from "@google/genai";
+import { realMcqQuestions } from "@/lib/domain/placeholder-mcq";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { QuestionFeedback, Resource } from "@/lib/types";
+
+export {
+  isPlaceholderWeekTestPrompt,
+  realMcqQuestions,
+} from "@/lib/domain/placeholder-mcq";
 
 export type WeekTestGradeResult = {
   score: number;
@@ -66,22 +72,11 @@ export function clampScore(value: unknown): number {
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
-/** Seed Saturday MCQs from `makeWeekTest` — not real paper items. */
-export function isPlaceholderWeekTestPrompt(prompt: string): boolean {
-  const p = prompt.trim().toLowerCase();
-  return (
-    p.startsWith("which statement best relates to ") ||
-    p.includes("a learner should prepare for saturday week tests") ||
-    /^in the context of .+,\s*the next step after practice is/.test(p)
-  );
-}
-
 /** Drop leftover seed MCQs so Gemini labels feedback from the memo. */
 export function questionHintsForPaperScan(
   questions: Array<{ id: string; prompt: string }> | undefined,
 ): Array<{ id: string; prompt: string }> {
-  if (!questions?.length) return [];
-  return questions.filter((q) => !isPlaceholderWeekTestPrompt(q.prompt));
+  return realMcqQuestions(questions);
 }
 
 export function parseCorrectFlag(value: unknown): boolean {

@@ -150,7 +150,9 @@ interface StoreContextValue {
   logout: () => Promise<void>;
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  deleteUser: (userId: string) => Promise<void>;
+  deleteUser: (
+    userId: string,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>;
   createAdmin: (input: {
     name: string;
     email: string;
@@ -480,36 +482,56 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return { ok: true as const };
   }, [session]);
 
-  const deleteUser = useCallback(async (userId: string) => {
-    try {
-      await fetch("/api/auth/delete-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
+  const deleteUser = useCallback(
+    async (userId: string) => {
+      if (session?.userId === userId) {
+        return { ok: false as const, error: "You cannot delete your own account." };
+      }
+
+      const target = state.users.find((u) => u.id === userId);
+
+      try {
+        const res = await fetch("/api/auth/delete-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        });
+        const data = (await res.json()) as { ok?: boolean; error?: string };
+        if (!res.ok || !data.ok) {
+          return {
+            ok: false as const,
+            error: data.error ?? "Failed to delete user.",
+          };
+        }
+      } catch {
+        return { ok: false as const, error: "Failed to delete user." };
+      }
+
+      // Auth delete cascades profiles/progress; client cleanup is for local cache + student rows.
+      if (target?.role === "student" || target?.role === "parent") {
+        void deleteProgress(userId);
+      }
+      setState((prev) => {
+        const users = prev.users.filter((u) => u.id !== userId);
+        return {
+          ...prev,
+          users,
+          progress: prev.progress.filter((p) => p.studentId !== userId),
+          classes: prev.classes.map((c) => ({
+            ...c,
+            studentIds: c.studentIds.filter((id) => id !== userId),
+            pendingStudentIds: c.pendingStudentIds.filter((id) => id !== userId),
+          })),
+          groups: prev.groups.map((g) => ({
+            ...g,
+            memberIds: g.memberIds.filter((id) => id !== userId),
+          })),
+        };
       });
-    } catch {
-      /* ignore network errors; still clear local cache */
-    }
-    void deleteProgress(userId);
-    setState((prev) => {
-      const users = prev.users.filter((u) => u.role === "admin" || u.id !== userId);
-      return {
-        ...prev,
-        users,
-        progress: prev.progress.filter((p) => p.studentId !== userId),
-        classes: prev.classes.map((c) => ({
-          ...c,
-          studentIds: c.studentIds.filter((id) => id !== userId),
-          pendingStudentIds: c.pendingStudentIds.filter((id) => id !== userId),
-        })),
-        groups: prev.groups.map((g) => ({
-          ...g,
-          memberIds: g.memberIds.filter((id) => id !== userId),
-        })),
-      };
-    });
-    setSession((s) => (s?.userId === userId ? null : s));
-  }, []);
+      return { ok: true as const };
+    },
+    [session?.userId, state.users],
+  );
 
   const createAdmin = useCallback(
     async (input: { name: string; email: string; password: string }) => {

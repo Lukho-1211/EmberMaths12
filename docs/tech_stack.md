@@ -119,7 +119,7 @@ Normal signup and login use the browser Supabase client. App Router APIs:
 | ----- | ------- |
 | [`src/app/api/auth/signup/route.ts`](../src/app/api/auth/signup/route.ts) | Optional pre-confirmed signup when the real **service_role** secret is set |
 | [`src/app/api/auth/create-admin/route.ts`](../src/app/api/auth/create-admin/route.ts) | Admin-only: create admin via service role; sets `app_metadata.role = admin` |
-| [`src/app/api/auth/delete-user/route.ts`](../src/app/api/auth/delete-user/route.ts) | Admin user delete (service role) |
+| [`src/app/api/auth/delete-user/route.ts`](../src/app/api/auth/delete-user/route.ts) | Admin-only user delete (service role); blocks self-delete and last-admin delete |
 | [`src/app/api/curriculum/route.ts`](../src/app/api/curriculum/route.ts) | Authed curriculum fetch — admins get answer keys/memos; others get stripped |
 | [`src/app/api/assessments/mcq/route.ts`](../src/app/api/assessments/mcq/route.ts) | Student MCQ submit — server scores against curriculum keys; updates progress |
 | [`src/app/api/assessments/paper-scan/route.ts`](../src/app/api/assessments/paper-scan/route.ts) | Student paper-scan grade — **Saturday week tests:** Gemini memo marking via [`grade-week-test-scan.ts`](../src/lib/grade-week-test-scan.ts); other kinds still mock; practice/past-paper skips pass/fail |

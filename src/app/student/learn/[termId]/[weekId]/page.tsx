@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { AssessmentPanel } from "@/components/assessment";
 import { PageHeader } from "@/components/app-shell";
 import { TermWeekNav } from "@/components/term-week-nav";
 import { WeekDayNav } from "@/components/week-day-nav";
-import { AssessmentPanel } from "@/components/assessment";
+import { hasRealMcqQuestions } from "@/lib/domain/placeholder-mcq";
 import { useStore } from "@/lib/store";
 
 function hasUploadedPaper(resources: { type: string; url: string }[]) {
@@ -30,7 +31,7 @@ function StudentWeekContent() {
   if (!term || !week || !user) return <p>Week not found.</p>;
 
   const paperUploaded = hasUploadedPaper(week.weekTest.resources ?? []);
-  const hideMcq = (week.weekTest.questions?.length ?? 0) === 0;
+  const hideMcq = !hasRealMcqQuestions(week.weekTest.questions);
   const modeParam = searchParams.get("mode");
   const initialMode =
     hideMcq || modeParam === "paper" || (paperUploaded && modeParam !== "mcq")

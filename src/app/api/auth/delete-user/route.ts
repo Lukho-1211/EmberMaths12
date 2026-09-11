@@ -6,6 +6,7 @@ type Body = { userId?: string };
 
 /**
  * Admin-only: delete an Auth user (cascades to profiles and related rows).
+ * Blocks self-delete and deleting the last admin account.
  */
 export async function POST(request: Request) {
   let body: Body;
@@ -44,6 +45,37 @@ export async function POST(request: Request) {
     }
 
     const admin = createAdminClient();
+
+    const { data: target, error: targetError } = await admin
+      .from("profiles")
+      .select("id, role")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (targetError) {
+      return NextResponse.json({ error: targetError.message }, { status: 400 });
+    }
+    if (!target) {
+      return NextResponse.json({ error: "User not found." }, { status: 404 });
+    }
+
+    if (target.role === "admin") {
+      const { count, error: countError } = await admin
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("role", "admin");
+
+      if (countError) {
+        return NextResponse.json({ error: countError.message }, { status: 400 });
+      }
+      if ((count ?? 0) <= 1) {
+        return NextResponse.json(
+          { error: "Cannot delete the last admin account." },
+          { status: 400 },
+        );
+      }
+    }
+
     const { error } = await admin.auth.admin.deleteUser(userId);
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

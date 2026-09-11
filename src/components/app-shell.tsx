@@ -15,6 +15,7 @@ import {
   Settings,
   Trophy,
   Users,
+  UserPlus,
   LayoutDashboard,
   GraduationCap,
 } from "lucide-react";
@@ -26,6 +27,7 @@ const NAV: Record<Role, { href: string; label: string; icon: typeof Home }[]> = 
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/terms", label: "Terms & Lessons", icon: BookOpen },
     { href: "/admin/users", label: "Users & Teachers", icon: Users },
+    { href: "/admin/create-admin", label: "Create Admin", icon: UserPlus },
     { href: "/admin/groups", label: "Study Groups", icon: School },
     { href: "/admin/pass-fail", label: "Pass / Fail", icon: ClipboardCheck },
     { href: "/admin/achievers", label: "Top Achievers", icon: Trophy },
@@ -186,7 +188,11 @@ export function AppShell({
           </div>
           <nav className="flex flex-1 flex-col gap-1 p-3">
             {items.map((item) => {
-              const active = pathname === item.href || pathname.startsWith(item.href + "/");
+              // Exact match for role roots (e.g. /admin) so Dashboard stays inactive on subpages.
+              const active =
+                item.href === `/${role}`
+                  ? pathname === item.href
+                  : pathname === item.href || pathname.startsWith(item.href + "/");
               const Icon = item.icon;
               return (
                 <Link
@@ -246,11 +252,13 @@ export function AppShell({
               <div className="flex flex-wrap items-center gap-2 md:hidden">
                 {(() => {
                   const primary = items.slice(0, 3);
+                  const createAdminItem = items.find((item) => item.href === "/admin/create-admin");
                   const settingsItem = items.find((item) => item.href.endsWith("/settings"));
-                  const mobileItems =
-                    settingsItem && !primary.some((item) => item.href === settingsItem.href)
-                      ? [...primary, settingsItem]
-                      : primary;
+                  const extras = [createAdminItem, settingsItem].filter(
+                    (item): item is (typeof items)[number] =>
+                      Boolean(item) && !primary.some((p) => p.href === item!.href),
+                  );
+                  const mobileItems = [...primary, ...extras];
                   return mobileItems.map((item) => (
                     <Link
                       key={item.href}

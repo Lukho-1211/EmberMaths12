@@ -293,6 +293,9 @@ export default function AdminTermsPage() {
             ok: false,
           });
         }
+      } else {
+        // No Markdown MCQ source — clear leftover seed banks so students see no MCQ.
+        patch.lessonTest = undefined;
       }
 
       upsertWeekLesson(term.id, week.id, day, patch);

@@ -3,6 +3,9 @@ import {
   canCompleteLesson,
   findAssessment,
   findLesson,
+  hasRealMcqQuestions,
+  isPlaceholderMcqPrompt,
+  realMcqQuestions,
   recomputeProgress,
   stripCurriculumSecrets,
 } from "@/lib/domain";
@@ -83,12 +86,12 @@ describe("recomputeProgress", () => {
 });
 
 describe("findAssessment / findLesson", () => {
-  it("finds a week test", () => {
+  it("finds a week test and drops leftover seed MCQs", () => {
     const found = findAssessment(SEED_TERMS, "test-t1-w1");
     expect(found).not.toBeNull();
     expect(found!.kind).toBe("weekTest");
     expect(found!.practiceOnly).toBe(false);
-    expect(found!.questions.length).toBeGreaterThan(0);
+    expect(found!.questions).toEqual([]);
   });
 
   it("finds a lesson test with parent lesson", () => {
@@ -98,12 +101,15 @@ describe("findAssessment / findLesson", () => {
     expect(found).not.toBeNull();
     expect(found!.kind).toBe("lessonTest");
     expect(found!.lesson?.id).toBe(lesson.id);
+    // Seed lesson prompts are placeholders even when Markdown exists in the fixture.
+    expect(found!.questions).toEqual([]);
   });
 
-  it("finds a pre-exam", () => {
+  it("finds a pre-exam and drops leftover seed MCQs", () => {
     const found = findAssessment(SEED_TERMS, "preexam-t1");
     expect(found?.kind).toBe("preExam");
     expect(found?.practiceOnly).toBe(false);
+    expect(found?.questions).toEqual([]);
   });
 
   it("marks past papers as practiceOnly", () => {
@@ -122,20 +128,111 @@ describe("findAssessment / findLesson", () => {
   });
 });
 
+describe("placeholder MCQ filters", () => {
+  it("detects seed week, lesson, and pre-exam prompts", () => {
+    expect(
+      isPlaceholderMcqPrompt("Which statement best relates to Series & Sigma Notation?"),
+    ).toBe(true);
+    expect(
+      isPlaceholderMcqPrompt("What is the main focus of today’s lesson (Sigma notation)?"),
+    ).toBe(true);
+    expect(
+      isPlaceholderMcqPrompt("Term 1 pre-exam: which area was covered across the four weeks?"),
+    ).toBe(true);
+  });
+
+  it("keeps generated lesson-test prompts", () => {
+    expect(
+      isPlaceholderMcqPrompt(
+        'According to today’s lesson materials on “Sigma notation”, which statement is correct?',
+      ),
+    ).toBe(false);
+    expect(
+      realMcqQuestions([
+        {
+          id: "real",
+          prompt: "From the uploaded lesson notes, which idea best matches this lesson?",
+        },
+        {
+          id: "seed",
+          prompt: "What is the main focus of today’s lesson (Sigma notation)?",
+        },
+      ]),
+    ).toEqual([
+      {
+        id: "real",
+        prompt: "From the uploaded lesson notes, which idea best matches this lesson?",
+      },
+    ]);
+  });
+
+  it("treats seed-only banks as empty", () => {
+    expect(hasRealMcqQuestions(SEED_TERMS[0]!.weeks[0]!.weekTest.questions)).toBe(false);
+    expect(hasRealMcqQuestions(SEED_TERMS[0]!.preExam.questions)).toBe(false);
+  });
+});
+
 describe("canCompleteLesson", () => {
-  const lessonWithTest: Lesson = {
+  const realQuestion = {
+    id: "q1",
+    prompt: "According to today’s lesson materials on “X”, which statement is correct?",
+    options: ["A", "B", "C", "D"],
+    answerIndex: 1,
+  };
+
+  const lessonWithRealTest: Lesson = {
     id: "lesson-x",
     day: "monday",
     title: "X",
     description: "",
     videoUrl: "",
     durationMinutes: 30,
-    resources: [],
+    resources: [
+      {
+        id: "md-1",
+        title: "Notes",
+        type: "markdown",
+        url: "data:text/markdown;charset=utf-8,Hello",
+      },
+    ],
     lessonTest: {
       id: "lt-x",
       title: "Test",
       description: "",
-      questions: [],
+      questions: [realQuestion],
+      passMark: 50,
+      resources: [],
+      memoResources: [],
+    },
+  };
+
+  const lessonWithSeedOnly: Lesson = {
+    id: "lesson-seed",
+    day: "tuesday",
+    title: "Seed",
+    description: "",
+    videoUrl: "",
+    durationMinutes: 30,
+    resources: [
+      {
+        id: "pdf-1",
+        title: "PDF",
+        type: "pdf",
+        url: "https://example.com/notes.pdf",
+      },
+    ],
+    lessonTest: {
+      id: "lt-seed",
+      title: "Seed test",
+      description: "",
+      questions: [
+        {
+          id: "s1",
+          prompt: "What is the main focus of today’s lesson (Seed)?",
+          options: ["A", "B", "C", "D"],
+          answerIndex: 1,
+        },
+      ],
       passMark: 50,
       resources: [],
       memoResources: [],
@@ -143,40 +240,145 @@ describe("canCompleteLesson", () => {
   };
 
   it("allows complete when there is no lesson test", () => {
-    const lesson: Lesson = { ...lessonWithTest, lessonTest: undefined };
+    const lesson: Lesson = { ...lessonWithRealTest, lessonTest: undefined };
     expect(canCompleteLesson(lesson, {})).toEqual({ ok: true });
   });
 
-  it("blocks complete when the lesson test has no score", () => {
-    const result = canCompleteLesson(lessonWithTest, {});
+  it("allows complete when lesson test is leftover seed without Markdown", () => {
+    expect(canCompleteLesson(lessonWithSeedOnly, {})).toEqual({ ok: true });
+  });
+
+  it("blocks complete when a real lesson test has no score", () => {
+    const result = canCompleteLesson(lessonWithRealTest, {});
     expect(result.ok).toBe(false);
   });
 
   it("blocks complete when score is below pass mark", () => {
-    const result = canCompleteLesson(lessonWithTest, { "lt-x": 40 });
+    const result = canCompleteLesson(lessonWithRealTest, { "lt-x": 40 });
     expect(result.ok).toBe(false);
   });
 
   it("allows complete when score meets pass mark", () => {
-    expect(canCompleteLesson(lessonWithTest, { "lt-x": 50 })).toEqual({ ok: true });
+    expect(canCompleteLesson(lessonWithRealTest, { "lt-x": 50 })).toEqual({ ok: true });
   });
 });
 
 describe("stripCurriculumSecrets", () => {
-  it("removes answerIndex, memoResources, and markdown for students", () => {
+  it("removes answerIndex, memoResources, markdown, and leftover seed MCQs", () => {
     const stripped = stripCurriculumSecrets(SEED_TERMS);
-    const q = stripped[0]!.weeks[0]!.weekTest.questions[0]!;
-    expect(q.answerIndex).toBeUndefined();
+    expect(stripped[0]!.weeks[0]!.weekTest.questions).toEqual([]);
     expect(stripped[0]!.weeks[0]!.weekTest.memoResources).toEqual([]);
     expect(stripped[0]!.pastPaper.memoResources).toEqual([]);
+    expect(stripped[0]!.preExam.questions).toEqual([]);
 
     const seedLesson = SEED_TERMS[0]!.weeks[0]!.lessons[0]!;
     const strippedLesson = stripped[0]!.weeks[0]!.lessons[0]!;
     expect(seedLesson.resources.some((r) => r.type === "markdown")).toBe(true);
     expect(strippedLesson.resources.some((r) => r.type === "markdown")).toBe(false);
-    expect(strippedLesson.resources.every((r) => r.type !== "markdown")).toBe(true);
+    // Seed lesson prompts are placeholders → no student lessonTest even with Markdown.
+    expect(strippedLesson.lessonTest).toBeUndefined();
 
     // Original seed unchanged
     expect(SEED_TERMS[0]!.weeks[0]!.weekTest.questions[0]!.answerIndex).toBeDefined();
+  });
+
+  it("omits lessonTest when Markdown is missing even if seed questions exist", () => {
+    const lesson: Lesson = {
+      id: "pdf-only",
+      day: "monday",
+      title: "PDF only",
+      description: "",
+      videoUrl: "",
+      durationMinutes: 25,
+      resources: [
+        {
+          id: "p1",
+          title: "Notes",
+          type: "pdf",
+          url: "https://example.com/a.pdf",
+        },
+      ],
+      lessonTest: {
+        id: "lt-pdf",
+        title: "Test",
+        description: "",
+        questions: [
+          {
+            id: "q1",
+            prompt: "What is the main focus of today’s lesson (PDF only)?",
+            options: ["A", "B", "C", "D"],
+            answerIndex: 1,
+          },
+        ],
+        passMark: 50,
+        resources: [],
+        memoResources: [],
+      },
+    };
+    const terms = [
+      {
+        ...SEED_TERMS[0]!,
+        weeks: [
+          {
+            ...SEED_TERMS[0]!.weeks[0]!,
+            lessons: [lesson],
+          },
+        ],
+      },
+    ];
+    const stripped = stripCurriculumSecrets(terms);
+    expect(stripped[0]!.weeks[0]!.lessons[0]!.lessonTest).toBeUndefined();
+  });
+
+  it("keeps generated lesson MCQs when Markdown source is present", () => {
+    const lesson: Lesson = {
+      id: "md-lesson",
+      day: "monday",
+      title: "With MD",
+      description: "",
+      videoUrl: "",
+      durationMinutes: 25,
+      resources: [
+        {
+          id: "m1",
+          title: "Notes",
+          type: "markdown",
+          url: "data:text/markdown;charset=utf-8,# Hello",
+        },
+      ],
+      lessonTest: {
+        id: "lt-md",
+        title: "Test",
+        description: "",
+        questions: [
+          {
+            id: "q1",
+            prompt: "Based on the lesson document, which option is accurate?",
+            options: ["A", "B", "C", "D"],
+            answerIndex: 2,
+          },
+        ],
+        passMark: 50,
+        resources: [],
+        memoResources: [],
+      },
+    };
+    const terms = [
+      {
+        ...SEED_TERMS[0]!,
+        weeks: [
+          {
+            ...SEED_TERMS[0]!.weeks[0]!,
+            lessons: [lesson],
+          },
+        ],
+      },
+    ];
+    const stripped = stripCurriculumSecrets(terms);
+    const out = stripped[0]!.weeks[0]!.lessons[0]!.lessonTest;
+    expect(out).toBeDefined();
+    expect(out!.questions).toHaveLength(1);
+    expect(out!.questions[0]!.answerIndex).toBeUndefined();
+    expect(out!.questions[0]!.prompt).toContain("Based on the lesson document");
   });
 });
